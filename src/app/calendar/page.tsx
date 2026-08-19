@@ -5,6 +5,59 @@ import { CaptionLabelProps, DayButtonProps, DayPicker } from "@daypicker/react"
 import { addMonths, subMonths } from "date-fns"
 import { useState } from "react"
 
+interface SelectedDayState {
+   date: Date
+}
+
+export default function Calendar() {
+   const [date, setDate] = useState(new Date())
+   const [selectedDay, setSelectedDay] = useState<SelectedDayState | null>(null)
+
+   const showPreviousMonth = () => setDate((prev) => subMonths(prev, 1));
+   const showNextMonth = () => setDate((prev) => addMonths(prev, 1));
+
+   return (
+      <main className="size-full flex flex-1 flex-col">
+         <DayPicker
+            selected={date}
+            onSelect={(_, date) => date ? setSelectedDay({ date }) : setSelectedDay(null)}
+            className="w-full flex-1 flex flex-col"
+            classNames={{
+               month_caption: 'text-center',
+               nav: 'hidden flex items-center gap-2 pt-2 justify-between',
+               months: 'flex flex-col flex-1 h-full w-full',
+               month: 'flex flex-col flex-1 h-full w-full gap-4',
+               month_grid: 'w-full h-full border-collapse gap-1 flex flex-col flex-1',
+               weekdays: 'flex w-full justify-between',
+               weekday: 'flex-1 text-center font-medium text-sm text-gray-400',
+               weeks: 'w-full flex flex-col flex-1 gap-2',
+               week: 'flex w-full flex-1 gap-2',
+               day: 'flex-1 0 h-full p-0 text-center bg-black-secondary rounded-xl hover:bg-neutral-900 transition-colors',
+               day_button: 'cursor-pointer w-full h-full flex flex-col justify-start items-start p-3 outline-none',
+               outside: 'opacity-30',
+               selected: 'outline outline-white font-bold'
+            }}
+            showOutsideDays
+            components={{
+               DayButton,
+               CaptionLabel: (props) => <CaptionLabel {...props} date={date} handlePreviousMonth={showPreviousMonth} handleNextMonth={showNextMonth} />,
+            }}
+            mode='single'
+         />
+
+         {(selectedDay) &&
+            <RenderModal onClickOutside={() => setSelectedDay(null)}>
+               <div className="px-6 py-4 flex flex-col items-center gap-5 max-w-96 w-full bg-black-secondary rounded-xl">
+                  <p className='font-bold w-full text-center border-b border-gray-primary pb-2'>
+                     {selectedDay?.date.toLocaleString('default', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+               </div>
+            </RenderModal>
+         }
+      </main>
+   )
+}
+
 function DayButton(props: DayButtonProps) {
    const { day, modifiers, ...buttonProps } = props
    return (
@@ -54,56 +107,4 @@ function CaptionLabel(props: CaptionLabelProps & { date: Date, handlePreviousMon
    )
 }
 
-interface SelectedDayState {
-   date: Date
-}
-
-export default function Calendar() {
-   const [date, setDate] = useState(new Date())
-   const [selectedDay, setSelectedDay] = useState<SelectedDayState | null>(null)
-
-   const showPreviousMonth = () => setDate((prev) => subMonths(prev, 1));
-   const showNextMonth = () => setDate((prev) => addMonths(prev, 1));
-
-   return (
-      <main className="size-full flex flex-1 flex-col">
-         <DayPicker
-            selected={date}
-            onSelect={(date) => date ? setSelectedDay({ date }) : setSelectedDay(null)}
-            className="w-full flex-1 flex flex-col"
-            classNames={{
-               month_caption: 'text-center',
-               nav: 'hidden flex items-center gap-2 pt-2 justify-between',
-               months: 'flex flex-col flex-1 h-full w-full',
-               month: 'flex flex-col flex-1 h-full w-full gap-4',
-               month_grid: 'w-full h-full border-collapse gap-1 flex flex-col flex-1',
-               weekdays: 'flex w-full justify-between',
-               weekday: 'flex-1 text-center font-medium text-sm text-gray-400',
-               weeks: 'w-full flex flex-col flex-1 gap-2',
-               week: 'flex w-full flex-1 gap-2',
-               day: 'flex-1 0 h-full p-0 text-center bg-black-secondary rounded-xl hover:bg-neutral-900 transition-colors',
-               day_button: 'cursor-pointer w-full h-full flex flex-col justify-start items-start p-3 outline-none',
-               outside: 'opacity-30',
-               selected: 'outline outline-white font-bold'
-            }}
-            showOutsideDays
-            components={{
-               DayButton,
-               CaptionLabel: (props) => <CaptionLabel {...props} date={date} handlePreviousMonth={showPreviousMonth} handleNextMonth={showNextMonth} />,
-            }}
-            mode='single'
-         />
-
-         {(selectedDay) &&
-            <RenderModal onClickOutside={() => setSelectedDay(null)}>
-               <div className="px-6 py-4 flex flex-col items-center gap-5 max-w-96 w-full bg-black-secondary rounded-xl">
-                  <p className='font-bold w-full text-center border-b border-gray-primary pb-2'>
-                     {selectedDay?.date.toLocaleString('default', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </p>
-               </div>
-            </RenderModal>
-         }
-      </main>
-   )
-}
 
