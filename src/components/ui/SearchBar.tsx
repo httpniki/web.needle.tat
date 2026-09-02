@@ -1,16 +1,31 @@
 interface Props {
    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+   onClick?: (event: React.MouseEvent<HTMLInputElement, MouseEvent>) => void
+   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
    placeholder?: string
+   defaultValue?: string
+   autoFocus?: boolean
+   classNames?: {
+      container?: string
+   }
 }
 
-export default function SearchBar({ onChange, placeholder }: Props) {
+export default function SearchBar(props: Props) {
    return (
-      <label className="relative flex items-center w-full rounded-full border border-gray-primary bg-white-main text-sm px-5 py-2.5">
+      <label className={
+         "relative flex items-center w-full rounded-full border border-gray-primary bg-white-main text-sm px-5 py-2.5" +
+         (props.classNames?.container ? ` ${props.classNames.container}` : '')
+      }>
          <input
             type="text"
+            id="searchbar"
             className='w-full h-full outline-none padding-none'
-            placeholder={placeholder}
-            onChange={onChange}
+            placeholder={props.placeholder}
+            onClick={props.onClick}
+            onChange={props.onChange}
+            defaultValue={props.defaultValue}
+            onFocus={props.onFocus}
+            autoFocus={props.autoFocus}
          />
 
          <span className='opacity-20'>

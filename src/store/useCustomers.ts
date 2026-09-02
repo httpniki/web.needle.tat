@@ -1,26 +1,7 @@
-import { Customer } from "@/types/types"
+import Customer from "@/domain/Customer"
 import { create } from "zustand"
 
-const customers: Customer[] = [
-   {
-      id: '1',
-      name: 'Nicolas',
-      username: 'nicolas',
-      phone_number: '+54 999 999 999',
-   },
-   {
-      id: '2',
-      name: 'Maria',
-      username: 'maria',
-      phone_number: '+54 999 999 999',
-   },
-   {
-      id: '3',
-      name: 'Juan',
-      username: 'juan',
-      phone_number: '+54 999 999 999',
-   },
-]
+const customers: Customer[] = []
 
 interface StoreState {
    customers: Customer[]

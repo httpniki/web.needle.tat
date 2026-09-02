@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./_components/Navbar";
 import Topbar from "./_components/Topbar";
 import NewAppointmentBtn from "./_components/NewAppointmentBtn";
+import ToastProvider from "./_context/ToastContext"
 
 const geistSans = Geist({
    variable: "--font-geist-sans",
@@ -29,12 +30,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Topbar />
 
             <div className='relative flex-1 px-8 py-4'>
-               {children}
+               <ToastProvider>
+                  {children}
+               </ToastProvider>
 
                <NewAppointmentBtn />
             </div>
 
             <Navbar />
+
          </body>
       </html>
    );

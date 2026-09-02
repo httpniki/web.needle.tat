@@ -1,16 +1,22 @@
-'use client'
-
-import { useSearchParams } from "next/navigation"
 import NewProjectForm from "./_components/NewProjectForm"
 import Appointments from "./_components/AppointmentList"
+import { NewProjectProvider } from "./_context/NewProjectContext"
 
-export default function AppointmentsPage() {
-   const searchParams = useSearchParams()
+interface Props {
+   searchParams: Promise<{ new?: boolean }>
+}
+
+export default async function AppointmentsPage({ searchParams }: Props) {
+   const { new: newAppointment } = await searchParams
 
    return (
       <main>
-         {searchParams.get('new') && <NewProjectForm />}
-         {!searchParams.get('new') && <Appointments />}
+         {newAppointment &&
+            <NewProjectProvider>
+               <NewProjectForm />
+            </NewProjectProvider>
+         }
+         {!newAppointment && <Appointments />}
       </main>
    )
 }

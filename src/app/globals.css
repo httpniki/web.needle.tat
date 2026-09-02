@@ -1,29 +1,76 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+   --background: #ffffff;
+   --foreground: #171717;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-black-primary: #0A0A0A;
-  --color-black-secondary: #101010;
-  --color-gray-primary: #6D6D6D20;
+   --color-background: var(--background);
+   --color-foreground: var(--foreground);
+   --font-sans: var(--font-geist-sans);
+   --font-mono: var(--font-geist-mono);
+   --color-black-primary: #0A0A0A;
+   --color-black-secondary: #101010;
+   --color-gray-primary: #6D6D6D20;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+   :root {
+      --background: #0a0a0a;
+      --foreground: #ededed;
+   }
 }
 
 body {
-  /* background: var(--background); */
-  color: #ffffff;
-  font-family: Arial, Helvetica, sans-serif;
+   /* background: var(--background); */
+   color: #ffffff;
+   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer utilities {
+   .no-spinner::-webkit-outer-spin-button,
+   .no-spinner::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+   }
+
+   .no-spinner {
+      -moz-appearance: textfield;
+      appearance: textfield;
+   }
+}
+
+.animation-overlay {
+   animation-name: overlay;
+   animation-duration: 0.3s;
+   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes overlay {
+   0% {
+      opacity: 0;
+      transform: translateY(10px);
+   }
+
+   100% {
+      opacity: 1;
+      transform: translateY(0);
+   }
+}
+
+.animation-slide-up {
+   animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slide-up {
+   0% {
+      opacity: 0;
+      transform: translateY(20px); /* Empieza 20px más abajo */
+   }
+   100% {
+      opacity: 1;
+      transform: translateY(0);    /* Vuelve a su posición original */
+   }
+}
+

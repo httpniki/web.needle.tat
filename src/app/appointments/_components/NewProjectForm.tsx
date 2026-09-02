@@ -1,113 +1,133 @@
-import RenderModal from "@/components/RenderModal"
-import SearchBar from "@/components/ui/SearchBar"
-import { useState } from "react"
+'use client'
 
-interface CustomerState {
-   name: string | null,
-   username: string | null,
-   phone_number: string | null,
-}
+import { useTransition } from "react"
+import Customer from "./new-project/Customer"
+import Sessions from "./new-project/Sessions"
+import useNewProject from "../_context/NewProjectContext"
+import References from "./new-project/References"
+import Loader from "@/components/ui/Loader"
+import { useRouter } from "next/navigation"
+import { createProject } from "@/actions/project-actions"
+import { useToast } from "@/app/_context/ToastContext"
+import CustomerDomain from "@/domain/Customer"
 
-interface CustomerSectionProps<K extends keyof CustomerState> {
-   onChange: (field: K, value: CustomerState[K]) => void
-}
-
-
-function CustomerSection({ onChange }: CustomerSectionProps<'name' | 'username' | 'phone_number'>) {
-   const [renderModal, setRenderModal] = useState<{ type: 'NAME' | 'USER' | 'PHONE_NUMBER' | null }>({ type: null })
-   
-   return (
-      <section className="flex flex-col gap-2">
-         <h6 className="font-bold">Cliente</h6>
-
-         <div className="text-sm flex gap-2">
-            <button
-               onClick={() => setRenderModal({ type: 'NAME' })}
-               className='cursor-pointer transition-all duration-200 hover:opacity-80'
-            >
-               + Añadir nombre
-            </button>
-
-            <button onClick={() => setRenderModal({ type: 'USER' })} className='cursor-pointer transition-all duration-200 hover:opacity-80'>
-               (+ Añadir usuario)
-            </button>
-
-            <button onClick={() => setRenderModal({ type: 'PHONE_NUMBER' })} className='cursor-pointer transition-all duration-200 hover:opacity-80'>
-               (+ Añadir telefono)
-            </button>
-         </div>
-
-         {(renderModal.type) &&
-            <RenderModal className='bg-black-primary' onClickOutside={() => setRenderModal({ type: null })}>
-               <div className="px-6 py-4 bg-black-primary flex flex-col gap-5 max-w-96 w-full">
-                  <h1 className="font-bold text-center text-xl">
-                     Selecciona un cliente
-                  </h1>
-
-                  <SearchBar
-                     placeholder={'Buscar ' + (renderModal.type === 'NAME' ? 'nombre' : renderModal.type === 'USER' ? 'usuario' : 'telefono') + '...'}
-                     onChange={(event) => onChange(renderModal.type === 'NAME' ? 'name' : renderModal.type === 'USER' ? 'username' : 'phone_number', event.target.value)}
-                  />
-               </div>
-            </RenderModal>
-         }
-      </section>
-   )
-}
-
+/**
+ * Parsea una fecha con formato "DD/MM/YYYY HH:MM" a un Date
+ * @param dateStr
+ * @returns Date
+ */
 export default function NewProjectForm() {
-   const [customer, setCustomer] = useState<CustomerState>({
-      name: null,
-      username: null,
-      phone_number: null,
-   })
+   const store = useNewProject()
+   const [pending, startTransition] = useTransition()
+   const router = useRouter()
+   const toast = useToast()
+
+   const disableSubmit = (() => {
+      let disabled = pending
+      const emptyCustomer = new CustomerDomain()
+
+      for (const key in store.errors) {
+         const k = key as keyof typeof store.errors
+
+         if (k === 'customer') {
+            for (const key in store.errors.customer) {
+               const k = key as keyof typeof store.errors.customer
+               if (store.errors.customer[k]) disabled = true
+            }
+         }
+
+         if (k === 'project') {
+            for (const key in store.errors.project) {
+               const k = key as keyof typeof store.errors.project
+               if (store.errors.project[k]) disabled = true
+            }
+         }
+
+         if (k === 'sessions') {
+            store.errors.sessions.forEach((session) => {
+               for (const key in session) {
+                  if (key === 'id') continue
+                  const k = key as keyof typeof session
+                  if (session[k]) disabled = true
+               }
+            })
+         }
+      }
+
+      if (store.project.sessions.length === 0) disabled = true
+      if (store.references.length === 0) disabled = true
+
+      for (const key in store.customer) {
+         const k = key as keyof typeof store.customer
+         const v = store.customer[k]
+
+         if (['id', 'username', 'email'].includes(k)) continue
+
+         if (v === emptyCustomer[k]) disabled = true
+      }
+
+      return disabled
+   })()
+
+   async function submitForm() {
+      const project = store.project.toObject()
+      const customer = store.customer.toObject()
+      const references = store.references
+
+      startTransition(async () => {
+         const result = await createProject(customer, project.sessions, references)
+            .catch((err) => {
+               console.error(err)
+               toast.add({ message: 'Something went wrong creating the project', type: 'error', title: 'Unexpected error' })
+            })
+
+         if (result) {
+            toast.add({ message: 'Nuevo projecto creado', type: 'success' })
+            router.push('/')
+         }
+      })
+   }
 
    return (
       <form onSubmit={(event) => event.preventDefault()} className="flex flex-col gap-6">
-         <h1 className="text-lg font-bold">Nuevo tatuaje</h1>
+         <header className="flex items-center justify-between">
+            <h1 className="text-lg font-bold">Nuevo tatuaje</h1>
 
-         <CustomerSection onChange={(field, value) => console.log(field, value)} />
-
-         <div className="flex flex-col gap-2">
-            <h6 className="font-bold">Referencias</h6>
-
-            <div className="flex gap-2">
+            <div className='flex gap-2 items-center'>
                <button
-                  className="size-28 bg-black-main border border-gray-primary text-nowrap cursor-pointer hover:opacity-80"
-                  onClick={(event) => event.preventDefault()}
+                  className='w-min enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25 border border-white/40 rounded-xs px-1.5 py-1.5'
+                  onClick={() => router.push('/')}
+                  disabled={pending}
                >
-                  +
+                  Cancelar
                </button>
 
-               {Array.from({ length: 5 }).map((_, index) => (
-                  <button
-                     key={index}
-                     className="flex gap-2 size-28 border border-gray-primary hover:opacity-80 bg-white aspect-square cursor-pointer"
-                  />
-               ))}
+               <button
+                  className='w-min enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25 border border-white/40 rounded-xs px-1.5 py-1.5'
+                  onClick={submitForm}
+                  disabled={disableSubmit}
+               >
+                  Agregar
+               </button>
             </div>
-         </div>
+         </header>
 
-         <div className="flex flex-col gap-2">
-            <h6 className="font-bold">1° Sesión</h6>
-
-            <div className='flex flex-col gap-2'>
-               <label className="flex gap-2 text-sm">
-                  Fecha: <button>+ Añadir fecha</button>
-               </label>
-
-               <label className="flex gap-2 text-sm">
-                  Hora: <button>+ Añadir hora</button>
-               </label>
+         {pending &&
+            <div className='m-auto'>
+               <Loader />
             </div>
-         </div>
+         }
 
-         <button
-            className='w-min cursor-pointer text-nowrap text-sm hover:opacity-80'
-            onClick={(event) => event.preventDefault()}
-         >
-            Agregar Sesión
-         </button>
+         {!pending &&
+            <article className='flex gap-6 flex-col lg:flex-row justify-between items-start'>
+               <div className='flex flex-col gap-6 w-full'>
+                  <Customer />
+                  <References />
+               </div>
+
+               <Sessions />
+            </article>
+         }
       </form>
    )
 }
