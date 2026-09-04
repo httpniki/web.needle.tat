@@ -1,7 +1,5 @@
 import DomainException from "@/utils/exceptions/domain-exception";
-
-// export type SessionStatus = 'PENDING' | 'IN_PROGRESS' | 'FINISHED' | 'CANCELLED'
-// export type Currency = 'EUR' | 'USD' | 'ARS'
+import { addHours, addMilliseconds, differenceInMilliseconds } from "date-fns";
 
 export enum SessionStatus {
    PENDING = 'PENDING',
@@ -43,27 +41,31 @@ export interface ITattooSession extends TattooSessionType {
 
 export default class TattooSession implements ITattooSession {
    private _id: string = '';
-   private _starts_at!: Date;
-   private _ends_at!: Date;
+   private _starts_at: Date = new Date();
+   private _ends_at: Date = addHours(new Date(), 1);
    private _observations: string = '';
    private _status: SessionStatus = SessionStatus.PENDING;
    private _price: number = 0;
    private _currency: Currency = Currency.ARS;
 
    constructor(props?: TattooSessionConsturctor) {
-      if (props?.id) this._id = props.id;
-      if (props?.status) this._status = props.status;
-      if (props?.currency) this._currency = props.currency;
-      if (props?.observations) this._observations = props.observations;
-      if (props?.starts_at) this._starts_at = new Date(props.starts_at.getTime());
-      if (props?.ends_at) this._ends_at = new Date(props.ends_at.getTime());
-      if (props?.price) this._price = props.price;
+      if (!props) return
+      this._id = props.id;
+      if(props.status) this._status = props.status;
+      if(props.currency) this._currency = props.currency;
+      if(props.observations) this._observations = props.observations;
+      this._starts_at = new Date(props.starts_at.getTime());
+      this._ends_at = new Date(props.ends_at.getTime());
+      this._price = props.price;
    }
 
    public get starts_at(): Date { return this._starts_at; }
    public set starts_at(value: Date) {
-      if (this._starts_at && value.getTime() > this._ends_at.getTime()) throw new DomainException('starts_at', 'La hora de inicio no puede ser posterior a la de finalización')
+      const durationInMs = differenceInMilliseconds(this._ends_at, this._starts_at)
+      const newEndsAt = addMilliseconds(value, durationInMs)
+
       this._starts_at = value
+      this._ends_at = newEndsAt
    }
 
    public get ends_at(): Date { return this._ends_at; }

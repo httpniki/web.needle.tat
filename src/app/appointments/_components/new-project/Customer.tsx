@@ -184,13 +184,13 @@ function CustomerSearchWrapper(props: CustomerSearchWrapperProps) {
    useEffect(() => {
       startTransition(async () => {
          const results = await findCustomers(searchParam)
-         const parsedResults = results.map((customer) => new CustomerDomain(
-            customer.id,
-            customer.name,
-            customer.phone_number,
-            customer.username,
-            customer.email
-         ))
+         const parsedResults = results.map((customer) => new CustomerDomain({
+            id: customer.id,
+            name: customer.name,
+            username: customer.username,
+            phone_number: customer.phone_number,
+            email: customer.email
+         }))
 
          setCustomers(parsedResults)
       })

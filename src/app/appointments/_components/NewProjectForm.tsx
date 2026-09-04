@@ -11,11 +11,6 @@ import { createProject } from "@/actions/project-actions"
 import { useToast } from "@/app/_context/ToastContext"
 import CustomerDomain from "@/domain/Customer"
 
-/**
- * Parsea una fecha con formato "DD/MM/YYYY HH:MM" a un Date
- * @param dateStr
- * @returns Date
- */
 export default function NewProjectForm() {
    const store = useNewProject()
    const [pending, startTransition] = useTransition()
@@ -96,7 +91,7 @@ export default function NewProjectForm() {
             <div className='flex gap-2 items-center'>
                <button
                   className='w-min enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25 border border-white/40 rounded-xs px-1.5 py-1.5'
-                  onClick={() => router.push('/')}
+                  onClick={() => router.back()}
                   disabled={pending}
                >
                   Cancelar
