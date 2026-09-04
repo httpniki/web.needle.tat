@@ -149,3 +149,26 @@ export async function findCustomerById(id: string): Promise<Customer> {
       email: result.data.email
    }
 }
+
+export async function getCustomers(): Promise<Customer[]> {
+   const db = createClient(await cookies())
+
+   const results = await db
+      .from('customers')
+      .select<string, CustomerModel>('*')
+      .order('name')
+
+   if (results.error) {
+      const err = new ActionException('Unexpected error getting customers')
+      err.name = 'unexpected_error'
+      throw err
+   }
+
+   return results.data.map((customer) => ({
+      id: customer.id,
+      name: customer.name,
+      username: customer.username,
+      phone_number: customer.phone_number,
+      email: customer.email
+   }))
+}

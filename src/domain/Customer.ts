@@ -11,21 +11,27 @@ export interface ICustomer extends CustomerType {
    toObject(): CustomerType
 }
 
+type CustomerConstructor = {
+   id: string
+   name: string
+   username?: string
+   phone_number: string
+   email?: string
+}
+
 export default class Customer {
-   private _id: string
-   private _name: string
+   private _id!: string
+   private _name!: string
    private _username?: string
-   private _phone_number: string
+   private _phone_number!: string
    private _email?: string;
 
-   constructor();
-   constructor(id: string, name: string, phone_number: string, username?: string, email?: string);
-   constructor(id?: string, name?: string, phone_number?: string, username?: string, email?: string) {
-      this._id = id ?? '';
-      this._name = name ?? '';
-      this._phone_number = phone_number ?? '';
-      this._username = username ?? undefined;
-      this._email = email ?? undefined;
+   constructor(props?: CustomerConstructor) {
+      if (props?.id) this._id = props.id;
+      if (props?.name) this._name = props.name;
+      if (props?.username) this._username = props.username;
+      if (props?.phone_number) this._phone_number = props.phone_number;
+      if (props?.email) this._email = props.email;
    }
 
    public get id(): string { return this._id; }

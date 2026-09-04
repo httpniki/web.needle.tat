@@ -115,3 +115,61 @@ export async function hasSessionConflict(startsAt: Date, endsAt: Date, excludeSe
       currency: session.currency
    }))
 }
+
+export default async function findSessionById(id: string): Promise<TattooSession> {
+   const db = createClient(await cookies())
+
+   const { data, error } = await db
+      .from('sessions')
+      .select('*')
+      .eq('id', id)
+
+   if (error) {
+      const exception = new ServerActionException('Unexpected error finding session')
+      exception.name = 'unexpected_error'
+      throw exception
+   }
+
+   if (!data || data.length === 0) {
+      const exception = new ServerActionException('Session not found')
+      exception.name = 'session_not_found'
+      throw exception
+   }
+
+   const session = data[0]
+
+   return {
+      id: session.id,
+      starts_at: session.starts_at,
+      ends_at: session.ends_at,
+      observations: session.observations,
+      status: session.status,
+      price: session.price,
+      currency: session.currency
+   }
+}
+
+export async function findSessionsByProjectId(projectId: string): Promise<TattooSession[]> {
+   const db = createClient(await cookies())
+
+   const { data, error } = await db
+      .from('sessions')
+      .select('*')
+      .eq('project_id', projectId)
+
+   if (error) {
+      const exception = new ServerActionException('Unexpected error finding sessions')
+      exception.name = 'unexpected_error'
+      throw exception
+   }
+
+   return data.map((session) => ({
+      id: session.id,
+      starts_at: session.starts_at,
+      ends_at: session.ends_at,
+      observations: session.observations,
+      status: session.status,
+      price: session.price,
+      currency: session.currency
+   }))
+}

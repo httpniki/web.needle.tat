@@ -26,6 +26,16 @@ export interface TattooSessionType {
    currency: Currency
 }
 
+type TattooSessionConsturctor = {
+   id: string,
+   starts_at: Date,
+   ends_at: Date,
+   price: number,
+   currency?: Currency,
+   status?: SessionStatus,
+   observations?: string
+}
+
 export interface ITattooSession extends TattooSessionType {
    clone(): TattooSession
    toObject(): TattooSessionType
@@ -33,45 +43,26 @@ export interface ITattooSession extends TattooSessionType {
 
 export default class TattooSession implements ITattooSession {
    private _id: string = '';
-   private _starts_at: Date = new Date();
-   private _ends_at: Date = new Date();
+   private _starts_at!: Date;
+   private _ends_at!: Date;
    private _observations: string = '';
    private _status: SessionStatus = SessionStatus.PENDING;
    private _price: number = 0;
    private _currency: Currency = Currency.ARS;
 
-   constructor();
-   constructor(
-      id: string,
-      starts_at: Date,
-      ends_at: Date,
-      price: number,
-      currency?: Currency,
-      status?: SessionStatus,
-      observations?: string
-   );
-   constructor(
-      id?: string,
-      starts_at?: Date,
-      ends_at?: Date,
-      price?: number,
-      currency?: Currency,
-      status?: SessionStatus,
-      observations?: string
-   ) {
-      if (starts_at) this._starts_at = new Date(starts_at.getTime());
-      if (ends_at) this._ends_at = new Date(ends_at.getTime());
-
-      this._status = status ?? SessionStatus.PENDING;
-      this._price = price ?? 0;
-      this._currency = currency ?? Currency.ARS;
-      this._observations = observations ?? '';
-      this._id = id ?? '';
+   constructor(props?: TattooSessionConsturctor) {
+      if (props?.id) this._id = props.id;
+      if (props?.status) this._status = props.status;
+      if (props?.currency) this._currency = props.currency;
+      if (props?.observations) this._observations = props.observations;
+      if (props?.starts_at) this._starts_at = new Date(props.starts_at.getTime());
+      if (props?.ends_at) this._ends_at = new Date(props.ends_at.getTime());
+      if (props?.price) this._price = props.price;
    }
 
    public get starts_at(): Date { return this._starts_at; }
    public set starts_at(value: Date) {
-      if (value.getTime() > this._ends_at.getTime()) throw new DomainException('starts_at', 'La hora de inicio no puede ser posterior a la de finalización')
+      if (this._starts_at && value.getTime() > this._ends_at.getTime()) throw new DomainException('starts_at', 'La hora de inicio no puede ser posterior a la de finalización')
       this._starts_at = value
    }
 

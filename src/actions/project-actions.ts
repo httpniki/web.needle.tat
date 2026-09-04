@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import ServerActionException from "../utils/exceptions/action-exception"
 import { createCustomer, findCustomerById } from "./customer-actions"
-import { createSession } from "./session-actions"
+import  { createSession, findSessionsByProjectId } from "./session-actions"
 import { v2 as cloudinary } from 'cloudinary'
 import { CustomerType } from "@/domain/Customer"
 import { TattooSessionType } from "@/domain/TattooSession"
@@ -109,4 +109,36 @@ export async function createProject(
       },
       customer: c
    }
+}
+
+export async function getProjects(): Promise<TattooProjectType[]> {
+   const db = createClient(await cookies())
+
+   const { data, error } = await db
+      .from('projects')
+      .select<string, ProjectModel>('*')
+      .order('created_at', { ascending: false })
+
+   if (error) {
+      const exception = new ServerActionException('Unexpected error getting projects')
+      exception.name = 'unexpected_error'
+      throw exception
+   }
+
+   const projects = Promise.all(
+      data.map(async (project) => {
+         const sessions = await findSessionsByProjectId(project.id)
+
+         return {
+            id: project.id,
+            customer_id: project.customer_id,
+            images: project.images,
+            references: project.references,
+            sessions: sessions,
+            observations: project.observations
+         }
+      })
+   )
+
+   return projects
 }
