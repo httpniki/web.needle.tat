@@ -35,7 +35,7 @@ export default function Customer() {
 
                         <TextInput
                            placeholder='Nombre completo'
-                           value={store.customer.name}
+                           value={store.project.customer.name}
                            onFocus={() => openOverlay()}
                            onChange={(event) => {
                               setSearchParam(event.target.value);
@@ -58,7 +58,7 @@ export default function Customer() {
 
                         <TextInput
                            placeholder='@Usuario'
-                           value={store.customer.username}
+                           value={store.project.customer.username}
                            onFocus={() => openOverlay()}
                            onChange={(event) => {
                               setSearchParam(event.target.value)
@@ -83,7 +83,7 @@ export default function Customer() {
 
                         <TextInput
                            placeholder='+5491122334455'
-                           value={store.customer.phone_number}
+                           value={store.project.customer.phone_number}
                            onFocus={() => openOverlay()}
                            onChange={(event) => {
                               setSearchParam(event.target.value);
@@ -106,7 +106,7 @@ export default function Customer() {
 
                         <TextInput
                            placeholder='email@domain.com'
-                           value={store.customer.email}
+                           value={store.project.customer.email}
                            onFocus={() => openOverlay()}
                            onChange={(event) => {
                               setSearchParam(event.target.value);

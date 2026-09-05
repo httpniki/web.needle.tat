@@ -1,14 +1,20 @@
-export interface CustomerType {
+
+export interface ICustomer {
    id: string
    name: string
    username?: string
    phone_number: string
    email?: string
+   clone(): Customer
+   toObject(): CustomerObject
 }
 
-export interface ICustomer extends CustomerType {
-   clone(): Customer
-   toObject(): CustomerType
+export interface CustomerObject {
+   id: string
+   name: string
+   username?: string
+   phone_number: string
+   email?: string
 }
 
 type CustomerConstructor = {
@@ -59,7 +65,7 @@ export default class Customer {
       return copy;
    }
 
-   public toObject(): CustomerType {
+   public toObject(): CustomerObject {
       return {
          id: this._id,
          name: this._name,

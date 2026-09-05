@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import ActionException from "../utils/exceptions/action-exception"
-import { CustomerType as Customer } from "@/domain/Customer"
+import { CustomerObject } from "@/domain/Customer"
 
 interface NewCustomer {
    name: string
@@ -21,7 +21,7 @@ interface CustomerModel {
    created_at: string
 }
 
-export async function createCustomer(body: NewCustomer): Promise<Customer> {
+export async function createCustomer(body: NewCustomer): Promise<CustomerObject> {
    const cookieStore = await cookies()
    const db = createClient(cookieStore)
 
@@ -97,7 +97,7 @@ export async function createCustomer(body: NewCustomer): Promise<Customer> {
    }
 }
 
-export async function findCustomers(q: string): Promise<Customer[]> {
+export async function findCustomers(q: string): Promise<CustomerObject[]> {
    const db = createClient(await cookies())
 
    const results = await db
@@ -120,7 +120,7 @@ export async function findCustomers(q: string): Promise<Customer[]> {
    }))
 }
 
-export async function findCustomerById(id: string): Promise<Customer> {
+export async function findCustomerById(id: string): Promise<CustomerObject> {
    const db = createClient(await cookies())
 
    const result = await db
@@ -150,7 +150,7 @@ export async function findCustomerById(id: string): Promise<Customer> {
    }
 }
 
-export async function getCustomers(): Promise<Customer[]> {
+export async function getCustomers(): Promise<CustomerObject[]> {
    const db = createClient(await cookies())
 
    const results = await db

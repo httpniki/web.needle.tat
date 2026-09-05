@@ -28,14 +28,17 @@ export default function References() {
                <span>+</span>
             </label>
 
-            {store.references.map((file, index) => (
-               <Reference
+            {store.project.references.map((ref, index) => {
+               if (!ref.file) throw new Error('File is null')
+
+               return <Reference
                   key={index}
-                  file={file}
+                  file={ref.file}
+                  url={ref.url}
                   index={index}
-                  onDelete={() => store.removeReference(index)}
+                  onDelete={() => store.removeReference(ref.url)}
                />
-            ))}
+            })}
          </ul>
       </section>
    )
@@ -43,12 +46,12 @@ export default function References() {
 
 interface ReferenceProps {
    file: File
+   url: string
    index: number
    onDelete: () => void
 }
 
 function Reference(props: ReferenceProps) {
-   const url = URL.createObjectURL(props.file)
    const [showPreview, setShowPreview] = useState(false)
 
    return (
@@ -58,7 +61,7 @@ function Reference(props: ReferenceProps) {
             onClick={() => setShowPreview(!showPreview)}
          >
             <Image
-               src={url}
+               src={props.url}
                alt={props.file.name}
                width={112}
                height={112}
@@ -72,7 +75,7 @@ function Reference(props: ReferenceProps) {
             >
                <div className='flex items-center justify-center group m-4 max-h-[75vh] max-w-[75vw] size-fit overflow-hidden bg-black-primary'>
                   <img
-                     src={url}
+                     src={props.url}
                      alt={props.file.name}
                      className="block max-w-full max-h-[75vh] w-auto h-auto object-contain"
                   />

@@ -1,6 +1,5 @@
 'use client'
 
-import { getCustomers } from "@/actions/customer-actions"
 import { getProjects } from "@/actions/project-actions"
 import RenderModal from "@/components/RenderModal"
 import Customer from "@/domain/Customer"
@@ -11,6 +10,7 @@ import { useEffect, useState, useTransition } from "react"
 import Calendar from "./_components/Calendar"
 import Loader from "@/components/ui/Loader"
 import DayOverlay from "./_components/DayOverlay"
+import TattooReference from "@/domain/TattooReference"
 
 interface DaySession {
    customer_name: string
@@ -28,55 +28,25 @@ export default function CalendarPage() {
    const [selectedDay, setSelectedDay] = useState<SelectedDayState | null>(null)
    const [loading, startTransition] = useTransition()
    const [projects, setProjects] = useState<TattooProject[]>([])
-   const [customers, setCustomers] = useState<Customer[]>([])
 
    useEffect(() => {
       startTransition(async () => {
          const projects = await getProjects()
 
          const parsedProjects: TattooProject[] = projects.map((p) => {
-            const sessions = p.sessions.map((s) => {
-               const session: TattooSession = new TattooSession({
-                  id: s.id,
-                  starts_at: new Date(s.starts_at),
-                  ends_at: new Date(s.ends_at),
-                  observations: s.observations ?? '',
-                  status: s.status,
-                  price: s.price,
-                  currency: s.currency
-               })
+            const customer = new Customer({ ...p.customer })
+            const sessions = p.sessions.map((s) => new TattooSession({ ...s }))
+            const references = p.references.map((r) => new TattooReference({ ...r }))
 
-               return session
+            return new TattooProject({
+               ...p,
+               customer,
+               sessions,
+               references
             })
-
-            const project: TattooProject = new TattooProject({
-               id: p.id,
-               customer_id: p.customer_id,
-               images: p.images,
-               references: p.references,
-               sessions: sessions,
-               observations: p.observations
-            })
-
-            return project
          })
 
          setProjects(parsedProjects)
-         const customers = await getCustomers()
-
-         const parsedCustomers: Customer[] = customers.map((c) => {
-            const customer = new Customer({
-               id: c.id,
-               name: c.name,
-               username: c.username,
-               phone_number: c.phone_number,
-               email: c.email
-            })
-
-            return customer
-         })
-
-         setCustomers(parsedCustomers)
       })
    }, [])
 
@@ -85,21 +55,17 @@ export default function CalendarPage() {
 
    function findDaySessions(date: Date) {
       const s = projects.reduce((acc, project) => {
-         const customer = customers.find((c) => c.id === project.customer_id)
+         project.sessions.forEach((session) => {
+            const { starts_at, ends_at } = session
 
-         if (!customer) throw new Error('Customer not found')
-
-         for (const session in project.sessions) {
-            const { starts_at, ends_at } = project.sessions[session]
-
-            if (!isSameDay(starts_at, date)) continue
+            if (!isSameDay(starts_at, date)) return
 
             acc.push({
-               customer_name: customer.name,
-               session_start_at: starts_at,
+               customer_name: project.customer.name,
+               session_start_at: session.starts_at,
                session_end_at: ends_at
             })
-         }
+         })
 
          return acc
       }, [] as DaySession[])

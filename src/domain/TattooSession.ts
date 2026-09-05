@@ -14,7 +14,20 @@ export enum Currency {
    EUR = 'EUR'
 }
 
-export interface TattooSessionType {
+export interface ITattooSession {
+   id: string
+   starts_at: Date
+   ends_at: Date
+   observations: string
+   booking_fee: number
+   status: SessionStatus
+   price: number
+   currency: Currency
+   clone(): TattooSession
+   toObject(): TattooSessionObject
+}
+
+export interface TattooSessionObject {
    id: string
    starts_at: Date
    ends_at: Date
@@ -36,11 +49,6 @@ type TattooSessionConsturctor = {
    observations?: string
 }
 
-export interface ITattooSession extends TattooSessionType {
-   clone(): TattooSession
-   toObject(): TattooSessionType
-}
-
 export default class TattooSession implements ITattooSession {
    private _id: string = '';
    private _starts_at: Date = new Date();
@@ -58,8 +66,8 @@ export default class TattooSession implements ITattooSession {
       if (props.currency) this._currency = props.currency;
       if (typeof props.observations === 'string') this._observations = props.observations;
       if (typeof props.booking_fee === 'number') this._booking_fee = props.booking_fee;
-      this._starts_at = new Date(props.starts_at.getTime());
-      this._ends_at = new Date(props.ends_at.getTime());
+      this._starts_at = new Date(props.starts_at);
+      this._ends_at = new Date(props.ends_at);
       this._price = props.price;
    }
 
@@ -111,7 +119,7 @@ export default class TattooSession implements ITattooSession {
       return copy;
    }
 
-   public toObject(): TattooSessionType {
+   public toObject(): TattooSessionObject {
       return {
          id: this._id,
          starts_at: this._starts_at,

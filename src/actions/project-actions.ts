@@ -4,21 +4,16 @@ import { createClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import ServerActionException from "../utils/exceptions/action-exception"
 import { createCustomer, findCustomerById } from "./customer-actions"
-import  { createSession, findSessionsByProjectId } from "./session-actions"
+import { createSession, findSessionsByProjectId } from "./session-actions"
 import { v2 as cloudinary } from 'cloudinary'
-import { CustomerType } from "@/domain/Customer"
-import { TattooSessionType } from "@/domain/TattooSession"
-import { TattooProjectType } from "@/domain/TattooProject"
+import { TattooProjectObject } from "@/domain/TattooProject"
+import { CustomerObject } from "@/domain/Customer"
+import { TattooSessionObject } from "@/domain/TattooSession"
 
 interface NewProject {
    references: File[]
    customer: Parameters<typeof createCustomer>[0] & { id?: string }
    sessions: Omit<Parameters<typeof createSession>[0], 'projectId'>[]
-}
-
-interface NewProjectResult {
-   project: TattooProjectType
-   customer: Awaited<ReturnType<typeof createCustomer>>
 }
 
 interface ProjectModel {
@@ -34,9 +29,9 @@ export async function createProject(
    customer: NewProject['customer'],
    sessions: NewProject['sessions'],
    references: NewProject['references']
-): Promise<NewProjectResult> {
+): Promise<TattooProjectObject> {
    const db = createClient(await cookies())
-   let c: CustomerType | null = null
+   let c: CustomerObject | null = null
 
    if (customer.id) c = await findCustomerById(customer.id)
    if (!customer.id) c = await createCustomer(customer)
@@ -95,23 +90,20 @@ export async function createProject(
       throw exception
    }
 
-   const s: TattooSessionType[] = await Promise.all(
+   const s: TattooSessionObject[] = await Promise.all(
       sessions.map(async (session) => await createSession({ ...session, projectId: projectResult.data.id }))
    )
 
    return {
-      project: {
-         id: projectResult.data.id,
-         customer_id: c.id,
-         images: projectResult.data.images,
-         references: projectResult.data.references,
-         sessions: s
-      },
-      customer: c
+      id: projectResult.data.id,
+      customer: c,
+      images: projectResult.data.images,
+      references: projectResult.data.references.map((url) => ({ url })),
+      sessions: s
    }
 }
 
-export async function getProjects(): Promise<TattooProjectType[]> {
+export async function getProjects(): Promise<TattooProjectObject[]> {
    const db = createClient(await cookies())
 
    const { data, error } = await db
@@ -125,20 +117,22 @@ export async function getProjects(): Promise<TattooProjectType[]> {
       throw exception
    }
 
-   const projects = Promise.all(
-      data.map(async (project) => {
-         const sessions = await findSessionsByProjectId(project.id)
 
-         return {
-            id: project.id,
-            customer_id: project.customer_id,
-            images: project.images,
-            references: project.references,
-            sessions: sessions,
-            observations: project.observations
-         }
-      })
-   )
+   const projects: TattooProjectObject[] = await Promise.all(data.map(async (project) => {
+      const [customer, sessions] = await Promise.all([
+         await findCustomerById(project.customer_id),
+         await findSessionsByProjectId(project.id)
+      ])
+
+      return {
+         id: project.id,
+         customer: customer,
+         images: project.images,
+         references: project.references.map((url) => ({ url })),
+         sessions: sessions,
+         observations: project.observations
+      }
+   }))
 
    return projects
 }

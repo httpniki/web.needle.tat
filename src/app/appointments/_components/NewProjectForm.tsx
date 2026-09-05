@@ -20,6 +20,7 @@ export default function NewProjectForm() {
    const disableSubmit = (() => {
       let disabled = pending
       const emptyCustomer = new CustomerDomain()
+      const project = store.project
 
       for (const key in store.errors) {
          const k = key as keyof typeof store.errors
@@ -49,12 +50,12 @@ export default function NewProjectForm() {
          }
       }
 
-      if (store.project.sessions.length === 0) disabled = true
-      if (store.references.length === 0) disabled = true
+      if (project.sessions.length === 0) disabled = true
+      if (project.references.length === 0) disabled = true
 
-      for (const key in store.customer) {
-         const k = key as keyof typeof store.customer
-         const v = store.customer[k]
+      for (const key in project.customer) {
+         const k = key as keyof typeof project.customer
+         const v = project.customer[k]
 
          if (['id', 'username', 'email'].includes(k)) continue
 
@@ -65,12 +66,15 @@ export default function NewProjectForm() {
    })()
 
    async function submitForm() {
-      const project = store.project.toObject()
-      const customer = store.customer.toObject()
-      const references = store.references
+      const customer = store.project.customer.toObject()
+      const sessions = store.project.sessions.map((s) => s.toObject())
+      const references = store.project.references.map((r) => {
+         if (!r.file) throw new Error('File is null')
+         return r.file
+      })
 
       startTransition(async () => {
-         const result = await createProject(customer, project.sessions, references)
+         const result = await createProject(customer, sessions, references)
             .catch((err) => {
                console.error(err)
                toast.add({ message: 'Something went wrong creating the project', type: 'error', title: 'Unexpected error' })

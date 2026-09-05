@@ -2,6 +2,7 @@
 
 import Customer from "@/domain/Customer"
 import TattooProject from "@/domain/TattooProject"
+import TattooReference from "@/domain/TattooReference"
 import TattooSession from "@/domain/TattooSession"
 import { ClassProperties } from "@/types/types"
 import DomainException from "@/utils/exceptions/domain-exception"
@@ -9,9 +10,7 @@ import { isKeyOf } from "@/utils/utils"
 import { createContext, useContext, useState } from "react"
 
 type StoreState = {
-   customer: Customer
    project: TattooProject
-   references: File[]
    errors: ErrorState
 }
 
@@ -35,7 +34,7 @@ interface StoreActions {
    addNewSession: () => void
    removeSession: (id: string) => void
    addReference: (image: File) => void
-   removeReference: (index: number) => void
+   removeReference: (url: string) => void
 }
 
 type Store = StoreState & StoreActions
@@ -44,8 +43,6 @@ export const NewProjectContext = createContext<Store | null>(null)
 
 export function NewProjectProvider({ children }: { children: React.ReactNode }) {
    const [project, setProject] = useState<TattooProject>(new TattooProject())
-   const [customer, setCustomer] = useState<Customer>(new Customer())
-   const [references, setReferences] = useState<File[]>([])
 
    const [errors, setErrors] = useState<ErrorState>({
       customer: {},
@@ -69,10 +66,10 @@ export function NewProjectProvider({ children }: { children: React.ReactNode }) 
 
    function updateCustomer<K extends Parameters<StoreActions['updateCustomer']>[0]>(field: K, value: Customer[K]) {
       try {
-         const updatedCustomer = customer.clone()
-         updatedCustomer[field] = value
+         const projectCopy = project.clone()
+         projectCopy.customer[field] = value
 
-         setCustomer(updatedCustomer)
+         setProject(projectCopy)
          setErrors({ ...errors, customer: { ...errors.customer, [field]: '' } })
       } catch (error: unknown) {
          if (!(error instanceof DomainException)) throw error
@@ -85,7 +82,11 @@ export function NewProjectProvider({ children }: { children: React.ReactNode }) 
       }
    }
 
-   const addCustomer = (customer: Customer) => setCustomer(customer)
+   function addCustomer(customer: Customer) {
+      const projectCopy = project.clone()
+      projectCopy.customer = customer
+      setProject(projectCopy)
+   }
 
    function addNewSession() {
       const projectCopy = project.clone()
@@ -123,14 +124,23 @@ export function NewProjectProvider({ children }: { children: React.ReactNode }) 
       if (errors.sessions.some((e) => e.id === id)) setErrors({ ...errors, sessions: errors.sessions.filter((s) => s.id !== id) })
    }
 
-   const addReference = (image: File) => setReferences([...references, image])
-   const removeReference = (index: number) => setReferences(references.filter((_, i) => i !== index))
+   function addReference(image: File) {
+      const projectCopy = project.clone()
+      const newReference = new TattooReference({ url: URL.createObjectURL(image), file: image })
+      projectCopy.references = [...projectCopy.references, newReference]
+      setProject(projectCopy)
+   }
+
+   function removeReference(url: string) {
+      const projectCopy = project.clone()
+      projectCopy.references = projectCopy.references.filter((r) => r.url !== url)
+
+      setProject(projectCopy)
+   }
 
    return (
       <NewProjectContext.Provider value={{
-         customer,
          project,
-         references,
          errors,
          updateCustomer,
          addCustomer,

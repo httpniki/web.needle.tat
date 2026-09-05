@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import ServerActionException from "../utils/exceptions/action-exception"
-import { Currency, SessionStatus, TattooSessionType as TattooSession } from "@/domain/TattooSession"
+import { Currency, SessionStatus, TattooSessionObject } from "@/domain/TattooSession"
 
 interface NewSession {
    projectId: string
@@ -28,7 +28,7 @@ interface SessionModel {
    created_at: string
 }
 
-export async function createSession(newSession: NewSession): Promise<TattooSession> {
+export async function createSession(newSession: NewSession): Promise<TattooSessionObject> {
    const db = createClient(await cookies())
 
    if (newSession.starts_at instanceof Date && isNaN(newSession.starts_at.getTime())) {
@@ -83,7 +83,7 @@ export async function createSession(newSession: NewSession): Promise<TattooSessi
    }
 }
 
-export async function hasSessionConflict(startsAt: Date, endsAt: Date, excludeSessionId?: string): Promise<TattooSession[]> {
+export async function hasSessionConflict(startsAt: Date, endsAt: Date, excludeSessionId?: string): Promise<TattooSessionObject[]> {
    const db = createClient(await cookies())
 
    if (isNaN(startsAt.getTime()) || isNaN(endsAt.getTime())) {
@@ -121,7 +121,7 @@ export async function hasSessionConflict(startsAt: Date, endsAt: Date, excludeSe
    }))
 }
 
-export default async function findSessionById(id: string): Promise<TattooSession> {
+export default async function findSessionById(id: string): Promise<TattooSessionObject> {
    const db = createClient(await cookies())
 
    const { data, error } = await db
@@ -155,7 +155,7 @@ export default async function findSessionById(id: string): Promise<TattooSession
    }
 }
 
-export async function findSessionsByProjectId(projectId: string): Promise<TattooSession[]> {
+export async function findSessionsByProjectId(projectId: string): Promise<TattooSessionObject[]> {
    const db = createClient(await cookies())
 
    const { data, error } = await db
