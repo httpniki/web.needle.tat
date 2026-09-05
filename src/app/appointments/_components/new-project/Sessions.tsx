@@ -26,7 +26,7 @@ export default function Sessions() {
          >
             Agregar sesión
          </button>
-      </section >
+      </section>
    )
 }
 

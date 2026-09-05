@@ -16,9 +16,10 @@ CREATE TABLE IF NOT EXISTS sessions (
    project_id BIGINT NOT NULL,
    starts_at TIMESTAMP WITH TIME ZONE NOT NULL,
    ends_at TIMESTAMP WITH TIME ZONE NOT NULL,
-   observations TEXT,
+   observations TEXT NOT NULL DEFAULT '',
    status session_status NOT NULL DEFAULT 'PENDING',
    price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+   booking_fee NUMERIC(10, 2) NOT NULL DEFAULT 0,
    currency currency_code NOT NULL DEFAULT 'ARS',
    created_at TIMESTAMPZ WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 

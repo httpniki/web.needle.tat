@@ -18,7 +18,8 @@ export interface TattooSessionType {
    id: string
    starts_at: Date
    ends_at: Date
-   observations?: string
+   observations: string
+   booking_fee: number
    status: SessionStatus
    price: number
    currency: Currency
@@ -31,6 +32,7 @@ type TattooSessionConsturctor = {
    price: number,
    currency?: Currency,
    status?: SessionStatus,
+   booking_fee?: number,
    observations?: string
 }
 
@@ -46,14 +48,16 @@ export default class TattooSession implements ITattooSession {
    private _observations: string = '';
    private _status: SessionStatus = SessionStatus.PENDING;
    private _price: number = 0;
+   private _booking_fee: number = 0;
    private _currency: Currency = Currency.ARS;
 
    constructor(props?: TattooSessionConsturctor) {
       if (!props) return
       this._id = props.id;
-      if(props.status) this._status = props.status;
-      if(props.currency) this._currency = props.currency;
-      if(props.observations) this._observations = props.observations;
+      if (props.status) this._status = props.status;
+      if (props.currency) this._currency = props.currency;
+      if (typeof props.observations === 'string') this._observations = props.observations;
+      if (typeof props.booking_fee === 'number') this._booking_fee = props.booking_fee;
       this._starts_at = new Date(props.starts_at.getTime());
       this._ends_at = new Date(props.ends_at.getTime());
       this._price = props.price;
@@ -83,6 +87,9 @@ export default class TattooSession implements ITattooSession {
    public get price(): number { return this._price; }
    public set price(value: number) { this._price = value; }
 
+   public get booking_fee(): number { return this._booking_fee; }
+   public set booking_fee(value: number) { this._booking_fee = value; }
+
    public get currency(): Currency { return this._currency; }
    public set currency(value: Currency) { this._currency = value; }
 
@@ -90,14 +97,17 @@ export default class TattooSession implements ITattooSession {
    public set id(value: string) { this._id = value; }
 
    public clone(): TattooSession {
-      const copy = new TattooSession();
-      copy._id = this._id;
-      copy._starts_at = this._starts_at
-      copy._ends_at = this._ends_at
-      copy._observations = this._observations;
-      copy._status = this._status;
-      copy._price = this._price;
-      copy._currency = this._currency;
+      const copy = new TattooSession({
+         id: this._id,
+         starts_at: this._starts_at,
+         ends_at: this._ends_at,
+         observations: this._observations,
+         status: this._status,
+         price: this._price,
+         currency: this._currency,
+         booking_fee: this._booking_fee
+      });
+
       return copy;
    }
 
@@ -109,7 +119,8 @@ export default class TattooSession implements ITattooSession {
          observations: this._observations,
          status: this._status,
          price: this._price,
-         currency: this._currency
+         currency: this._currency,
+         booking_fee: this._booking_fee
       }
    }
 }

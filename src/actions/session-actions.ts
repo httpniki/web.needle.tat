@@ -10,6 +10,7 @@ interface NewSession {
    starts_at: Date
    ends_at: Date
    observations?: string
+   booking_fee?: number
    price: number
    currency: 'EUR' | 'USD' | 'ARS'
 }
@@ -19,7 +20,8 @@ interface SessionModel {
    project_id: string
    starts_at: Date
    ends_at: Date
-   observations?: string
+   observations: string
+   booking_fee: number
    status: SessionStatus
    price: number
    currency: Currency
@@ -58,6 +60,7 @@ export async function createSession(newSession: NewSession): Promise<TattooSessi
          observations: newSession.observations,
          price: newSession.price,
          currency: newSession.currency,
+         booking_fee: newSession.booking_fee
       })
       .select<string, SessionModel>('*')
       .single()
@@ -74,6 +77,7 @@ export async function createSession(newSession: NewSession): Promise<TattooSessi
       ends_at: result.data.ends_at,
       observations: result.data.observations,
       status: result.data.status,
+      booking_fee: result.data.booking_fee,
       price: result.data.price,
       currency: result.data.currency
    }
@@ -109,6 +113,7 @@ export async function hasSessionConflict(startsAt: Date, endsAt: Date, excludeSe
       id: session.id,
       starts_at: session.starts_at,
       ends_at: session.ends_at,
+      booking_fee: session.booking_fee,
       observations: session.observations,
       status: session.status,
       price: session.price,
@@ -145,6 +150,7 @@ export default async function findSessionById(id: string): Promise<TattooSession
       observations: session.observations,
       status: session.status,
       price: session.price,
+      booking_fee: session.booking_fee,
       currency: session.currency
    }
 }
@@ -170,6 +176,7 @@ export async function findSessionsByProjectId(projectId: string): Promise<Tattoo
       observations: session.observations,
       status: session.status,
       price: session.price,
+      booking_fee: session.booking_fee,
       currency: session.currency
    }))
 }
