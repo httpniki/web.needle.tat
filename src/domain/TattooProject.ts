@@ -81,4 +81,8 @@ export default class TattooProject implements ITattooProject {
          observations: this._observations
       }
    }
+
+   public static getProjects(): TattooProject[] {
+      
+   }
 }

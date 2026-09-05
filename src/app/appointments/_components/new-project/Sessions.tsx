@@ -56,6 +56,7 @@ function Session(props: SessionProps) {
                </button>
             </div>
          </div>
+
          <div className='flex flex-col gap-3 text-sm'>
             <div className="flex items-center gap-1.5 w-40">
                <p>Fecha:</p>
@@ -127,6 +128,23 @@ function Session(props: SessionProps) {
                   error={!!store.errors.sessions.find((s) => s.id === props.data.id)?.price}
                />
             </div>
+
+            <div className='flex items-center gap-2 text-sm text-nowrap'>
+               <div className='w-48 flex items-center gap-1.5'>
+                  <p>Seña:</p>
+
+                  <span>$</span>
+
+                  <NumberInput
+                     value={props.data.price}
+                     onChange={(price) => store.updateSession('booking_fee', price, props.data.id)}
+                     error={!!store.errors.sessions.find((s) => s.id === props.data.id)?.booking_fee}
+                  />
+               </div>
+
+               <p>Restante: ${props.data.price - props.data.booking_fee}</p>
+            </div>
+
 
             {(error) &&
                <p className='text-sm text-red-500 text-nowrap text-ellipsis overflow-hidden'>
