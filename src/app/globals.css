@@ -66,11 +66,34 @@ body {
 @keyframes slide-up {
    0% {
       opacity: 0;
-      transform: translateY(20px); /* Empieza 20px más abajo */
+      transform: translateY(20px);
    }
    100% {
       opacity: 1;
-      transform: translateY(0);    /* Vuelve a su posición original */
+      transform: translateY(0);
    }
 }
 
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #404040 #09090b;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #404040;  
+  border-radius: 9999px; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #525252;
+}

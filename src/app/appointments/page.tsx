@@ -10,7 +10,7 @@ export default async function AppointmentsPage({ searchParams }: Props) {
    const { new: newAppointment } = await searchParams
 
    return (
-      <main>
+      <main className='w-full px-8 py-4'>
          {newAppointment &&
             <NewProjectProvider>
                <NewProjectForm />

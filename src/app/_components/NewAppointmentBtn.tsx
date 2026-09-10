@@ -11,7 +11,7 @@ export default function NewAppointmentBtn() {
 
    return (
       <button
-         className="absolute bg-black-primary bottom-6 right-6 flex items-center justify-center transition-colors duration-200 hover:opacity-80 cursor-pointer border border-gray-primary rounded-full aspect-square z-12 w-12 shadow-[0_0_10px_#ffffff10]"
+         className="fixed bg-black-primary bottom-17 right-6 flex items-center justify-center transition-colors duration-200 hover:opacity-80 cursor-pointer border border-gray-primary rounded-full aspect-square z-12 w-12 shadow-[0_0_10px_#ffffff10]"
          onClick={() => router.push('/appointments?new=true')}
       >
          +

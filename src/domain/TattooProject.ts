@@ -11,6 +11,8 @@ export interface ITattooProject {
    customer: Customer
    clone(): TattooProject
    toObject(): TattooProjectObject
+   hasSession(session: TattooSession | string): boolean
+   getMonthSessions(month: number): TattooSession[]
 }
 
 export interface TattooProjectObject {
@@ -89,5 +91,16 @@ export default class TattooProject implements ITattooProject {
          sessions: this._sessions.map((s) => s.toObject()),
          observations: this._observations
       }
+   }
+
+   public hasSession(session: TattooSession | string): boolean {
+      if (typeof session === 'string') return !!this._sessions.find((s) => s.id === session)
+      if (session instanceof TattooSession) return !!this._sessions.find((s) => s.id === session.id)
+
+      return false
+   }
+
+   public getMonthSessions(month: number): TattooSession[] {
+      return this._sessions.filter((s) => s.starts_at.getMonth() === month)
    }
 }

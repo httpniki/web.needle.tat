@@ -5,6 +5,8 @@ import Navbar from "./_components/Navbar";
 import Topbar from "./_components/Topbar";
 import NewAppointmentBtn from "./_components/NewAppointmentBtn";
 import ToastProvider from "./_context/ToastContext"
+import TattooProjectsProvider from "./_context/TattooProjectsContext"
+import { getProjects } from "@/actions/project-actions";
 
 const geistSans = Geist({
    variable: "--font-geist-sans",
@@ -20,25 +22,28 @@ export const metadata: Metadata = {
    title: "Dashboard - Needle.tat"
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+   const projects = await getProjects()
+
    return (
       <html
          lang="en"
          className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-         <body className="h-full min-h-screen flex flex-col bg-black-primary font-sans text-white">
+         <body className="h-screen flex flex-col bg-black-primary font-sans text-white">
             <Topbar />
 
-            <div className='relative flex-1 px-8 py-4'>
+            <div className='flex min-h-0 flex-1 relative'>
                <ToastProvider>
-                  {children}
+                  <TattooProjectsProvider projects={projects}>
+                     {children}
+                  </TattooProjectsProvider>
                </ToastProvider>
 
                <NewAppointmentBtn />
             </div>
 
             <Navbar />
-
          </body>
       </html>
    );

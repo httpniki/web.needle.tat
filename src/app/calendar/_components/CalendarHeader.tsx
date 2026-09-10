@@ -1,6 +1,12 @@
 import { CaptionLabelProps } from "@daypicker/react"
 
-export default function CalendarHeader(props: CaptionLabelProps & { date: Date, handlePreviousMonth: () => void, handleNextMonth: () => void }) {
+type Props = CaptionLabelProps & {
+   date: Date
+   handlePreviousMonth: () => void
+   handleNextMonth: () => void
+}
+
+export default function CalendarHeader(props: Props) {
    const { handlePreviousMonth, handleNextMonth, ...captionProps } = props
 
    return (
@@ -19,7 +25,8 @@ export default function CalendarHeader(props: CaptionLabelProps & { date: Date, 
             </button>
 
             <h2 className="text-lg font-semibold text-white capitalize">
-               {props.date.toLocaleString('default', { month: 'long' })} {props.date.getFullYear()}
+               {props.date?.toLocaleString('default', { month: 'long' })} 
+               {' ' + props.date?.getFullYear()}
             </h2>
 
             <button
