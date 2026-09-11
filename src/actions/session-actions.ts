@@ -6,7 +6,7 @@ import ServerActionException from "../utils/exceptions/action-exception"
 import { Currency, SessionStatus, TattooSessionObject } from "@/domain/TattooSession"
 
 interface NewSession {
-   projectId: string
+   projectId: number
    starts_at: Date
    ends_at: Date
    observations?: string
@@ -16,7 +16,7 @@ interface NewSession {
 }
 
 interface SessionModel {
-   id: string
+   id: number
    project_id: string
    starts_at: Date
    ends_at: Date
@@ -155,7 +155,7 @@ export default async function findSessionById(id: string): Promise<TattooSession
    }
 }
 
-export async function findSessionsByProjectId(projectId: string): Promise<TattooSessionObject[]> {
+export async function findSessionsByProjectId(projectId: number): Promise<TattooSessionObject[]> {
    const db = createClient(await cookies())
 
    const { data, error } = await db

@@ -15,7 +15,7 @@ export enum Currency {
 }
 
 export interface ITattooSession {
-   id: string
+   id: number
    starts_at: Date
    ends_at: Date
    observations: string
@@ -28,7 +28,7 @@ export interface ITattooSession {
 }
 
 export interface TattooSessionObject {
-   id: string
+   id: number
    starts_at: Date
    ends_at: Date
    observations: string
@@ -39,7 +39,7 @@ export interface TattooSessionObject {
 }
 
 type TattooSessionConsturctor = {
-   id: string,
+   id: number,
    starts_at: Date,
    ends_at: Date,
    price: number,
@@ -50,7 +50,7 @@ type TattooSessionConsturctor = {
 }
 
 export default class TattooSession implements ITattooSession {
-   private _id: string = '';
+   private _id: number = 0
    private _starts_at: Date = new Date();
    private _ends_at: Date = addHours(new Date(), 1);
    private _observations: string = '';
@@ -101,8 +101,8 @@ export default class TattooSession implements ITattooSession {
    public get currency(): Currency { return this._currency; }
    public set currency(value: Currency) { this._currency = value; }
 
-   public get id(): string { return this._id; }
-   public set id(value: string) { this._id = value; }
+   public get id(): number { return this._id; }
+   public set id(value: number) { this._id = value; }
 
    public clone(): TattooSession {
       const copy = new TattooSession({

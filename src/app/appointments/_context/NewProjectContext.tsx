@@ -23,16 +23,16 @@ type ErrorState = {
    }
    sessions: ({
       [K in keyof Omit<ClassProperties<TattooProject['sessions'][number]>, 'id'>]?: string
-   } & { id: string })[]
+   } & { id: number })[]
    references?: string
 }
 
 interface StoreActions {
    updateCustomer: <K extends keyof Omit<ClassProperties<Customer>, 'id'>>(field: K, value: Customer[K]) => void
    addCustomer: (customer: Customer) => void
-   updateSession: <K extends keyof Omit<ClassProperties<TattooSession>, 'id'>>(field: K, value: TattooSession[K], id: string) => void
+   updateSession: <K extends keyof Omit<ClassProperties<TattooSession>, 'id'>>(field: K, value: TattooSession[K], id: number) => void
    addNewSession: () => void
-   removeSession: (id: string) => void
+   removeSession: (id: number) => void
    addReference: (image: File) => void
    removeReference: (url: string) => void
 }
@@ -52,10 +52,10 @@ export function NewProjectProvider({ children }: { children: React.ReactNode }) 
 
    if (project.sessions.length === 0) addNewSession()
 
-   function setSessionError(id: string, field: keyof typeof errors['sessions'][number], message: string) {
+   function setSessionError(id: number, field: keyof typeof errors['sessions'][number], message: string) {
       let sessionErr = errors.sessions.find((s) => s.id === id)
 
-      if (sessionErr) sessionErr[field] = message
+      if (sessionErr) sessionErr[field as keyof Omit<typeof sessionErr, 'id'>] = message
       if (!sessionErr) sessionErr = { id, [field]: message }
 
       const updateSessions = errors.sessions.filter((s) => s.id !== id)
@@ -92,13 +92,13 @@ export function NewProjectProvider({ children }: { children: React.ReactNode }) 
       const projectCopy = project.clone()
       const newSession = new TattooSession()
 
-      newSession.id = crypto.randomUUID()
+      newSession.id = Math.floor(Math.random() * 10000)
       projectCopy.sessions = [...projectCopy.sessions, newSession]
 
       setProject(projectCopy)
    }
 
-   function updateSession<K extends keyof TattooSession>(field: K, value: TattooSession[K], id: string) {
+   function updateSession<K extends keyof TattooSession>(field: K, value: TattooSession[K], id: number) {
       const projectCopy = project.clone()
       const session = projectCopy.sessions.find((session) => session.id === id)
 
@@ -115,7 +115,7 @@ export function NewProjectProvider({ children }: { children: React.ReactNode }) 
       }
    }
 
-   function removeSession(id: string) {
+   function removeSession(id: number) {
       const projectCopy = project.clone()
       const updatedSessions = project.sessions.filter((data) => data.id !== id)
       projectCopy.sessions = updatedSessions

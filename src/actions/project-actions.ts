@@ -17,7 +17,7 @@ interface NewProject {
 }
 
 interface ProjectModel {
-   id: string
+   id: number
    customer_id: string
    observations?: string
    images: string[]

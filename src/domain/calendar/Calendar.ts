@@ -1,5 +1,5 @@
 import TattooSession from "../TattooSession"
-import { eachDayOfInterval, endOfMonth, endOfWeek, getWeekOfMonth, startOfMonth, startOfWeek } from "date-fns"
+import { addHours, eachDayOfInterval, endOfMonth, endOfWeek, getWeekOfMonth, startOfMonth, startOfWeek } from "date-fns"
 
 export default class Calendar<T> {
    private _years: Year<T>[] = []
@@ -166,6 +166,38 @@ export class TattooCalendar extends Calendar<TattooSession[]> {
       if (!day) throw new Error(`No se encontró el día ${sessionDay} de la semana ${sessionWeek} del mes ${sessionMonth} del año ${sessionYear}`)
 
       day.data = Array.isArray(day.data) ? [...day.data, session] : [session]
+   }
+
+   public getDaySessions(date: Date): TattooSession[] {
+      const yearObj = this.years.find((y) => y.year === date.getFullYear())
+      if (!yearObj) throw new Error(`No se encontró el año ${date.getFullYear()}`)
+
+      const monthObj = yearObj.months.find((m) => m.month === date.getMonth())
+      if (!monthObj) throw new Error(`No se encontró el mes ${date.getMonth()} del año ${date.getFullYear()}`)
+
+      for (const week of monthObj.weeks) {
+         const dayObj = week.days.find((d) => d.dayNumber === date.getDate())
+
+         if (dayObj && dayObj.data) {
+            return dayObj.data
+         }
+      }
+
+      return []
+   }
+
+   public isSlotOccupied(date: Date): boolean {
+      const daySessions = this.getDaySessions(date)
+
+      const slotStart = date.getTime()
+      const slotEnd = addHours(slotStart, 1).getTime()
+
+      return daySessions.some((session) => {
+         const sStart = session.starts_at.getTime()
+         const sEnd = session.ends_at.getTime()
+
+         return sStart < slotEnd && sEnd > slotStart
+      })
    }
 
    public clone(): TattooCalendar {

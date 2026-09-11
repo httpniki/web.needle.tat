@@ -3,7 +3,7 @@ import TattooReference, { TattooReferenceObject } from "./TattooReference"
 import TattooSession, { TattooSessionObject } from "./TattooSession"
 
 export interface ITattooProject {
-   id: string
+   id: number
    images: string[]
    references: TattooReference[]
    sessions: TattooSession[]
@@ -11,12 +11,12 @@ export interface ITattooProject {
    customer: Customer
    clone(): TattooProject
    toObject(): TattooProjectObject
-   hasSession(session: TattooSession | string): boolean
+   hasSession(session: TattooSession | number): boolean
    getMonthSessions(month: number): TattooSession[]
 }
 
 export interface TattooProjectObject {
-   id: string
+   id: number
    customer: CustomerObject
    images: string[]
    references: TattooReferenceObject[]
@@ -25,7 +25,7 @@ export interface TattooProjectObject {
 }
 
 interface TattooProjectConstructor {
-   id: string
+   id: number
    customer: Customer
    images: string[]
    references: TattooReference[]
@@ -34,7 +34,7 @@ interface TattooProjectConstructor {
 }
 
 export default class TattooProject implements ITattooProject {
-   private _id: string = '';
+   private _id: number = 0
    private _images: string[] = []
    private _references: TattooReference[] = []
    private _sessions: TattooSession[] = []
@@ -51,8 +51,8 @@ export default class TattooProject implements ITattooProject {
       this._sessions = props.sessions;
    }
 
-   public get id(): string { return this._id; }
-   public set id(value: string) { this._id = value; }
+   public get id(): number { return this._id; }
+   public set id(value: number) { this._id = value; }
 
    public get customer(): Customer { return this._customer; }
    public set customer(value: Customer) { this._customer = value; }
@@ -93,8 +93,8 @@ export default class TattooProject implements ITattooProject {
       }
    }
 
-   public hasSession(session: TattooSession | string): boolean {
-      if (typeof session === 'string') return !!this._sessions.find((s) => s.id === session)
+   public hasSession(session: TattooSession | number): boolean {
+      if (typeof session === 'number') return !!this._sessions.find((s) => s.id === session)
       if (session instanceof TattooSession) return !!this._sessions.find((s) => s.id === session.id)
 
       return false

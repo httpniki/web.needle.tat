@@ -1,10 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { isToday as isTodayDate } from 'date-fns'
 import Customer from '@/domain/Customer'
 import TattooSession, { SessionStatus } from '@/domain/TattooSession'
-import { TattooCalendar } from '@/domain/calendar/Calendar'
 import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
 
 export type Time = {
@@ -36,60 +35,25 @@ function formatTime(time: Time): string {
 export default function Scheduler(props: Props) {
    const store = useTattooProjects()
    const [isDragging, setIsDragging] = useState(false)
-   const [selectedSessions, setSelectedSessions] = useState<SelectedSessionItem[]>([])
-
-   const calendar = useMemo(() => {
-      const tattooCalendar = new TattooCalendar()
-      const allSessions = store.projects.flatMap((project) => project.sessions)
-      tattooCalendar.addSessions(allSessions)
-      return tattooCalendar
-   }, [store.projects])
-
-   const sessionCustomerMap = useMemo(() => {
-      const map = new Map<string, Customer>()
-      store.projects.forEach((project) => {
-         project.sessions.forEach((session) => {
-            map.set(session.id, project.customer)
-         })
-      })
-      return map
-   }, [store.projects])
+   const [selectedSlots, setSelectedSlots] = useState<SelectedSessionItem[]>([])
 
    const todaySessionsWithCustomer = useMemo(() => {
-      const yearObj = calendar.years.find((y) => y.year === props.year)
-      const monthObj = yearObj?.months.find((m) => m.month === props.month)
+      const daySessions: TattooSession[] = store.calendar.getDaySessions(new Date(props.year, props.month, props.day))
 
-      let daySessions: TattooSession[] = []
+      return daySessions.map((session) => {
+         const project = store.findProject({ sessionId: session.id })
 
-      if (monthObj) {
-         for (const week of monthObj.weeks) {
-            const dayObj = week.days.find((d) => d.dayNumber === props.day)
-            if (dayObj && dayObj.data) {
-               daySessions = dayObj.data
-               break
-            }
+         if (!project) throw new Error(`Project with session ${session.id} not found`)
+
+         return {
+            session,
+            customer: project.customer
          }
-      }
-
-      return daySessions.map((session) => ({
-         session,
-         customer: sessionCustomerMap.get(session.id)
-      }))
-   }, [calendar, props.year, props.month, props.day, sessionCustomerMap])
-
-   function isSlotOccupied(hour: number, minute: number): boolean {
-      const slotStart = new Date(props.year, props.month, props.day, hour, minute).getTime()
-      const slotEnd = new Date(props.year, props.month, props.day, hour + 1, minute).getTime()
-
-      return todaySessionsWithCustomer.some(({ session }) => {
-         const sStart = session.starts_at.getTime()
-         const sEnd = session.ends_at.getTime()
-         return sStart < slotEnd && sEnd > slotStart
       })
-   }
+   }, [store.projects, store.calendar, props.year, props.month, props.day])
 
    function isSlotSelected(time: Time): boolean {
-      return selectedSessions.some(
+      return selectedSlots.some(
          (item) => item.selectedTime.hours === time.hours && item.selectedTime.minutes === time.minutes
       )
    }
@@ -113,13 +77,14 @@ export default function Scheduler(props: Props) {
 
       const hour = Number(target.dataset.hour)
       const minute = Number(target.dataset.minute)
+      const date = new Date(props.year, props.month, props.day, hour, minute)
 
-      if (isSlotOccupied(hour, minute)) return
+      if (store.calendar.isSlotOccupied(date)) return
 
       const slotTime: Time = { hours: hour, minutes: minute }
       const match = findSessionByTime(slotTime)
 
-      setSelectedSessions([
+      setSelectedSlots([
          {
             session: match?.session,
             customer: match?.customer,
@@ -138,8 +103,9 @@ export default function Scheduler(props: Props) {
 
       const hour = Number(dataset.hour)
       const minute = Number(dataset.minute)
+      const date = new Date(props.year, props.month, props.day, hour, minute)
 
-      if (isSlotOccupied(hour, minute)) return
+      if (store.calendar.isSlotOccupied(date)) return
 
       if (isSlotSelected({ hours: hour, minutes: minute })) return
 
@@ -153,7 +119,7 @@ export default function Scheduler(props: Props) {
          const slotTime: Time = { hours: hour, minutes: minute }
          const match = findSessionByTime(slotTime)
 
-         setSelectedSessions((prev) => [
+         setSelectedSlots((prev) => [
             ...prev,
             {
                session: match?.session,
@@ -166,11 +132,24 @@ export default function Scheduler(props: Props) {
 
    const onMouseUp = () => setIsDragging(false)
 
+   useEffect(() => {
+      function onClickOnside(e: MouseEvent) {
+         const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement
+         if (target.closest('.cell')) return
+
+         setSelectedSlots([])
+      }
+
+      document.addEventListener('click', onClickOnside)
+      return () => document.removeEventListener('click', onClickOnside)
+   }, [selectedSlots])
+
    return (
       <div className="relative flex min-w-0 min-h-0 flex-1 overflow-hidden w-full">
          <div className="min-w-0 min-h-0 flex-1 overflow-auto w-full">
             <div
                className="grid grid-cols-[80px_1fr] grid-rows-[auto] auto-rows-24 relative w-full text-center min-w-0 select-none border-x border-gray-primary mx-auto max-w-4xl"
+               id='scheduler'
                onDragStart={(e) => e.preventDefault()}
             >
                <SchedulerHeader date={new Date(props.year, props.month, props.day)} />
@@ -195,7 +174,7 @@ export default function Scheduler(props: Props) {
                            <div
                               style={{ gridRow: rowIndex, gridColumn: 2 }}
                               className={
-                                 'border-b border-gray-primary touch-none transition-colors ' +
+                                 'cell border-b border-gray-primary touch-none transition-colors ' +
                                  (isSelected ? 'bg-neutral-900' : ' hover:bg-white/2')
                               }
                               data-hour={time.hours}
