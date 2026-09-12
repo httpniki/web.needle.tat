@@ -5,7 +5,7 @@ export enum SessionStatus {
    PENDING = 'PENDING',
    IN_PROGRESS = 'IN_PROGRESS',
    FINISHED = 'FINISHED',
-   CANCELLED = 'CANCELLED'
+   CANCELED = 'CANCELED'
 }
 
 export enum Currency {

@@ -125,11 +125,10 @@ export default async function findSessionById(id: string): Promise<TattooSession
    const db = createClient(await cookies())
 
    const { data, error } = await db
-      .from('sessions')
-      .select('*')
-      .eq('id', id)
+      .rpc('get_session_by_id', { s_id: id })
+      .overrideTypes<SessionModel[]>()
 
-   if (error) {
+   if (error || !data || 'Error' in data) {
       const exception = new ServerActionException('Unexpected error finding session')
       exception.name = 'unexpected_error'
       throw exception
@@ -159,11 +158,10 @@ export async function findSessionsByProjectId(projectId: number): Promise<Tattoo
    const db = createClient(await cookies())
 
    const { data, error } = await db
-      .from('sessions')
-      .select('*')
-      .eq('project_id', projectId)
+      .rpc('get_sessions_by_project_id', { p_id: projectId })
+      .overrideTypes<SessionModel[]>()
 
-   if (error) {
+   if (error || !data || 'Error' in data) {
       const exception = new ServerActionException('Unexpected error finding sessions')
       exception.name = 'unexpected_error'
       throw exception

@@ -52,7 +52,7 @@ export default function CellContentContent(props: Props) {
                (props.session.status === SessionStatus.PENDING ? " text-gray-400" : "") +
                (props.session.status === SessionStatus.IN_PROGRESS ? " text-orange-400" : "") +
                (props.session.status === SessionStatus.FINISHED ? " text-green-400" : "") +
-               (props.session.status === SessionStatus.CANCELLED ? " text-red-400" : "")
+               (props.session.status === SessionStatus.CANCELED ? " text-red-400" : "")
             }
             >
                {props.session.status}
@@ -63,7 +63,7 @@ export default function CellContentContent(props: Props) {
                (props.session.status === SessionStatus.PENDING ? " text-gray-400" : "") +
                (props.session.status === SessionStatus.IN_PROGRESS ? " text-orange-400" : "") +
                (props.session.status === SessionStatus.FINISHED ? " text-green-400" : "") +
-               (props.session.status === SessionStatus.CANCELLED ? " text-red-400" : "")
+               (props.session.status === SessionStatus.CANCELED ? " text-red-400" : "")
             }>
                {props.session.startsAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                {' - '}

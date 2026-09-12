@@ -62,7 +62,7 @@ export default function Schedule(props: Props) {
    }
 
    function prevDay() {
-      const newDate = addDays(date, 1)
+      const newDate = addDays(date, -1)
       setDate(newDate)
       window.history.replaceState(null, '', `/calendar?day=${newDate.getDate()}&month=${newDate.getMonth()}&year=${newDate.getFullYear()}`)
    }

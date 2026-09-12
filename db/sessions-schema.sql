@@ -48,3 +48,56 @@ INSERT INTO sessions (project_id, starts_at, ends_at, observations, status, pric
     (8, '2026-03-15 16:00:00-03', '2026-03-15 17:00:00-03', 'Cancelado previo a la seña.', 'CANCELED', 40000.00, 'ARS'),
     (9, '2026-08-01 14:00:00-03', '2026-08-01 18:00:00-03', 'Relleno de bloque negro en gemelo.', 'IN_PROGRESS', 130000.00, 'ARS'),
     (9, '2026-08-28 15:00:00-03', '2026-08-28 18:00:00-03', 'Segunda etapa de relleno.', 'PENDING', 110000.00, 'ARS');
+
+CREATE OR REPLACE FUNCTION sync_sessions_status()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+   UPDATE public.sessions
+   SET status = CASE
+      WHEN status = 'CANCELED'::session_status THEN status
+      WHEN CURRENT_TIMESTAMP > COALESCE(ends_at, starts_at) THEN 'FINISHED'::session_status
+      WHEN CURRENT_TIMESTAMP BETWEEN starts_at AND ends_at THEN 'IN_PROGRESS'::session_status
+      ELSE status
+   END
+   WHERE 
+      status IS DISTINCT FROM 'CANCELED'::session_status
+      AND status IS DISTINCT FROM (
+         CASE
+            WHEN CURRENT_TIMESTAMP > COALESCE(ends_at, starts_at) THEN 'FINISHED'::session_status
+            WHEN CURRENT_TIMESTAMP BETWEEN starts_at AND ends_at THEN 'IN_PROGRESS'::session_status
+            ELSE status
+         END
+      );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION get_sessions_by_project_id(p_id bigint)
+RETURNS SETOF public.sessions
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+   PERFORM sync_sessions_status();
+      RETURN QUERY
+      SELECT * FROM public.sessions WHERE project_id = p_id ORDER BY starts_at DESC;
+   END
+$$;
+
+CREATE OR REPLACE FUNCTION get_session_by_id(s_id bigint)
+RETURNS SETOF public.sessions
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  PERFORM sync_sessions_status();
+
+   RETURN QUERY
+      SELECT * FROM public.sessions WHERE id = s_id;
+  END
+$$;

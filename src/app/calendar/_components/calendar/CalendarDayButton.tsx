@@ -55,7 +55,7 @@ export default function CalendarDayButton(props: Props) {
                         (session.session_status === SessionStatus.PENDING ? ' bg-gray-400' : '') +
                         (session.session_status === SessionStatus.IN_PROGRESS ? ' bg-orange-400' : '') +
                         (session.session_status === SessionStatus.FINISHED ? ' bg-green-400' : '') +
-                        (session.session_status === SessionStatus.CANCELLED ? ' bg-red-400' : '')
+                        (session.session_status === SessionStatus.CANCELED ? ' bg-red-400' : '')
                      }
                   />
                )

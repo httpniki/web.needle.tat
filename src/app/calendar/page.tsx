@@ -14,9 +14,7 @@ export default async function CalendarPage({ searchParams }: Props) {
 
    return (
       <main className="size-full min-h-0 flex flex-1 flex-col">
-         {(!params.day && !params.month && !params.year) &&
-            <Calendar />
-         }
+         {(!params.day && !params.month && !params.year) && <Calendar />}
 
          {((params.day || params.month || params.year)) &&
             <Schedule
