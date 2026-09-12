@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { addDays, isToday as isTodayDate, setHours } from 'date-fns'
+import { addDays, setHours } from 'date-fns'
 import Customer from '@/domain/Customer'
-import TattooSession, { SessionStatus } from '@/domain/TattooSession'
+import TattooSession from '@/domain/TattooSession'
 import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
 import { useRouter } from 'next/navigation'
+import ScheduleHeader from './schedule/ScheduleHeader'
+import CellContentContent from './schedule/ScheduleCellContent'
 
 export type Time = {
    hours: number
@@ -33,7 +35,7 @@ function formatTime(time: Time): string {
    return `${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}`
 }
 
-export default function Scheduler(props: Props) {
+export default function Schedule(props: Props) {
    const store = useTattooProjects()
    const router = useRouter()
 
@@ -41,7 +43,7 @@ export default function Scheduler(props: Props) {
    const [selectedSlots, setSelectedSlots] = useState<SelectedSessionItem[]>([])
    const [date, setDate] = useState(new Date(props.year, props.month, props.day))
 
-   const todaySessionsWithCustomer = useMemo(() => {
+   const sessionsWithCustomer = useMemo(() => {
       const daySessions: TattooSession[] = store.calendar.getDaySessions(date)
 
       return daySessions.map((session) => {
@@ -64,7 +66,7 @@ export default function Scheduler(props: Props) {
       const slotStart = date.getTime()
       const slotEnd = setHours(date, time.hours + 1).getTime()
 
-      return todaySessionsWithCustomer.find(({ session }) => {
+      return sessionsWithCustomer.find(({ session }) => {
          const sStart = session.starts_at.getTime()
          const sEnd = session.ends_at.getTime()
          return sStart < slotEnd && sEnd > slotStart
@@ -149,7 +151,7 @@ export default function Scheduler(props: Props) {
    return (
       <div className="relative flex min-w-0 min-h-0 flex-1 overflow-hidden w-full">
          <div className="min-w-0 min-h-0 flex-1 overflow-auto w-full">
-            <SchedulerHeader
+            <ScheduleHeader
                date={date}
                handlePrevious={() => setDate(addDays(date, -1))}
                handleNext={() => setDate(addDays(date, 1))}
@@ -158,7 +160,7 @@ export default function Scheduler(props: Props) {
 
             <div
                className="grid grid-cols-[80px_1fr] grid-rows-[auto] auto-rows-24 relative w-full text-center min-w-0 select-none border-x border-gray-primary mx-auto max-w-4xl"
-               id='scheduler'
+               id='schedule'
                onDragStart={(e) => e.preventDefault()}
             >
 
@@ -199,7 +201,7 @@ export default function Scheduler(props: Props) {
                   })}
                </div>
 
-               {todaySessionsWithCustomer.map(({ session, customer }) => {
+               {sessionsWithCustomer.map(({ session, customer }) => {
                   let startIndex = DAY_TIMES.findIndex((time) => {
                      const slotEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.hours + 1, time.minutes).getTime()
                      return session.starts_at.getTime() < slotEnd
@@ -218,7 +220,7 @@ export default function Scheduler(props: Props) {
                   const endRow = endIndex + 2
 
                   return (
-                     <CellContent
+                     <CellContentContent
                         key={session.id}
                         sessionId={session.id}
                         sessionStatus={session.status}
@@ -236,111 +238,3 @@ export default function Scheduler(props: Props) {
    )
 }
 
-interface SchedulerHeaderProps {
-   date: Date
-   handlePrevious: () => void
-   handleNext: () => void
-   handleDate: () => void
-}
-
-function SchedulerHeader(props: SchedulerHeaderProps) {
-   const isToday = isTodayDate(props.date)
-   const day_number = props.date.getDate()
-   const day_name = props.date
-      .toLocaleDateString('es-ES', { weekday: 'long' })
-      .replace(/^./, (str) => str.toUpperCase())
-   const month_name = props.date
-      .toLocaleDateString('es-ES', { month: 'long' })
-      .replace(/^./, (str) => str.toUpperCase())
-
-   const year = props.date.getFullYear()
-
-   return (
-      <header className="contents">
-         <div
-            className={
-               'sticky top-0 bg-black-primary z-20 flex items-center justify-center gap-2.5 py-4 border-b border-gray-primary' +
-               `${(isToday ? ' border-white border-b-2 bg-neutral-900 transition-colors' : '')}`
-            }
-         >
-            <button
-               type="button"
-               className="cursor-pointer border border-none hover:opacity-80 transition-all"
-               aria-label="Mes anterior"
-               onClick={props.handlePrevious}
-            >
-               <svg xmlns="http://www.w3.org/2000/svg" width="1.3rem" height="1.3rem" viewBox="0 0 24 24">
-                  <path d="M0 0h24v24H0z" fill="none" />
-                  <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 12h15m-10 5.657L4.343 12L10 6.343" />
-               </svg>
-            </button>
-
-            <button
-               className="font-semibold text-center text-nowrap cursor-pointer border-none transition-all hover:opacity-80"
-               onClick={props.handleDate}
-            >
-               {day_name}, {day_number} de {month_name} de {year}
-            </button>
-
-            <button
-               type="button"
-               className="cursor-pointer border border-none hover:opacity-80 transition-all"
-               aria-label="Mes siguiente"
-               onClick={props.handleNext}
-            >
-               <svg xmlns="http://www.w3.org/2000/svg" width="1.3rem" height="1.3rem" viewBox="0 0 24 24">
-                  <path d="M0 0h24v24H0z" fill="none" />
-                  <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M4 12h15m-5 5.657L19.657 12L14 6.343" />
-               </svg>
-            </button>
-         </div>
-      </header>
-   )
-}
-
-interface CellContentProps {
-   sessionId: TattooSession['id']
-   sessionStatus: TattooSession['status']
-   customerName: string
-   customerUsername?: string
-   startsAt: Date
-   endsAt: Date
-   gridRow: string
-}
-
-function CellContent(props: CellContentProps) {
-   return (
-      <div
-         style={{ gridRow: props.gridRow, gridColumn: 2 }}
-         className="z-10 m-1 bg-black-secondary border border-neutral-800 rounded-lg p-3 text-xs text-white flex flex-col justify-between text-left shadow-lg"
-         data-id={props.sessionId}
-      >
-         <div>
-            <h4 className="font-bold text-white text-sm truncate">{props.customerName} {props.customerUsername ? `(@${props.customerUsername})` : ''}</h4>
-
-            <p className={
-               "text-amber-200/80 font-medium block mt-0.5" +
-               (props.sessionStatus === SessionStatus.PENDING ? " text-gray-400" : "") +
-               (props.sessionStatus === SessionStatus.IN_PROGRESS ? " text-orange-400" : "") +
-               (props.sessionStatus === SessionStatus.FINISHED ? " text-green-400" : "") +
-               (props.sessionStatus === SessionStatus.CANCELLED ? " text-red-400" : "")
-            }
-            >
-               {props.sessionStatus}
-            </p>
-
-            <time className={
-               "text-amber-200/80 font-medium block mt-0.5" +
-               (props.sessionStatus === SessionStatus.PENDING ? " text-gray-400" : "") +
-               (props.sessionStatus === SessionStatus.IN_PROGRESS ? " text-orange-400" : "") +
-               (props.sessionStatus === SessionStatus.FINISHED ? " text-green-400" : "") +
-               (props.sessionStatus === SessionStatus.CANCELLED ? " text-red-400" : "")
-            }>
-               {props.startsAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-               {' - '}
-               {props.endsAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} hs
-            </time>
-         </div>
-      </div>
-   )
-}

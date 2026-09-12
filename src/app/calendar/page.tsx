@@ -1,5 +1,5 @@
 import Calendar from "./_components/Calendar"
-import Scheduler from "./_components/Scheduler"
+import Schedule from "./_components/Schedule"
 
 interface Props {
    searchParams: Promise<{
@@ -19,7 +19,7 @@ export default async function CalendarPage({ searchParams }: Props) {
          }
 
          {((params.day || params.month || params.year)) &&
-            <Scheduler
+            <Schedule
                day={Number(params.day) ?? new Date().getDate()}
                month={Number(params.month) ?? new Date().getMonth()}
                year={Number(params.year) ?? new Date().getFullYear()}
