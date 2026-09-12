@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { isToday as isTodayDate } from 'date-fns'
+import { addDays, isToday as isTodayDate, setHours } from 'date-fns'
 import Customer from '@/domain/Customer'
 import TattooSession, { SessionStatus } from '@/domain/TattooSession'
 import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
+import { useRouter } from 'next/navigation'
 
 export type Time = {
    hours: number
@@ -34,11 +35,14 @@ function formatTime(time: Time): string {
 
 export default function Scheduler(props: Props) {
    const store = useTattooProjects()
+   const router = useRouter()
+
    const [isDragging, setIsDragging] = useState(false)
    const [selectedSlots, setSelectedSlots] = useState<SelectedSessionItem[]>([])
+   const [date, setDate] = useState(new Date(props.year, props.month, props.day))
 
    const todaySessionsWithCustomer = useMemo(() => {
-      const daySessions: TattooSession[] = store.calendar.getDaySessions(new Date(props.year, props.month, props.day))
+      const daySessions: TattooSession[] = store.calendar.getDaySessions(date)
 
       return daySessions.map((session) => {
          const project = store.findProject({ sessionId: session.id })
@@ -50,17 +54,15 @@ export default function Scheduler(props: Props) {
             customer: project.customer
          }
       })
-   }, [store.projects, store.calendar, props.year, props.month, props.day])
+   }, [store.projects, store.calendar, props.year, props.month, props.day, date])
 
    function isSlotSelected(time: Time): boolean {
-      return selectedSlots.some(
-         (item) => item.selectedTime.hours === time.hours && item.selectedTime.minutes === time.minutes
-      )
+      return selectedSlots.some((item) => item.selectedTime.hours === time.hours && item.selectedTime.minutes === time.minutes)
    }
 
    function findSessionByTime(time: Time) {
-      const slotStart = new Date(props.year, props.month, props.day, time.hours, time.minutes).getTime()
-      const slotEnd = new Date(props.year, props.month, props.day, time.hours + 1, time.minutes).getTime()
+      const slotStart = date.getTime()
+      const slotEnd = setHours(date, time.hours + 1).getTime()
 
       return todaySessionsWithCustomer.find(({ session }) => {
          const sStart = session.starts_at.getTime()
@@ -77,9 +79,9 @@ export default function Scheduler(props: Props) {
 
       const hour = Number(target.dataset.hour)
       const minute = Number(target.dataset.minute)
-      const date = new Date(props.year, props.month, props.day, hour, minute)
+      const newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute)
 
-      if (store.calendar.isSlotOccupied(date)) return
+      if (store.calendar.isSlotOccupied(newDate)) return
 
       const slotTime: Time = { hours: hour, minutes: minute }
       const match = findSessionByTime(slotTime)
@@ -103,9 +105,9 @@ export default function Scheduler(props: Props) {
 
       const hour = Number(dataset.hour)
       const minute = Number(dataset.minute)
-      const date = new Date(props.year, props.month, props.day, hour, minute)
+      const newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute)
 
-      if (store.calendar.isSlotOccupied(date)) return
+      if (store.calendar.isSlotOccupied(newDate)) return
 
       if (isSlotSelected({ hours: hour, minutes: minute })) return
 
@@ -147,12 +149,18 @@ export default function Scheduler(props: Props) {
    return (
       <div className="relative flex min-w-0 min-h-0 flex-1 overflow-hidden w-full">
          <div className="min-w-0 min-h-0 flex-1 overflow-auto w-full">
+            <SchedulerHeader
+               date={date}
+               handlePrevious={() => setDate(addDays(date, -1))}
+               handleNext={() => setDate(addDays(date, 1))}
+               handleDate={() => router.push('/calendar')}
+            />
+
             <div
                className="grid grid-cols-[80px_1fr] grid-rows-[auto] auto-rows-24 relative w-full text-center min-w-0 select-none border-x border-gray-primary mx-auto max-w-4xl"
                id='scheduler'
                onDragStart={(e) => e.preventDefault()}
             >
-               <SchedulerHeader date={new Date(props.year, props.month, props.day)} />
 
                <div className="contents">
                   {DAY_TIMES.map((time, index) => {
@@ -193,14 +201,14 @@ export default function Scheduler(props: Props) {
 
                {todaySessionsWithCustomer.map(({ session, customer }) => {
                   let startIndex = DAY_TIMES.findIndex((time) => {
-                     const slotEnd = new Date(props.year, props.month, props.day, time.hours + 1, time.minutes).getTime()
+                     const slotEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.hours + 1, time.minutes).getTime()
                      return session.starts_at.getTime() < slotEnd
                   })
 
                   if (startIndex === -1) startIndex = 0
 
                   let endIndex = DAY_TIMES.findIndex((time) => {
-                     const slotStart = new Date(props.year, props.month, props.day, time.hours, time.minutes).getTime()
+                     const slotStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.hours, time.minutes).getTime()
                      return slotStart >= session.ends_at.getTime()
                   })
 
@@ -230,6 +238,9 @@ export default function Scheduler(props: Props) {
 
 interface SchedulerHeaderProps {
    date: Date
+   handlePrevious: () => void
+   handleNext: () => void
+   handleDate: () => void
 }
 
 function SchedulerHeader(props: SchedulerHeaderProps) {
@@ -247,20 +258,41 @@ function SchedulerHeader(props: SchedulerHeaderProps) {
    return (
       <header className="contents">
          <div
-            style={{ gridRow: 1, gridColumn: 1 }}
-            className="sticky top-0 bg-black-primary z-20 border-b border-gray-primary"
-         />
-
-         <div
-            style={{ gridRow: 1, gridColumn: 2 }}
             className={
-               'sticky top-0 bg-black-primary z-20 flex items-center justify-center py-3 border-b border-gray-primary' +
+               'sticky top-0 bg-black-primary z-20 flex items-center justify-center gap-2.5 py-4 border-b border-gray-primary' +
                `${(isToday ? ' border-white border-b-2 bg-neutral-900 transition-colors' : '')}`
             }
          >
-            <h3 className="text-sm font-semibold">
+            <button
+               type="button"
+               className="cursor-pointer border border-none hover:opacity-80 transition-all"
+               aria-label="Mes anterior"
+               onClick={props.handlePrevious}
+            >
+               <svg xmlns="http://www.w3.org/2000/svg" width="1.3rem" height="1.3rem" viewBox="0 0 24 24">
+                  <path d="M0 0h24v24H0z" fill="none" />
+                  <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 12h15m-10 5.657L4.343 12L10 6.343" />
+               </svg>
+            </button>
+
+            <button
+               className="font-semibold text-center text-nowrap cursor-pointer border-none transition-all hover:opacity-80"
+               onClick={props.handleDate}
+            >
                {day_name}, {day_number} de {month_name} de {year}
-            </h3>
+            </button>
+
+            <button
+               type="button"
+               className="cursor-pointer border border-none hover:opacity-80 transition-all"
+               aria-label="Mes siguiente"
+               onClick={props.handleNext}
+            >
+               <svg xmlns="http://www.w3.org/2000/svg" width="1.3rem" height="1.3rem" viewBox="0 0 24 24">
+                  <path d="M0 0h24v24H0z" fill="none" />
+                  <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M4 12h15m-5 5.657L19.657 12L14 6.343" />
+               </svg>
+            </button>
          </div>
       </header>
    )
