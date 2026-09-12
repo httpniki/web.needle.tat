@@ -7,6 +7,7 @@ import { useState } from "react"
 import { useTattooProjects } from "@/app/_context/TattooProjectsContext"
 import { addMonths, isSameDay, subMonths } from "date-fns"
 import { useRouter } from "next/navigation"
+import { SessionStatus } from "@/domain/TattooSession"
 
 export default function Calendar() {
    const router = useRouter()
@@ -26,12 +27,13 @@ export default function Calendar() {
             acc.push({
                customer_name: project.customer.name,
                session_start_at: session.starts_at,
-               session_end_at: ends_at
+               session_end_at: ends_at,
+               session_status: session.status
             })
          })
 
          return acc
-      }, [] as { customer_name: string, session_start_at: Date, session_end_at: Date }[])
+      }, [] as { customer_name: string, session_start_at: Date, session_end_at: Date, session_status: SessionStatus }[])
 
       return s.sort((a, b) => a.session_start_at.getTime() - b.session_start_at.getTime())
    }

@@ -49,10 +49,26 @@ export default function Schedule(props: Props) {
 
          return {
             session,
-            customer: project.customer
+            customer: project.customer,
+            projectId: project.id
          }
       })
    }, [store.projects, store.calendar, props.year, props.month, props.day, date])
+
+   function nextDay() {
+      const newDate = addDays(date, 1)
+      setDate(newDate)
+      window.history.replaceState(null, '', `/calendar?day=${newDate.getDate()}&month=${newDate.getMonth()}&year=${newDate.getFullYear()}`)
+   }
+
+   function prevDay() {
+      const newDate = addDays(date, 1)
+      setDate(newDate)
+      window.history.replaceState(null, '', `/calendar?day=${newDate.getDate()}&month=${newDate.getMonth()}&year=${newDate.getFullYear()}`)
+   }
+
+   const gotoCalendar = () => router.push('/calendar')
+   const closeMenu = () => { setMenu(false); setSelectedSlots([]) }
 
    function selectSlot(time: Time) {
       return setSelectedSlots((prev) => {
@@ -127,18 +143,43 @@ export default function Schedule(props: Props) {
          setSelectedSlots([])
       }
 
+      function onKeyDown(e: KeyboardEvent) {
+         switch (e.key) {
+            case 'ArrowRight':
+               nextDay()
+               break
+            case 'ArrowLeft':
+               prevDay()
+               break
+            case 'Escape':
+               if (menu) {
+                  closeMenu()
+                  break
+               }
+               if (!menu) {
+                  gotoCalendar()
+                  break
+               }
+               break
+         }
+      }
+
       document.addEventListener('click', onClickOutside)
-      return () => document.removeEventListener('click', onClickOutside)
-   }, [selectedSlots])
+      document.addEventListener('keydown', onKeyDown)
+      return () => {
+         document.removeEventListener('click', onClickOutside)
+         document.removeEventListener('keydown', onKeyDown)
+      }
+   }, [selectedSlots, date])
 
    return (
       <div className="relative flex min-w-0 min-h-0 flex-1 overflow-hidden w-full">
          <div className="min-w-0 min-h-0 flex-1 overflow-auto w-full">
             <ScheduleHeader
                date={date}
-               handlePrevious={() => setDate(addDays(date, -1))}
-               handleNext={() => setDate(addDays(date, 1))}
-               handleDate={() => router.push('/calendar')}
+               handlePrevious={prevDay}
+               handleNext={nextDay}
+               handleDate={gotoCalendar}
             />
 
             <div
@@ -184,7 +225,7 @@ export default function Schedule(props: Props) {
                   })}
                </div>
 
-               {sessionsWithCustomer.map(({ session, customer }) => {
+               {sessionsWithCustomer.map(({ session, customer, ...rest }) => {
                   let startIndex = DAY_TIMES.findIndex((time) => {
                      const slotEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.hours + 1, time.minutes).getTime()
                      return session.starts_at.getTime() < slotEnd
@@ -205,13 +246,21 @@ export default function Schedule(props: Props) {
                   return (
                      <CellContentContent
                         key={session.id}
-                        sessionId={session.id}
-                        sessionStatus={session.status}
-                        customerName={customer?.name ?? ''}
-                        customerUsername={customer?.username}
-                        startsAt={session.starts_at}
-                        endsAt={session.ends_at}
                         gridRow={`${startRow} / ${endRow}`}
+                        customer={{
+                           name: customer.name,
+                           username: customer.username
+                        }}
+                        session={{
+                           id: session.id,
+                           projectId: rest.projectId,
+                           status: session.status,
+                           price: session.price,
+                           bookingFee: session.booking_fee,
+                           currency: session.currency,
+                           startsAt: session.starts_at,
+                           endsAt: session.ends_at
+                        }}
                      />
                   )
                })}
@@ -219,7 +268,7 @@ export default function Schedule(props: Props) {
          </div>
 
          {(menu && selectedSlots.length > 0) &&
-            <RenderModal onClickOutside={() => { setMenu(false); setSelectedSlots([]) }} className='slot-selection-menu bg-black/10'>
+            <RenderModal onClickOutside={closeMenu} className='slot-selection-menu bg-black/10'>
                <SlotSelectionMenu
                   starts_date={new Date(date.getFullYear(), date.getMonth(), date.getDate(), selectedSlots[0].hours, selectedSlots[0].minutes)}
                   ends_date={addHours(new Date(date.getFullYear(), date.getMonth(), date.getDate(), selectedSlots[selectedSlots.length - 1].hours, selectedSlots[selectedSlots.length - 1].minutes), 1)}
