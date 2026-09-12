@@ -1,5 +1,5 @@
 import TattooSession from "../TattooSession"
-import { addHours, eachDayOfInterval, endOfMonth, endOfWeek, getWeekOfMonth, startOfMonth, startOfWeek } from "date-fns"
+import { addHours, eachDayOfInterval, endOfMonth, endOfWeek, getWeekOfMonth, setHours, startOfMonth, startOfWeek } from "date-fns"
 
 export default class Calendar<T> {
    private _years: Year<T>[] = []
@@ -196,6 +196,17 @@ export class TattooCalendar extends Calendar<TattooSession[]> {
          const sStart = session.starts_at.getTime()
          const sEnd = session.ends_at.getTime()
 
+         return sStart < slotEnd && sEnd > slotStart
+      })
+   }
+
+   public findSessionByTime(date: Date): TattooSession | undefined {
+      const slotStart = date.getTime()
+      const slotEnd = setHours(date, date.getHours() + 1).getTime()
+
+      return this.getDaySessions(date).find((session) => {
+         const sStart = session.starts_at.getTime()
+         const sEnd = session.ends_at.getTime()
          return sStart < slotEnd && sEnd > slotStart
       })
    }

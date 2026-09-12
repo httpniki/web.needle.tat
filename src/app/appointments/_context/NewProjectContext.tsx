@@ -41,7 +41,13 @@ type Store = StoreState & StoreActions
 
 export const NewProjectContext = createContext<Store | null>(null)
 
-export function NewProjectProvider({ children }: { children: React.ReactNode }) {
+interface Props {
+   children: React.ReactNode
+   starts_date?: Date
+   ends_date?: Date
+}
+
+export function NewProjectProvider(props: Props) {
    const [project, setProject] = useState<TattooProject>(new TattooProject())
 
    const [errors, setErrors] = useState<ErrorState>({
@@ -50,7 +56,17 @@ export function NewProjectProvider({ children }: { children: React.ReactNode }) 
       sessions: []
    })
 
-   if (project.sessions.length === 0) addNewSession()
+   if (project.sessions.length === 0) {
+      const projectCopy = project.clone()
+      const newSession = new TattooSession()
+
+      newSession.id = Math.floor(Math.random() * 10000)
+      newSession.starts_at = props.starts_date ? props.starts_date : new Date()
+      newSession.ends_at = props.ends_date ? props.ends_date : new Date()
+      projectCopy.sessions = [...projectCopy.sessions, newSession]
+
+      setProject(projectCopy)
+   }
 
    function setSessionError(id: number, field: keyof typeof errors['sessions'][number], message: string) {
       let sessionErr = errors.sessions.find((s) => s.id === id)
@@ -150,7 +166,7 @@ export function NewProjectProvider({ children }: { children: React.ReactNode }) 
          addReference,
          removeReference
       }}>
-         {children}
+         {props.children}
       </NewProjectContext.Provider>
    )
 }

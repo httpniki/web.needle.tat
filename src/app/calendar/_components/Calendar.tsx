@@ -1,8 +1,8 @@
 'use client'
 
 import { DayPicker } from "@daypicker/react"
-import CalendarHeader from "./CalendarHeader"
-import CalendarDayButton from "./CalendarDayButton"
+import CalendarHeader from "./calendar/CalendarHeader"
+import CalendarDayButton from "./calendar/CalendarDayButton"
 import { useState } from "react"
 import { useTattooProjects } from "@/app/_context/TattooProjectsContext"
 import { addMonths, isSameDay, subMonths } from "date-fns"

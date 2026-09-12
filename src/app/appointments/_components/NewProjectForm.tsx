@@ -10,9 +10,14 @@ import { useRouter } from "next/navigation"
 import { createProject } from "@/actions/project-actions"
 import { useToast } from "@/app/_context/ToastContext"
 import CustomerDomain from "@/domain/Customer"
+import { useTattooProjects } from "@/app/_context/TattooProjectsContext"
+import TattooProject from "@/domain/TattooProject"
+import TattooSession from "@/domain/TattooSession"
+import TattooReference from "@/domain/TattooReference"
 
 export default function NewProjectForm() {
    const store = useNewProject()
+   const projectsStore = useTattooProjects()
    const [pending, startTransition] = useTransition()
    const router = useRouter()
    const toast = useToast()
@@ -81,14 +86,24 @@ export default function NewProjectForm() {
             })
 
          if (result) {
+            const project = new TattooProject({
+               ...result,
+               customer: new CustomerDomain(result.customer),
+               sessions: result.sessions.map((s) => new TattooSession(s)),
+               references: result.references.map((r) => new TattooReference(r))
+            })
+
+            projectsStore.addProject(project)
             toast.add({ message: 'Nuevo projecto creado', type: 'success' })
-            router.push('/')
+
+            const calendarUrl = `/calendar?day=${project.sessions[0].starts_at.getDate()}&month=${project.sessions[0].starts_at.getMonth()}&year=${project.sessions[0].starts_at.getFullYear()}`
+            router.push(calendarUrl)
          }
       })
    }
 
    return (
-      <form onSubmit={(event) => event.preventDefault()} className="flex flex-col gap-6">
+      <form onSubmit={(event) => event.preventDefault()} className="flex flex-col w-full gap-6">
          <header className="flex items-center justify-between">
             <h1 className="text-lg font-bold">Nuevo tatuaje</h1>
 
@@ -111,13 +126,13 @@ export default function NewProjectForm() {
             </div>
          </header>
 
-         {pending &&
+         {(pending) &&
             <div className='m-auto'>
-               <Loader />
+               <Loader className='-translate-y-full' />
             </div>
          }
 
-         {!pending &&
+         {(!pending) &&
             <article className='flex gap-6 flex-col lg:flex-row justify-between items-start'>
                <div className='flex flex-col gap-6 w-full'>
                   <Customer />

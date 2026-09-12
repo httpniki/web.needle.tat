@@ -15,6 +15,7 @@ export default function RenderModal({ children, onClickOutside, className }: Pro
 
       function handleClickOutside(event: MouseEvent) {
          const target = event.target as HTMLElement
+         event.stopPropagation()
          if (target.matches('#modal')) onClickOutside()
       }
 

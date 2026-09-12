@@ -50,7 +50,7 @@ export default function TattooProjectsProvider(props: Props) {
    }, [projects])
 
    function addProject(project: TattooProject | TattooProjectObject) {
-      if (project instanceof TattooProject) return project = project.toObject()
+      if (project instanceof TattooProject) return setProjects((prev) => [...prev, project])
 
       const customer = new Customer({ ...project.customer })
       const sessions = project.sessions.map((s) => new TattooSession({ ...s }))
