@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState } from 'react'
 
 type Toast = {
    title?: string
@@ -37,7 +37,7 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
    return (
       <ToastContext.Provider value={{ toasts, add: addToast }}>
          {children}
-         <div className='fixed bottom-5 right-5 z-50 w-full max-w-sm flex flex-col gap-4'>
+         <div className='fixed right-5 bottom-5 z-50 flex w-full max-w-sm flex-col gap-4'>
             {toasts.map((toast) => (
                <Toast key={toast.id} message={toast.message} type={toast.type} title={toast.title} />
             ))}
@@ -61,7 +61,7 @@ interface ToastProps {
 
 function Toast({ message, type, title }: ToastProps) {
    return (
-      <div className='animation-slide-up w-full border border-gray-primary p-4 bg-black-secondary rounded-sm text-center'>
+      <div className='animation-slide-up w-full rounded-sm border border-gray-primary bg-black-secondary p-4 text-center'>
          {(title) &&
             <h6 className={'text-lg mb-1.5' + (type === 'error' ? ' text-red-500' : ' text-white')}>
                {title}

@@ -1,6 +1,6 @@
-import Customer, { CustomerObject } from "./Customer"
-import TattooReference, { TattooReferenceObject } from "./TattooReference"
-import TattooSession, { TattooSessionObject } from "./TattooSession"
+import Customer, { CustomerObject } from './Customer'
+import TattooReference, { TattooReferenceObject } from './TattooReference'
+import TattooSession, { TattooSessionObject } from './TattooSession'
 
 export interface ITattooProject {
    id: number

@@ -13,13 +13,13 @@ interface Props {
 export default function SearchBar(props: Props) {
    return (
       <label className={
-         "relative flex items-center w-full rounded-full border border-gray-primary bg-white-main text-sm px-5 py-2.5" +
+         'relative flex items-center w-full rounded-full border border-gray-primary bg-white-main text-sm px-5 py-2.5' +
          (props.classNames?.container ? ` ${props.classNames.container}` : '')
       }>
          <input
             type="text"
             id="searchbar"
-            className='w-full h-full outline-none padding-none'
+            className='padding-none size-full outline-none'
             placeholder={props.placeholder}
             onClick={props.onClick}
             onChange={props.onChange}

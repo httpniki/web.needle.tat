@@ -1,6 +1,6 @@
-import NewProjectForm from "./_components/NewProjectForm"
-import Appointments from "./_components/AppointmentList"
-import { NewProjectProvider } from "./_context/NewProjectContext"
+import Appointments from './_components/AppointmentList'
+import NewProjectForm from './_components/NewProjectForm'
+import { NewProjectProvider } from './_context/NewProjectContext'
 
 interface SearchParams {
    new?: boolean
@@ -16,7 +16,7 @@ export default async function AppointmentsPage({ searchParams }: Props) {
    const params = await searchParams
 
    return (
-      <main className='w-full px-8 py-4 overflow-hidden overflow-y-auto'>
+      <main className='w-full overflow-hidden overflow-y-auto px-8 py-4'>
          {params.new &&
             <NewProjectProvider
                starts_date={params.starts_date ? new Date(params.starts_date) : undefined}

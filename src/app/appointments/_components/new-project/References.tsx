@@ -1,7 +1,9 @@
-import RenderModal from "@/components/RenderModal"
-import useNewProject from "../../_context/NewProjectContext"
-import Image from "next/image"
-import { ChangeEvent, useState } from "react"
+import Image from 'next/image'
+import { ChangeEvent, useState } from 'react'
+
+import RenderModal from '@/components/RenderModal'
+
+import useNewProject from '../../_context/NewProjectContext'
 
 export default function References() {
    const store = useNewProject()
@@ -14,11 +16,11 @@ export default function References() {
    }
 
    return (
-      <section className="flex flex-col gap-2 border border-gray-primary rounded-sm p-6">
+      <section className="flex flex-col gap-2 rounded-sm border border-gray-primary p-6">
          <h6 className="font-bold text-nowrap">Referencias</h6>
 
          <ul className="flex gap-2">
-            <label className={"flex justify-center items-center bg-black-main border border-gray-primary text-nowrap cursor-pointer hover:opacity-80" + (store.project.references.length === 0 ? ' w-full h-54' : ' size-28')}>
+            <label className={'flex justify-center items-center bg-black-main border border-gray-primary text-nowrap cursor-pointer hover:opacity-80' + (store.project.references.length === 0 ? ' w-full h-54' : ' size-28')}>
                <input
                   className="hidden"
                   type="file"
@@ -66,7 +68,7 @@ function Reference(props: ReferenceProps) {
    return (
       <li>
          <button
-            className="border border-gray-primary hover:opacity-80 aspect-square cursor-pointer"
+            className="aspect-square cursor-pointer border border-gray-primary hover:opacity-80"
             onClick={() => setShowPreview(!showPreview)}
          >
             <Image
@@ -74,7 +76,7 @@ function Reference(props: ReferenceProps) {
                alt={props.file.name}
                width={112}
                height={112}
-               className='object-cover aspect-square'
+               className='aspect-square object-cover'
             />
          </button>
 
@@ -82,15 +84,15 @@ function Reference(props: ReferenceProps) {
             <RenderModal
                onClickOutside={() => setShowPreview(false)}
             >
-               <div className='flex items-center justify-center group m-4 max-h-[75vh] max-w-[75vw] size-fit overflow-hidden bg-black-primary'>
+               <div className='group m-4 flex size-fit max-h-[75vh] max-w-[75vw] items-center justify-center overflow-hidden bg-black-primary'>
                   <img
                      src={props.url}
                      alt={props.file.name}
-                     className="block max-w-full max-h-[75vh] w-auto h-auto object-contain"
+                     className="block size-auto max-h-[75vh] max-w-full object-contain"
                   />
 
                   <button
-                     className='absolute h-max w-max inset-2/4 -translate-x-2/4 -translate-y-2/4 cursor-pointer transition-opacity duration-200 group-hover:opacity-100 opacity-0 p-3 bg-black/70 rounded-full'
+                     className='absolute inset-2/4 size-max -translate-2/4 cursor-pointer rounded-full bg-black/70 p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100'
                      onClick={props.onDelete}
                   >
                      <svg xmlns="http://www.w3.org/2000/svg" width="1.6rem" height="1.6rem" viewBox="0 0 24 24">

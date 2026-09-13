@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
 import { addDays, addHours } from 'date-fns'
-import TattooSession from '@/domain/TattooSession'
-import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
 import { useRouter } from 'next/navigation'
-import ScheduleHeader from './schedule/ScheduleHeader'
-import CellContentContent from './schedule/ScheduleCellContent'
-import SlotSelectionMenu from './schedule/SlotSelectionMenu'
+import { useEffect, useMemo, useState } from 'react'
+
+import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
 import RenderModal from '@/components/RenderModal'
+import TattooSession from '@/domain/TattooSession'
+
+import CellContentContent from './schedule/ScheduleCellContent'
+import ScheduleHeader from './schedule/ScheduleHeader'
+import SlotSelectionMenu from './schedule/SlotSelectionMenu'
 
 export type Time = {
    hours: number
@@ -179,8 +181,8 @@ export default function Schedule(props: Props) {
    }, [selectedSlots, date])
 
    return (
-      <div className="relative flex min-w-0 min-h-0 flex-1 overflow-hidden w-full">
-         <div className="min-w-0 min-h-0 flex-1 overflow-auto w-full">
+      <div className="relative flex min-h-0 w-full min-w-0 flex-1 overflow-hidden">
+         <div className="min-h-0 w-full min-w-0 flex-1 overflow-auto">
             <ScheduleHeader
                date={date}
                handlePrevious={prevDay}
@@ -189,7 +191,7 @@ export default function Schedule(props: Props) {
             />
 
             <div
-               className="grid grid-cols-[80px_1fr] grid-rows-[auto] auto-rows-24 relative w-full text-center min-w-0 select-none border-x border-gray-primary mx-auto max-w-4xl"
+               className="relative mx-auto grid w-full max-w-4xl min-w-0 auto-rows-24 grid-cols-[80px_1fr] grid-rows-[auto] border-x border-gray-primary text-center select-none"
                id='schedule'
                onDragStart={(e) => e.preventDefault()}
             >
@@ -205,7 +207,7 @@ export default function Schedule(props: Props) {
                            <time
                               dateTime={timeLabel}
                               style={{ gridRow: rowIndex, gridColumn: 1 }}
-                              className="sticky left-0 z-10 bg-black-primary select-none flex items-center justify-center border-b border-r border-gray-primary text-sm text-gray-400"
+                              className="sticky left-0 z-10 flex items-center justify-center border-r border-b border-gray-primary bg-black-primary text-sm text-gray-400 select-none"
                               draggable={false}
                            >
                               {timeLabel}

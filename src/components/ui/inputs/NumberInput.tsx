@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react"
+import { ChangeEvent, useState } from 'react'
 
 interface Props {
    onChange: (value: number) => void
@@ -48,8 +48,8 @@ export default function NumberInput(props: Props) {
          onChange={handleChange}
          onBlur={handleBlur}
          placeholder="0"
-         className={"px-2 py-1 border border-gray-primary rounded-lg outline-none text-sm w-full" +
-            (props.error ? " border-red-700" : "")
+         className={'px-2 py-1 border border-gray-primary rounded-lg outline-none text-sm w-full' +
+            (props.error ? ' border-red-700' : '')
          }
       />
    )

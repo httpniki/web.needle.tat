@@ -1,19 +1,21 @@
 'use client'
 
-import { useTransition } from "react"
-import Customer from "./new-project/Customer"
-import Sessions from "./new-project/Sessions"
-import useNewProject from "../_context/NewProjectContext"
-import References from "./new-project/References"
-import Loader from "@/components/ui/Loader"
-import { useRouter } from "next/navigation"
-import { createProject } from "@/actions/project-actions"
-import { useToast } from "@/app/_context/ToastContext"
-import CustomerDomain from "@/domain/Customer"
-import { useTattooProjects } from "@/app/_context/TattooProjectsContext"
-import TattooProject from "@/domain/TattooProject"
-import TattooSession from "@/domain/TattooSession"
-import TattooReference from "@/domain/TattooReference"
+import { useRouter } from 'next/navigation'
+import { useTransition } from 'react'
+
+import { createProject } from '@/actions/project-actions'
+import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
+import { useToast } from '@/app/_context/ToastContext'
+import Loader from '@/components/ui/Loader'
+import CustomerDomain from '@/domain/Customer'
+import TattooProject from '@/domain/TattooProject'
+import TattooReference from '@/domain/TattooReference'
+import TattooSession from '@/domain/TattooSession'
+
+import useNewProject from '../_context/NewProjectContext'
+import Customer from './new-project/Customer'
+import References from './new-project/References'
+import Sessions from './new-project/Sessions'
 
 export default function NewProjectForm() {
    const store = useNewProject()
@@ -103,7 +105,7 @@ export default function NewProjectForm() {
    }
 
    return (
-      <form onSubmit={(event) => event.preventDefault()} className="flex flex-col w-full gap-6">
+      <form onSubmit={(event) => event.preventDefault()} className="flex w-full flex-col gap-6">
          <header className="flex items-center justify-between">
             <h1 className="flex items-center gap-1 text-lg font-bold">
                <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 640 640">
@@ -114,9 +116,9 @@ export default function NewProjectForm() {
                Nuevo tatuaje
             </h1>
 
-            <div className='flex gap-2 items-center'>
+            <div className='flex items-center gap-2'>
                <button
-                  className='w-min enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25 border border-white/40 rounded-xs px-2 py-2 bg-gray-primary'
+                  className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
                   onClick={() => router.back()}
                   disabled={pending}
                >
@@ -124,7 +126,7 @@ export default function NewProjectForm() {
                </button>
 
                <button
-                  className='w-min enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25 border border-white/40 bg-gray-primary rounded-xs px-2 py-2'
+                  className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
                   onClick={submitForm}
                   disabled={disableSubmit}
                >
@@ -140,8 +142,8 @@ export default function NewProjectForm() {
          }
 
          {(!pending) &&
-            <article className='flex gap-6 flex-col 2xl:flex-row justify-between items-start'>
-               <div className='flex flex-col gap-6 w-full'>
+            <article className='flex flex-col items-start justify-between gap-6 2xl:flex-row'>
+               <div className='flex w-full flex-col gap-6'>
                   <Customer />
                   <References />
                </div>

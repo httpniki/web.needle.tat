@@ -1,5 +1,6 @@
-import { SessionStatus } from "@/domain/TattooSession"
-import { DayButtonProps } from "@daypicker/react"
+import { DayButtonProps } from '@daypicker/react'
+
+import { SessionStatus } from '@/domain/TattooSession'
 
 type Props = DayButtonProps & {
    sessions: {
@@ -16,13 +17,13 @@ export default function CalendarDayButton(props: Props) {
    return (
       <button
          {...buttonProps}
-         className='cursor-pointer w-full h-full flex flex-col justify-start items-start p-2 md:p-3 outline-none overflow-hidden font-normal'
+         className='flex size-full cursor-pointer flex-col items-start justify-start overflow-hidden p-2 font-normal outline-none md:p-3'
       >
          <span className={_modifiers.selected ? ' font-bold' : ''}>
             {day.date.getDate()}
          </span>
 
-         <ul className='hidden lg:flex lg:flex-col gap-1 size-full'>
+         <ul className='hidden size-full gap-1 lg:flex lg:flex-col'>
             {sessions.map((session) => {
                const startHours = session.session_start_at.getHours() < 10 ? '0' + session.session_start_at.getHours() : session.session_start_at.getHours()
                const startMinutes = session.session_start_at.getMinutes() < 10 ? '0' + session.session_start_at.getMinutes() : session.session_start_at.getMinutes()
@@ -41,7 +42,7 @@ export default function CalendarDayButton(props: Props) {
                         {startHours + ':' + startMinutes}
                      </span>
 
-                     <span className='inline-block text-ellipsis max-w-32 lg:w-min overflow-hidden text-start'>
+                     <span className='inline-block max-w-32 overflow-hidden text-start text-ellipsis lg:w-min'>
                         {session.customer_name}
                      </span>
                   </li>
@@ -49,7 +50,7 @@ export default function CalendarDayButton(props: Props) {
             })}
          </ul>
 
-         <ul className='lg:hidden flex flex-wrap gap-1 mt-1 w-full content-start overflow-hidden'>
+         <ul className='mt-1 flex w-full flex-wrap content-start gap-1 overflow-hidden lg:hidden'>
             {sessions.map((session) => {
                return (
                   <li

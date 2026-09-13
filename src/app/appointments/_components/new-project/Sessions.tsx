@@ -1,27 +1,29 @@
-import DateInput from "@/components/ui/inputs/DateInput"
-import NumberInput from "@/components/ui/inputs/NumberInput"
-import TimeInput from "@/components/ui/inputs/TimeInput"
-import useNewProject from "../../_context/NewProjectContext"
-import SessionData, { Currency } from "@/domain/TattooSession"
-import { ClassProperties } from "@/types/types"
-import { add, format, parse } from "date-fns"
+import { add, format, parse } from 'date-fns'
+
+import DateInput from '@/components/ui/inputs/DateInput'
+import NumberInput from '@/components/ui/inputs/NumberInput'
+import TimeInput from '@/components/ui/inputs/TimeInput'
+import SessionData, { Currency } from '@/domain/TattooSession'
+import { ClassProperties } from '@/types/types'
+
+import useNewProject from '../../_context/NewProjectContext'
 
 export default function Sessions() {
    const store = useNewProject()
 
    return (
-      <section className='w-full lg:max-w-125 border border-gray-primary rounded-sm p-6'>
+      <section className='w-full rounded-sm border border-gray-primary p-6 lg:max-w-125'>
          <div className="flex flex-col">
             {store.project.sessions.map((session, index) => (
                <div key={session.id}>
-                  {index > 0 && <hr className='border-gray-primary my-6' />}
+                  {index > 0 && <hr className='my-6 border-gray-primary' />}
                   <Session key={session.id} data={session} index={index} />
                </div>
             ))}
          </div>
 
          <button
-            className='w-min mt-1.5 enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25'
+            className='mt-1.5 w-min text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
             onClick={() => store.addNewSession()}
          >
             Agregar sesión
@@ -44,8 +46,8 @@ function Session(props: SessionProps) {
 
    return (
       <div>
-         <div className='flex gap-2 items-center'>
-            <div className="w-full flex items-center justify-between mb-2">
+         <div className='flex items-center gap-2'>
+            <div className="mb-2 flex w-full items-center justify-between">
                <h6 className="font-bold text-nowrap">{props.index + 1}° Sesión</h6>
 
                <button onClick={() => store.removeSession(props.data.id)} className='cursor-pointer transition-opacity duration-200 hover:opacity-80'>
@@ -58,7 +60,7 @@ function Session(props: SessionProps) {
          </div>
 
          <div className='flex flex-col gap-3 text-sm'>
-            <div className="flex items-center gap-1.5 w-40">
+            <div className="flex w-40 items-center gap-1.5">
                <p>Fecha:</p>
 
                <DateInput
@@ -77,7 +79,7 @@ function Session(props: SessionProps) {
                />
             </div>
 
-            <div className="flex items-center gap-1.5 w-44">
+            <div className="flex w-44 items-center gap-1.5">
                <p>Hora:</p>
 
                <TimeInput
@@ -101,13 +103,13 @@ function Session(props: SessionProps) {
                />
             </div>
 
-            <div className='flex items-center gap-1.5 text-sm w-48'>
+            <div className='flex w-48 items-center gap-1.5 text-sm'>
                <p>Precio:</p>
 
                <select
                   className={
                      'outline-none bg-black-primary text-white cursor-pointer' +
-                     (store.errors.sessions.find((s) => s.id === props.data.id)?.currency ? " border-red-700" : "")
+                     (store.errors.sessions.find((s) => s.id === props.data.id)?.currency ? ' border-red-700' : '')
                   }
                   value={props.data.currency}
                   onChange={(event) => {
@@ -130,7 +132,7 @@ function Session(props: SessionProps) {
             </div>
 
             <div className='flex items-center gap-2 text-sm text-nowrap'>
-               <div className='w-48 flex items-center gap-1.5'>
+               <div className='flex w-48 items-center gap-1.5'>
                   <p>Seña:</p>
 
                   <span>$</span>
@@ -147,7 +149,7 @@ function Session(props: SessionProps) {
 
 
             {(error) &&
-               <p className='text-sm text-red-500 text-nowrap text-ellipsis overflow-hidden'>
+               <p className='overflow-hidden text-sm text-nowrap text-ellipsis text-red-500'>
                   * {error}
                </p>
             }

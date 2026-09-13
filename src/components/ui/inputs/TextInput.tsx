@@ -12,8 +12,8 @@ export default function TextInput(props: Props) {
    return (
       <input
          type="text"
-         className={"w-full border border-gray-primary text-white text-sm outline-none px-3 py-2 rounded-md" +
-            (props.error ? " border-red-700" : "")
+         className={'w-full border border-gray-primary text-white text-sm outline-none px-3 py-2 rounded-md' +
+            (props.error ? ' border-red-700' : '')
          }
          placeholder={props.placeholder}
          onChange={(event) => props.onChange?.(event)}

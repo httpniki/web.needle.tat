@@ -1,14 +1,16 @@
 'use server'
 
-import { createClient } from "@/lib/supabase/server"
-import { cookies } from "next/headers"
-import ServerActionException from "../utils/exceptions/action-exception"
-import { createCustomer, findCustomerById } from "./customer-actions"
-import { createSession, findSessionsByProjectId } from "./session-actions"
 import { v2 as cloudinary } from 'cloudinary'
-import { TattooProjectObject } from "@/domain/TattooProject"
-import { CustomerObject } from "@/domain/Customer"
-import { TattooSessionObject } from "@/domain/TattooSession"
+import { cookies } from 'next/headers'
+
+import { CustomerObject } from '@/domain/Customer'
+import { TattooProjectObject } from '@/domain/TattooProject'
+import { TattooSessionObject } from '@/domain/TattooSession'
+import { createClient } from '@/lib/supabase/server'
+
+import ServerActionException from '../utils/exceptions/action-exception'
+import { createCustomer, findCustomerById } from './customer-actions'
+import { createSession, findSessionsByProjectId } from './session-actions'
 
 interface NewProject {
    references: File[]

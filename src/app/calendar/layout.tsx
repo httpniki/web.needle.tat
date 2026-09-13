@@ -1,9 +1,9 @@
-import { Metadata } from "next"
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-   title: "Calendar - Needle.tat"
+   title: 'Calendar - Needle.tat'
 }
 
-export default function Layout({ children }: LayoutProps<"/calendar">) {
+export default function Layout({ children }: LayoutProps<'/calendar'>) {
    return children
 }

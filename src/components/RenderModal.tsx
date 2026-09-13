@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useEffect } from "react"
-import { createPortal } from "react-dom"
+import React, { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 interface Props {
    children: React.ReactNode
@@ -30,7 +30,7 @@ export default function RenderModal({ children, onClickOutside, className }: Pro
    return createPortal(
       <div
          id='modal'
-         className={"fixed flex items-center justify-center inset-0 z-10000 overflow-auto" +
+         className={'fixed flex items-center justify-center inset-0 z-10000 overflow-auto' +
             (className ? ` ${className}` : ' bg-black/80')
          }
       >

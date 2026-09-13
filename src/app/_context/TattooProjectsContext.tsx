@@ -1,11 +1,12 @@
 'use client'
 
-import { TattooCalendar } from "@/domain/calendar/Calendar";
-import Customer from "@/domain/Customer";
-import TattooProject, { TattooProjectObject } from "@/domain/TattooProject";
-import TattooReference from "@/domain/TattooReference";
-import TattooSession from "@/domain/TattooSession";
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useContext, useMemo, useState } from 'react';
+
+import { TattooCalendar } from '@/domain/calendar/Calendar';
+import Customer from '@/domain/Customer';
+import TattooProject, { TattooProjectObject } from '@/domain/TattooProject';
+import TattooReference from '@/domain/TattooReference';
+import TattooSession from '@/domain/TattooSession';
 
 interface FindProjectParams {
    sessionId?: number

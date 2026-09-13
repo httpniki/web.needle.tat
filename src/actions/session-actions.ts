@@ -1,9 +1,11 @@
 'use server'
 
-import { createClient } from "@/lib/supabase/server"
-import { cookies } from "next/headers"
-import ServerActionException from "../utils/exceptions/action-exception"
-import { Currency, SessionStatus, TattooSessionObject } from "@/domain/TattooSession"
+import { cookies } from 'next/headers'
+
+import { Currency, SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
+import { createClient } from '@/lib/supabase/server'
+
+import ServerActionException from '../utils/exceptions/action-exception'
 
 interface NewSession {
    projectId: number

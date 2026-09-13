@@ -1,4 +1,4 @@
-import { type ChangeEvent, useState } from "react"
+import { type ChangeEvent, useState } from 'react'
 
 interface Props {
    onChange?: (time: string) => void
@@ -94,8 +94,8 @@ export default function TimeInput(props: Props) {
 
    return (
       <input
-         className={"w-full px-2 py-1 border border-gray-primary rounded-md outline-none text-sm text-center" +
-            (props.error ? " border-red-700" : "")
+         className={'w-full px-2 py-1 border border-gray-primary rounded-md outline-none text-sm text-center' +
+            (props.error ? ' border-red-700' : '')
          }
          type="text"
          value={time}

@@ -1,13 +1,15 @@
 'use client'
 
-import { DayPicker } from "@daypicker/react"
-import CalendarHeader from "./calendar/CalendarHeader"
-import CalendarDayButton from "./calendar/CalendarDayButton"
-import { useEffect, useState } from "react"
-import { useTattooProjects } from "@/app/_context/TattooProjectsContext"
-import { addMonths, isSameDay, subMonths } from "date-fns"
-import { useRouter } from "next/navigation"
-import { SessionStatus } from "@/domain/TattooSession"
+import { DayPicker } from '@daypicker/react'
+import { addMonths, isSameDay, subMonths } from 'date-fns'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
+import { SessionStatus } from '@/domain/TattooSession'
+
+import CalendarDayButton from './calendar/CalendarDayButton'
+import CalendarHeader from './calendar/CalendarHeader'
 
 export default function Calendar() {
    const router = useRouter()
@@ -56,7 +58,7 @@ export default function Calendar() {
    }, [date])
 
    return (
-      <div className='flex flex-col px-8 py-4 size-full min-h-0'>
+      <div className='flex size-full min-h-0 flex-col px-8 py-4'>
          <DayPicker
             selected={new Date()}
             month={date}
@@ -65,7 +67,7 @@ export default function Calendar() {
                if (!date) return
                router.push(`/calendar?day=${date.getDate()}&month=${date.getMonth()}&year=${date.getFullYear()}`)
             }}
-            className="w-full flex-1 flex flex-col min-h-0"
+            className="flex min-h-0 w-full flex-1 flex-col"
             classNames={{
                month_caption: 'text-center',
                nav: 'hidden flex items-center gap-2 pt-2 justify-between',

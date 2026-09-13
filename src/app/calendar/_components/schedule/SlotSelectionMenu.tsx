@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 
 interface Props {
    starts_date: Date
@@ -10,9 +10,9 @@ export default function SlotSelectionMenu(props: Props) {
    const url = `/appointments?new=true&starts_date=${props.starts_date.toISOString()}&ends_date=${props.ends_date.toISOString()}`
 
    return (
-      <div className="absolute bottom-0 left-0 right-0 p-6 z-1000 bg-black-primary flex flex-col gap-2 rounded-lg shadow-[0_0_10px_#ffffff10]">
+      <div className="absolute inset-x-0 bottom-0 z-1000 flex flex-col gap-2 rounded-lg bg-black-primary p-6 shadow-[0_0_10px_#ffffff10]">
          <button
-            className='w-full bg-gray-primary border border-white/20 py-3 hover:border-white/12 transition-all cursor-pointer animation-slide-up rounded-sm'
+            className='animation-slide-up w-full cursor-pointer rounded-sm border border-white/20 bg-gray-primary py-3 transition-all hover:border-white/12'
             onClick={() => router.push(url)}
          >
             Añadir cita

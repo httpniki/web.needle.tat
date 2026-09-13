@@ -1,5 +1,6 @@
-import DomainException from "@/utils/exceptions/domain-exception";
-import { addHours, addMilliseconds, differenceInMilliseconds } from "date-fns";
+import { addHours, addMilliseconds, differenceInMilliseconds } from 'date-fns';
+
+import DomainException from '@/utils/exceptions/domain-exception';
 
 export enum SessionStatus {
    PENDING = 'PENDING',

@@ -1,13 +1,14 @@
 'use client'
 
-import Customer from "@/domain/Customer"
-import TattooProject from "@/domain/TattooProject"
-import TattooReference from "@/domain/TattooReference"
-import TattooSession from "@/domain/TattooSession"
-import { ClassProperties } from "@/types/types"
-import DomainException from "@/utils/exceptions/domain-exception"
-import { isKeyOf } from "@/utils/utils"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState } from 'react'
+
+import Customer from '@/domain/Customer'
+import TattooProject from '@/domain/TattooProject'
+import TattooReference from '@/domain/TattooReference'
+import TattooSession from '@/domain/TattooSession'
+import { ClassProperties } from '@/types/types'
+import DomainException from '@/utils/exceptions/domain-exception'
+import { isKeyOf } from '@/utils/utils'
 
 type StoreState = {
    project: TattooProject

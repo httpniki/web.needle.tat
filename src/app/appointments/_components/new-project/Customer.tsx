@@ -1,29 +1,31 @@
-import { ReactNode, useEffect, useRef, useState, useTransition } from "react"
-import { findCustomers } from "@/actions/customer-actions"
-import RenderModal from "@/components/RenderModal"
-import SearchBar from "@/components/ui/SearchBar"
-import useNewProject from "../../_context/NewProjectContext"
-import Loader from "@/components/ui/Loader"
-import TextInput from "@/components/ui/inputs/TextInput"
-import CustomerDomain from "@/domain/Customer"
+import { ReactNode, useEffect, useRef, useState, useTransition } from 'react'
+
+import { findCustomers } from '@/actions/customer-actions'
+import RenderModal from '@/components/RenderModal'
+import TextInput from '@/components/ui/inputs/TextInput'
+import Loader from '@/components/ui/Loader'
+import SearchBar from '@/components/ui/SearchBar'
+import CustomerDomain from '@/domain/Customer'
+
+import useNewProject from '../../_context/NewProjectContext'
 
 export default function Customer() {
    const store = useNewProject()
    const customerError = Object.values(store.errors.customer).find((value) => value)
 
    return (
-      <section className="flex flex-col gap-2 border border-gray-primary rounded-sm p-6">
-         <div className='flex gap-2 items-center'>
+      <section className="flex flex-col gap-2 rounded-sm border border-gray-primary p-6">
+         <div className='flex items-center gap-2'>
             <h6 className="font-bold text-nowrap">Detalles del Cliente</h6>
 
             {(customerError) &&
-               <p className='text-sm text-red-500 text-nowrap text-ellipsis overflow-hidden'>
+               <p className='overflow-hidden text-sm text-nowrap text-ellipsis text-red-500'>
                   * {customerError}
                </p>
             }
          </div>
 
-         <fieldset className="text-sm flex-col flex gap-2">
+         <fieldset className="flex flex-col gap-2 text-sm">
             <div className='flex gap-2'>
                <CustomerSearchWrapper
                   onSelectCustomer={(customer) => store.addCustomer(customer)}
@@ -31,7 +33,7 @@ export default function Customer() {
                >
                   {({ openOverlay, setSearchParam, closeOverlay }) =>
                      <label>
-                        <p className="text-white/50 mb-1.5">Nombre</p>
+                        <p className="mb-1.5 text-white/50">Nombre</p>
 
                         <TextInput
                            placeholder='Nombre completo'
@@ -54,7 +56,7 @@ export default function Customer() {
                >
                   {({ openOverlay, setSearchParam, closeOverlay }) =>
                      <label>
-                        <p className="text-white/50 mb-1.5">Usuario</p>
+                        <p className="mb-1.5 text-white/50">Usuario</p>
 
                         <TextInput
                            placeholder='@Usuario'
@@ -79,7 +81,7 @@ export default function Customer() {
                >
                   {({ openOverlay, setSearchParam, closeOverlay }) =>
                      <label>
-                        <p className="text-white/50 mb-1.5">Telefono</p>
+                        <p className="mb-1.5 text-white/50">Telefono</p>
 
                         <TextInput
                            placeholder='+5491122334455'
@@ -102,7 +104,7 @@ export default function Customer() {
                >
                   {({ openOverlay, setSearchParam, closeOverlay }) =>
                      <label>
-                        <p className="text-white/50 mb-1.5">Email</p>
+                        <p className="mb-1.5 text-white/50">Email</p>
 
                         <TextInput
                            placeholder='email@domain.com'
@@ -134,10 +136,10 @@ interface CustomerListProps {
 
 function CustomerList(props: CustomerListProps) {
    return (
-      <ul className="flex items-center flex-col gap-2 max-h-92 h-full overflow-y-auto text-sm">
+      <ul className="flex h-full max-h-92 flex-col items-center gap-2 overflow-y-auto text-sm">
          {!props.pending && props.searchParam && (
             <li
-               className="w-full flex items-center justify-center px-2 py-1 hover:bg-neutral-900 transition-colors text-center text-nowrap cursor-pointer"
+               className="flex w-full cursor-pointer items-center justify-center px-2 py-1 text-center text-nowrap transition-colors hover:bg-neutral-900"
                onClick={() => props.onSelectCustomValue(props.searchParam)}
             >
                {`Añadir "${props.searchParam}"`}
@@ -149,10 +151,10 @@ function CustomerList(props: CustomerListProps) {
          {!props.pending && props.customers.map((customer) => (
             <li
                key={customer.id}
-               className="w-full flex items-center justify-center px-2 py-1 hover:bg-neutral-900 transition-colors text-center text-nowrap cursor-pointer"
+               className="flex w-full cursor-pointer items-center justify-center px-2 py-1 text-center text-nowrap transition-colors hover:bg-neutral-900"
                onMouseDown={(event) => { event.preventDefault(); props.onSelectCustomer(customer) }}
             >
-               <p className="mr-1 max-w-[32%] overflow-hidden text-ellipsis text-end">{customer.name}</p>
+               <p className="mr-1 max-w-[32%] overflow-hidden text-end text-ellipsis">{customer.name}</p>
                {customer.username && <span className="mr-1">(@{customer.username})</span>}
                <span className='opacity-70'>{customer.phone_number ?? 'Unknown'}</span>
             </li>
@@ -230,8 +232,8 @@ function CustomerSearchWrapper(props: CustomerSearchWrapperProps) {
 
          {showOverlay && (
             <RenderModal className="bg-black-primary lg:hidden" onClickOutside={() => setShowOverlay(false)}>
-               <div ref={mobileModalRef} className="animation-overlay px-6 py-4 bg-black-primary flex flex-col justify-center gap-5 max-w-lg w-full h-full">
-                  <h1 className="font-bold text-center text-xl">
+               <div ref={mobileModalRef} className="animation-overlay flex size-full max-w-lg flex-col justify-center gap-5 bg-black-primary px-6 py-4">
+                  <h1 className="text-center text-xl font-bold">
                      Selecciona un cliente
                   </h1>
 
@@ -253,7 +255,7 @@ function CustomerSearchWrapper(props: CustomerSearchWrapperProps) {
          )}
 
          {showOverlay && (
-            <div ref={desktopOverlayRef} className="absolute translate-y-1 border w-100 max-h-72 shadow-[0_0_10px_#ffffff10] border-gray-primary animation-overlay px-6 py-4 bg-black-primary flex flex-col justify-center gap-5 z-10">
+            <div ref={desktopOverlayRef} className="animation-overlay absolute z-10 flex max-h-72 w-100 translate-y-1 flex-col justify-center gap-5 border border-gray-primary bg-black-primary px-6 py-4 shadow-[0_0_10px_#ffffff10]">
                <SearchBar
                   placeholder={props.searchPlaceholder || 'Buscar cliente...'}
                   onChange={(event) => setSearchParam(event.target.value)}

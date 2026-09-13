@@ -1,16 +1,16 @@
 'use client'
 
-import { usePathname, useRouter } from "next/navigation"
-import { useState } from "react";
+import { usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react';
 
 export default function Navbar() {
    const [hidden, setHidden] = useState(false)
 
    return (
-      <nav className={`sticky bg-black-primary bottom-0 top-0 left-0 border-r border-gray-primary py-4 px-2 transition-all duration-300 ease-in-out flex flex-col gap-2 ${hidden ? 'w-16' : 'w-52'}`}>
+      <nav className={`sticky inset-y-0 left-0 flex flex-col gap-2 border-r border-gray-primary bg-black-primary px-2 py-4 transition-all duration-300 ease-in-out ${hidden ? 'w-16' : 'w-52'}`}>
          <div className={`flex w-full ${hidden ? 'justify-center' : 'justify-end'}`}>
             <button
-               className="cursor-pointer hover:opacity-80 transition-all duration-200 p-1 flex justify-center"
+               className="flex cursor-pointer justify-center p-1 transition-all duration-200 hover:opacity-80"
                onClick={() => setHidden((prev) => !prev)}
             >
                <svg
@@ -109,12 +109,12 @@ function NavItem({ href, icon, label, hide }: NavItemProps) {
 
    return (
       <button
-         className={`flex items-center gap-2 py-2 text-white transition-colors duration-200 hover:opacity-80 cursor-pointer w-full h-min hover:bg-gray-primary rounded-sm ${hide ? 'items-center justify-center px-2' : 'px-4'} ${pathname === href ? 'font-bold' : 'font-medium'}`}
+         className={`flex h-min w-full cursor-pointer items-center gap-2 rounded-sm py-2 text-white transition-colors duration-200 hover:bg-gray-primary hover:opacity-80 ${hide ? 'items-center justify-center px-2' : 'px-4'} ${pathname === href ? 'font-bold' : 'font-medium'}`}
          onClick={() => router.push(href)}
       >
          {icon}
 
-         <span className={`transition-all duration-200 overflow-hidden whitespace-nowrap ${hide ? 'max-w-0 opacity-0 hidden' : 'max-w-xs opacity-100'}`}>
+         <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${hide ? 'hidden max-w-0 opacity-0' : 'max-w-xs opacity-100'}`}>
             {label}
          </span>
       </button>

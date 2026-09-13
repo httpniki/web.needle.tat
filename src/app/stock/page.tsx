@@ -1,7 +1,7 @@
 export default function Stock() {
    return (
-      <main className='w-full flex items-center flex-col px-8 py-4 overflow-hidden overflow-y-auto'>
-         <h1 className="text-2xl font-bold mt-8">
+      <main className='flex w-full flex-col items-center overflow-hidden overflow-y-auto px-8 py-4'>
+         <h1 className="mt-8 text-2xl font-bold">
             Stock
          </h1>
 

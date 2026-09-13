@@ -1,4 +1,4 @@
-import { type ChangeEvent, useState } from "react"
+import { type ChangeEvent, useState } from 'react'
 
 interface Props {
    onChange?: (date: string) => void
@@ -107,8 +107,8 @@ export default function DateInput(props: Props) {
 
    return (
       <input
-         className={"w-full px-2 py-1 border border-gray-primary text-sm text-center rounded-md outline-none" + 
-            (props.error ? " border-red-700" : "")
+         className={'w-full px-2 py-1 border border-gray-primary text-sm text-center rounded-md outline-none' +
+            (props.error ? ' border-red-700' : '')
          }
          type="text"
          value={date}

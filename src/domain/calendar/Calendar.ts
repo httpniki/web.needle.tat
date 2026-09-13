@@ -1,5 +1,6 @@
-import TattooSession from "../TattooSession"
-import { addHours, eachDayOfInterval, endOfMonth, endOfWeek, getWeekOfMonth, setHours, startOfMonth, startOfWeek } from "date-fns"
+import { addHours, eachDayOfInterval, endOfMonth, endOfWeek, getWeekOfMonth, setHours, startOfMonth, startOfWeek } from 'date-fns'
+
+import TattooSession from '../TattooSession'
 
 export default class Calendar<T> {
    private _years: Year<T>[] = []

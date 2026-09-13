@@ -29,7 +29,7 @@ export default function ScheduleHeader(props: Props) {
          >
             <button
                type="button"
-               className="cursor-pointer border border-none hover:opacity-80 transition-all"
+               className="cursor-pointer border border-none transition-all hover:opacity-80"
                aria-label="Mes anterior"
                onClick={props.handlePrevious}
             >
@@ -40,7 +40,7 @@ export default function ScheduleHeader(props: Props) {
             </button>
 
             <button
-               className="font-semibold text-center text-nowrap cursor-pointer border-none transition-all hover:opacity-80"
+               className="cursor-pointer border-none text-center font-semibold text-nowrap transition-all hover:opacity-80"
                onClick={props.handleDate}
             >
                {day_name}, {day_number} de {month_name} de {year}
@@ -48,7 +48,7 @@ export default function ScheduleHeader(props: Props) {
 
             <button
                type="button"
-               className="cursor-pointer border border-none hover:opacity-80 transition-all"
+               className="cursor-pointer border border-none transition-all hover:opacity-80"
                aria-label="Mes siguiente"
                onClick={props.handleNext}
             >

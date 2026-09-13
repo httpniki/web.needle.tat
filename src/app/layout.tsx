@@ -1,28 +1,31 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Navbar from "./_components/Navbar";
-import Topbar from "./_components/Topbar";
-import NewAppointmentBtn from "./_components/NewAppointmentBtn";
-import ToastProvider from "./_context/ToastContext"
-import TattooProjectsProvider from "./_context/TattooProjectsContext"
-import { getProjects } from "@/actions/project-actions";
+import './globals.css';
+
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+
+import { getProjects } from '@/actions/project-actions';
+
+import Navbar from './_components/Navbar';
+import NewAppointmentBtn from './_components/NewAppointmentBtn';
+import Topbar from './_components/Topbar';
+import TattooProjectsProvider from './_context/TattooProjectsContext'
+import ToastProvider from './_context/ToastContext'
 
 const geistSans = Geist({
-   variable: "--font-geist-sans",
-   subsets: ["latin"],
+   variable: '--font-geist-sans',
+   subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-   variable: "--font-geist-mono",
-   subsets: ["latin"],
+   variable: '--font-geist-mono',
+   subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-   title: "Dashboard - Needle.tat"
+   title: 'Dashboard - Needle.tat'
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<'/'>) {
    const projects = await getProjects()
 
    return (
@@ -30,10 +33,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
          lang="en"
          className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-         <body className="flex flex-col h-screen bg-black-primary font-sans text-white">
+         <body className="flex h-screen flex-col bg-black-primary font-sans text-white">
             <Topbar />
 
-            <div className='flex-1 flex min-h-0'>
+            <div className='flex min-h-0 flex-1'>
                <Navbar />
 
                <div className='relative flex min-h-0 flex-1'>

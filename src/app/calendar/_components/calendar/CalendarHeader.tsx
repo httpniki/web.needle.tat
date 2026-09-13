@@ -1,4 +1,4 @@
-import { CaptionLabelProps } from "@daypicker/react"
+import { CaptionLabelProps } from '@daypicker/react'
 
 type Props = CaptionLabelProps & {
    date: Date
@@ -10,12 +10,12 @@ export default function CalendarHeader(props: Props) {
    const { handlePreviousMonth, handleNextMonth, ...captionProps } = props
 
    return (
-      <div className="flex flex-col items-center justify-between w-full px-2 mb-4">
-         <div className="flex items-center justify-between w-full">
+      <div className="mb-4 flex w-full flex-col items-center justify-between px-2">
+         <div className="flex w-full items-center justify-between">
             <button
                type="button"
                onClick={handlePreviousMonth}
-               className="cursor-pointer border border-none hover:opacity-80 transition-all"
+               className="cursor-pointer border border-none transition-all hover:opacity-80"
                aria-label="Mes anterior"
             >
                <svg xmlns="http://www.w3.org/2000/svg" width="1.3rem" height="1.3rem" viewBox="0 0 24 24">
@@ -32,7 +32,7 @@ export default function CalendarHeader(props: Props) {
             <button
                type="button"
                onClick={handleNextMonth}
-               className="cursor-pointer border border-none hover:opacity-80 transition-all"
+               className="cursor-pointer border border-none transition-all hover:opacity-80"
                aria-label="Mes siguiente"
             >
                <svg xmlns="http://www.w3.org/2000/svg" width="1.3rem" height="1.3rem" viewBox="0 0 24 24">

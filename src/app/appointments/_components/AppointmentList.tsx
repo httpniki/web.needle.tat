@@ -1,6 +1,6 @@
 function AppointmentItem() {
    return (
-      <li className="flex gap-2 items-center justify-between text-sm">
+      <li className="flex items-center justify-between gap-2 text-sm">
          <span>10:00hs - 12:00hs</span>
          <span>{'<cliente>'}</span>
          <button>${'<precio>'}</button>

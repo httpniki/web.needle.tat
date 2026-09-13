@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 export default function NewAppointmentBtn() {
    const router = useRouter()
@@ -11,7 +11,7 @@ export default function NewAppointmentBtn() {
 
    return (
       <button
-         className="fixed bg-black-primary bottom-8 right-8 flex items-center justify-center transition-colors duration-200 hover:opacity-80 cursor-pointer border border-gray-primary rounded-full aspect-square z-12 w-12 shadow-[0_0_10px_#ffffff10]"
+         className="fixed right-8 bottom-8 z-12 flex aspect-square w-12 cursor-pointer items-center justify-center rounded-full border border-gray-primary bg-black-primary shadow-[0_0_10px_#ffffff10] transition-colors duration-200 hover:opacity-80"
          onClick={() => router.push('/appointments?new=true')}
       >
          +
