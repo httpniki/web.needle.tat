@@ -40,7 +40,13 @@ export default function Schedule(props: Props) {
    const [menu, setMenu] = useState(false)
 
    const sessionsWithCustomer = useMemo(() => {
-      const daySessions: TattooSession[] = store.calendar.getDaySessions(date)
+      let daySessions: TattooSession[] = []
+
+      try {
+         daySessions = store.calendar.getDaySessions(date)
+      } catch (_err: unknown) {
+         daySessions = []
+      }
 
       return daySessions.map((session) => {
          const project = store.findProject({ sessionId: session.id })

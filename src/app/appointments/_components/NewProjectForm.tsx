@@ -105,11 +105,18 @@ export default function NewProjectForm() {
    return (
       <form onSubmit={(event) => event.preventDefault()} className="flex flex-col w-full gap-6">
          <header className="flex items-center justify-between">
-            <h1 className="text-lg font-bold">Nuevo tatuaje</h1>
+            <h1 className="flex items-center gap-1 text-lg font-bold">
+               <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 640 640">
+                  <path d="M0 0h640v640H0z" fill="none" />
+                  <path fill="currentColor" d="M535.6 85.7c-21.9-21.9-57.3-21.9-79.2 0L432 110.1l97.9 97.9l24.4-24.4c21.9-21.9 21.9-57.3 0-79.2zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L496 241.9L398.1 144zM160 128c-53 0-96 43-96 96v256c0 53 43 96 96 96h256c53 0 96-43 96-96v-96c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32z" />
+               </svg>
+
+               Nuevo tatuaje
+            </h1>
 
             <div className='flex gap-2 items-center'>
                <button
-                  className='w-min enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25 border border-white/40 rounded-xs px-1.5 py-1.5'
+                  className='w-min enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25 border border-white/40 rounded-xs px-2 py-2 bg-gray-primary'
                   onClick={() => router.back()}
                   disabled={pending}
                >
@@ -117,7 +124,7 @@ export default function NewProjectForm() {
                </button>
 
                <button
-                  className='w-min enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25 border border-white/40 rounded-xs px-1.5 py-1.5'
+                  className='w-min enabled:cursor-pointer text-nowrap text-sm hover:opacity-80 disabled:opacity-25 border border-white/40 bg-gray-primary rounded-xs px-2 py-2'
                   onClick={submitForm}
                   disabled={disableSubmit}
                >
@@ -133,7 +140,7 @@ export default function NewProjectForm() {
          }
 
          {(!pending) &&
-            <article className='flex gap-6 flex-col lg:flex-row justify-between items-start'>
+            <article className='flex gap-6 flex-col 2xl:flex-row justify-between items-start'>
                <div className='flex flex-col gap-6 w-full'>
                   <Customer />
                   <References />

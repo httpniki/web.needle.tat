@@ -30,20 +30,22 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
          lang="en"
          className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-         <body className="h-screen flex flex-col bg-black-primary font-sans text-white">
+         <body className="flex flex-col h-screen bg-black-primary font-sans text-white">
             <Topbar />
 
-            <div className='flex min-h-0 flex-1 relative'>
-               <ToastProvider>
-                  <TattooProjectsProvider projects={projects}>
-                     {children}
-                  </TattooProjectsProvider>
-               </ToastProvider>
+            <div className='flex-1 flex min-h-0'>
+               <Navbar />
 
-               <NewAppointmentBtn />
+               <div className='relative flex min-h-0 flex-1'>
+                  <ToastProvider>
+                     <TattooProjectsProvider projects={projects}>
+                        {children}
+                     </TattooProjectsProvider>
+                  </ToastProvider>
+
+                  <NewAppointmentBtn />
+               </div>
             </div>
-
-            <Navbar />
          </body>
       </html>
    );

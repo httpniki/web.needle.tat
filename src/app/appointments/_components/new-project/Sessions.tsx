@@ -11,10 +11,10 @@ export default function Sessions() {
 
    return (
       <section className='w-full lg:max-w-125 border border-gray-primary rounded-sm p-6'>
-         <div className="flex flex-col gap-6 mb-2">
+         <div className="flex flex-col">
             {store.project.sessions.map((session, index) => (
                <div key={session.id}>
-                  {index > 0 && <hr className='border-gray-primary my-2' />}
+                  {index > 0 && <hr className='border-gray-primary my-6' />}
                   <Session key={session.id} data={session} index={index} />
                </div>
             ))}
@@ -46,7 +46,7 @@ function Session(props: SessionProps) {
       <div>
          <div className='flex gap-2 items-center'>
             <div className="w-full flex items-center justify-between mb-2">
-               <h6 className="font-bold text-nowrap">Sesion {props.index + 1}</h6>
+               <h6 className="font-bold text-nowrap">{props.index + 1}° Sesión</h6>
 
                <button onClick={() => store.removeSession(props.data.id)} className='cursor-pointer transition-opacity duration-200 hover:opacity-80'>
                   <svg xmlns="http://www.w3.org/2000/svg" width="1.4em" height="1.4em" viewBox="0 0 24 24">

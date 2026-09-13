@@ -187,7 +187,13 @@ export class TattooCalendar extends Calendar<TattooSession[]> {
    }
 
    public isSlotOccupied(date: Date): boolean {
-      const daySessions = this.getDaySessions(date)
+      let daySessions: TattooSession[] = []
+
+      try {
+         daySessions = this.getDaySessions(date)
+      } catch (_err: unknown) {
+         daySessions = []
+      }
 
       const slotStart = date.getTime()
       const slotEnd = addHours(slotStart, 1).getTime()

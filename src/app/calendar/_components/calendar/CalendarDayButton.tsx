@@ -26,15 +26,19 @@ export default function CalendarDayButton(props: Props) {
             {sessions.map((session) => {
                const startHours = session.session_start_at.getHours() < 10 ? '0' + session.session_start_at.getHours() : session.session_start_at.getHours()
                const startMinutes = session.session_start_at.getMinutes() < 10 ? '0' + session.session_start_at.getMinutes() : session.session_start_at.getMinutes()
-               const endHours = session.session_end_at.getHours() < 10 ? '0' + session.session_end_at.getHours() : session.session_end_at.getHours()
-               const endMinutes = session.session_end_at.getMinutes() < 10 ? '0' + session.session_end_at.getMinutes() : session.session_end_at.getMinutes()
 
                return (
-                  <li key={session.session_start_at.toString()} className='flex flex-col 2xl:flex-row 2xl:gap-2 text-nowrap ellipsis w-full bg-white/5 rounded-md text-sm md:text-base'>
+                  <li key={session.session_start_at.toString()}
+                     className={
+                        'flex gap-1 2xl:gap-2 text-nowrap ellipsis w-full rounded-md text-sm md:text-base px-1' +
+                        (session.session_status === SessionStatus.PENDING ? ' bg-gray-400' : '') +
+                        (session.session_status === SessionStatus.IN_PROGRESS ? ' bg-orange-700' : '') +
+                        (session.session_status === SessionStatus.CANCELED ? ' bg-red-800' : '') +
+                        (session.session_status === SessionStatus.FINISHED ? ' bg-green-900' : '')
+                     }
+                  >
                      <span className='text-start'>
                         {startHours + ':' + startMinutes}
-                        {' - '}
-                        {endHours + ':' + endMinutes}
                      </span>
 
                      <span className='inline-block text-ellipsis max-w-32 lg:w-min overflow-hidden text-start'>
@@ -45,7 +49,7 @@ export default function CalendarDayButton(props: Props) {
             })}
          </ul>
 
-         <ul className='lg:hidden flex items-start justify-start gap-1 flex-wrap mt-1 overflow-hidden'>
+         <ul className='lg:hidden flex flex-wrap gap-1 mt-1 w-full content-start overflow-hidden'>
             {sessions.map((session) => {
                return (
                   <li
@@ -53,14 +57,13 @@ export default function CalendarDayButton(props: Props) {
                      className={
                         'size-2 rounded-full' +
                         (session.session_status === SessionStatus.PENDING ? ' bg-gray-400' : '') +
-                        (session.session_status === SessionStatus.IN_PROGRESS ? ' bg-orange-400' : '') +
+                        (session.session_status === SessionStatus.IN_PROGRESS ? ' bg-orange-600' : '') +
                         (session.session_status === SessionStatus.FINISHED ? ' bg-green-400' : '') +
-                        (session.session_status === SessionStatus.CANCELED ? ' bg-red-400' : '')
+                        (session.session_status === SessionStatus.CANCELED ? ' bg-red-800' : '')
                      }
                   />
                )
-            })
-            }
+            })}
          </ul>
       </button>
    )

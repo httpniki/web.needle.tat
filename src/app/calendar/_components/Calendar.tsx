@@ -3,7 +3,7 @@
 import { DayPicker } from "@daypicker/react"
 import CalendarHeader from "./calendar/CalendarHeader"
 import CalendarDayButton from "./calendar/CalendarDayButton"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTattooProjects } from "@/app/_context/TattooProjectsContext"
 import { addMonths, isSameDay, subMonths } from "date-fns"
 import { useRouter } from "next/navigation"
@@ -38,8 +38,25 @@ export default function Calendar() {
       return s.sort((a, b) => a.session_start_at.getTime() - b.session_start_at.getTime())
    }
 
+   useEffect(() => {
+      function onKeyDown(e: KeyboardEvent) {
+         switch (e.key) {
+            case 'ArrowLeft':
+               showPreviousMonth()
+               break
+
+            case 'ArrowRight':
+               showNextMonth()
+               break
+         }
+      }
+
+      window.addEventListener('keydown', onKeyDown)
+      return () => window.removeEventListener('keydown', onKeyDown)
+   }, [date])
+
    return (
-      <div className='flex px-8 py-4 size-full'>
+      <div className='flex flex-col px-8 py-4 size-full min-h-0'>
          <DayPicker
             selected={new Date()}
             month={date}
@@ -48,13 +65,13 @@ export default function Calendar() {
                if (!date) return
                router.push(`/calendar?day=${date.getDate()}&month=${date.getMonth()}&year=${date.getFullYear()}`)
             }}
-            className="w-full flex-1 flex flex-col"
+            className="w-full flex-1 flex flex-col min-h-0"
             classNames={{
                month_caption: 'text-center',
                nav: 'hidden flex items-center gap-2 pt-2 justify-between',
-               months: 'flex flex-col flex-1 h-full w-full',
-               month: 'flex flex-col flex-1 h-full w-full gap-4',
-               month_grid: 'w-full h-full border-collapse gap-1 flex flex-col flex-1',
+               months: 'flex flex-col flex-1 h-full w-full min-h-0',
+               month: 'flex flex-col flex-1 h-full w-full gap-4 min-h-0',
+               month_grid: 'w-full h-full border-collapse gap-1 flex flex-col flex-1 min-h-0',
                weekdays: 'flex w-full justify-between',
                weekday: 'flex-1 text-center font-medium text-sm text-gray-400',
                weeks: 'w-full flex flex-col flex-1 gap-2 min-h-0',

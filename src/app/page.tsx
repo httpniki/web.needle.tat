@@ -1,9 +1,13 @@
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 sm:items-start">
-         
+   return (
+      <main className='w-full flex items-center flex-col px-8 py-4 overflow-hidden overflow-y-auto'>
+         <h1 className="text-2xl font-bold mt-8">
+            Dashboard
+         </h1>
+
+         <p className="mt-4">
+            IN PROGRESS
+         </p>
       </main>
-    </div>
-  );
+   );
 }

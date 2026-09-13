@@ -12,7 +12,7 @@ export default function SlotSelectionMenu(props: Props) {
    return (
       <div className="absolute bottom-0 left-0 right-0 p-6 z-1000 bg-black-primary flex flex-col gap-2 rounded-lg shadow-[0_0_10px_#ffffff10]">
          <button
-            className='w-full border border-white py-3 hover:opacity-80 transition-all cursor-pointer animation-slide-up rounded-sm'
+            className='w-full bg-gray-primary border border-white/20 py-3 hover:border-white/12 transition-all cursor-pointer animation-slide-up rounded-sm'
             onClick={() => router.push(url)}
          >
             Añadir cita
