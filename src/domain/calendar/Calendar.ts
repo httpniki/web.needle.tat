@@ -218,6 +218,33 @@ export class TattooCalendar extends Calendar<TattooSession[]> {
       })
    }
 
+   public getSessionsGroupedByDay(): { date: Date; sessions: TattooSession[] }[] {
+      const result: { date: Date; sessions: TattooSession[] }[] = []
+
+      for (const year of this.years) {
+         for (const month of year.months) {
+            for (const week of month.weeks) {
+               for (const day of week.days) {
+                  if (day.data && day.data.length > 0) {
+                     const date = new Date(year.year, month.month, day.dayNumber)
+
+                     const sortedSessions = [...day.data].sort(
+                        (a, b) => a.starts_at.getTime() - b.starts_at.getTime()
+                     )
+
+                     result.push({
+                        date,
+                        sessions: sortedSessions
+                     })
+                  }
+               }
+            }
+         }
+      }
+
+      return result.sort((a, b) => a.date.getTime() + b.date.getTime())
+   }
+
    public clone(): TattooCalendar {
       const clonedCalendar = new TattooCalendar()
       clonedCalendar.years = this.years
