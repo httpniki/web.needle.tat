@@ -14,7 +14,7 @@ export default function Customer() {
    const customerError = Object.values(store.errors.customer).find((value) => value)
 
    return (
-      <section className="flex flex-col gap-2 rounded-sm border border-gray-primary p-6">
+      <section className="flex w-full flex-col gap-2 rounded-sm border border-gray-primary p-6">
          <div className='flex items-center gap-2'>
             <h6 className="font-bold text-nowrap">Detalles del Cliente</h6>
 

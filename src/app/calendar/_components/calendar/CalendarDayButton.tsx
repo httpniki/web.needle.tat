@@ -17,7 +17,7 @@ export default function CalendarDayButton(props: Props) {
    return (
       <button
          {...buttonProps}
-         className='flex size-full cursor-pointer flex-col items-start justify-start overflow-hidden p-2 font-normal outline-none md:p-3'
+         className='flex size-full cursor-pointer flex-col items-start justify-start gap-1 overflow-hidden p-2 font-normal outline-none md:p-3'
       >
          <span className={_modifiers.selected ? ' font-bold' : ''}>
             {day.date.getDate()}
@@ -31,8 +31,8 @@ export default function CalendarDayButton(props: Props) {
                return (
                   <li key={session.session_start_at.toString()}
                      className={
-                        'flex gap-1 2xl:gap-2 text-nowrap ellipsis w-full rounded-md text-sm md:text-base px-1' +
-                        (session.session_status === SessionStatus.PENDING ? ' bg-gray-400' : '') +
+                        'flex gap-1 2xl:gap-2 text-nowrap ellipsis w-full rounded-xs text-sm px-1 pt-0.5 items-center' +
+                        (session.session_status === SessionStatus.PENDING ? ' bg-gray-600' : '') +
                         (session.session_status === SessionStatus.IN_PROGRESS ? ' bg-orange-700' : '') +
                         (session.session_status === SessionStatus.CANCELED ? ' bg-red-800' : '') +
                         (session.session_status === SessionStatus.FINISHED ? ' bg-green-900' : '')
@@ -41,6 +41,8 @@ export default function CalendarDayButton(props: Props) {
                      <span className='text-start'>
                         {startHours + ':' + startMinutes}
                      </span>
+
+                     -
 
                      <span className='inline-block max-w-32 overflow-hidden text-start text-ellipsis lg:w-min'>
                         {session.customer_name}

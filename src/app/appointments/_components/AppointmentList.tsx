@@ -130,7 +130,7 @@ function AppointmentItem({ session, customer, project_id }: SessionWithCustomer)
    return (
       <li className='py-1 transition-colors duration-300 hover:bg-neutral-900/50'>
          <Link href={`/appointments/${project_id}`} className={'flex items-center justify-between gap-2 text-sm' + (session.starts_at < today ? ' text-gray-300' : '')}>
-            <p className='flex w-full max-w-42 items-center'>
+            <p className='flex w-full max-w-46 items-center'>
                <span>{starts_time} - {ends_time}</span>
 
                <span className={
@@ -140,13 +140,16 @@ function AppointmentItem({ session, customer, project_id }: SessionWithCustomer)
                   (session.status === SessionStatus.CANCELED ? ' bg-red-800' : '') +
                   (session.status === SessionStatus.FINISHED ? ' bg-green-900' : '')
                }>
-                  {session.status.split('').map((char, i) => i === 0 ? char : char.toLowerCase()).join('')}
+                  {session.status === SessionStatus.PENDING && 'Pendiente'}
+                  {session.status === SessionStatus.IN_PROGRESS && 'En progreso'}
+                  {session.status === SessionStatus.CANCELED && 'Cancelado'}
+                  {session.status === SessionStatus.FINISHED && 'Finalizado'}
                </span>
             </p>
 
             <p className='flex-1 text-center'>{customer.name}</p>
 
-            <p className='w-full max-w-42 text-end'>
+            <p className='w-full max-w-46 text-end'>
                <span className={session.booking_fee !== 0 ? 'mr-1 text-red-400 line-through' : 'hidden'}>
                   ${total_price}
                </span>
@@ -159,5 +162,4 @@ function AppointmentItem({ session, customer, project_id }: SessionWithCustomer)
       </li>
    )
 }
-
 

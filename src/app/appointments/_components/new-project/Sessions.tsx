@@ -12,18 +12,17 @@ export default function Sessions() {
    const store = useNewProject()
 
    return (
-      <section className='w-full rounded-sm border border-gray-primary p-6 lg:max-w-125'>
-         <div className="flex flex-col">
-            {store.project.sessions.map((session, index) => (
-               <div key={session.id}>
-                  {index > 0 && <hr className='my-6 border-gray-primary' />}
+      <section className='flex w-full flex-wrap gap-6'>
+         {store.project.sessions.map((session, index) => (
+            <div key={session.id} className='w-full flex-1 basis-full rounded-sm border border-gray-primary p-6 sm:basis-[calc(50%-12px)] lg:basis-[calc(33.333%-16px)]'>
+               <div>
                   <Session key={session.id} data={session} index={index} />
                </div>
-            ))}
-         </div>
+            </div>
+         ))}
 
          <button
-            className='mt-1.5 w-min text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+            className='mt-1.5 w-full flex-1 basis-full rounded-sm border border-gray-primary p-6 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25 sm:basis-[calc(50%-12px)] lg:basis-[calc(33.333%-16px)]'
             onClick={() => store.addNewSession()}
          >
             Agregar sesión
