@@ -180,3 +180,104 @@ export async function findSessionsByProjectId(projectId: number): Promise<Tattoo
       currency: session.currency
    }))
 }
+
+export async function updateSession(session: TattooSessionObject): Promise<TattooSessionObject> {
+   const db = createClient(await cookies())
+   const { id, ...payload } = session
+
+   const startsAt = new Date(session.starts_at)
+   const endsAt = new Date(session.ends_at)
+
+   if (isNaN(startsAt.getTime())) {
+      const err = new ServerActionException('Fecha de inicio inválida')
+      err.name = 'invalid_date'
+      throw err
+   }
+
+   if (isNaN(endsAt.getTime())) {
+      const err = new ServerActionException('Fecha de fin inválida')
+      err.name = 'invalid_date'
+      throw err
+   }
+
+   if (Object.keys(payload).length === 0) {
+      const err = new ServerActionException('No se detectaron cambios con respecto al estado actual de la sesión')
+      err.name = 'no_changes'
+      throw err
+   }
+
+   const conflicts = await hasSessionConflict(
+      startsAt,
+      endsAt,
+      String(id)
+   )
+
+   if (conflicts.length > 0) {
+      const err = new ServerActionException('El horario seleccionado ya está ocupado')
+      err.name = 'session_time_conflict'
+      throw err
+   }
+
+   const { data, error } = await db
+      .from('sessions')
+      .update(payload)
+      .eq('id', id)
+      .select<string, SessionModel>('*')
+      .single()
+
+   if (error || !data) {
+      const err = new ServerActionException('Error inesperado al actualizar la sesión')
+      err.name = 'unexpected_error'
+      throw err
+   }
+
+   return {
+      id: data.id,
+      starts_at: data.starts_at,
+      ends_at: data.ends_at,
+      observations: data.observations,
+      status: data.status,
+      booking_fee: data.booking_fee,
+      price: data.price,
+      currency: data.currency
+   }
+}
+
+export async function deleteSession(id: TattooSessionObject['id']): Promise<void> {
+   const db = createClient(await cookies())
+
+   const { data: sessionData, error: sessionError } = await db
+      .rpc('get_session_by_id', { s_id: id })
+      .overrideTypes<SessionModel[]>()
+
+   if (sessionError || !sessionData || 'Error' in sessionData) {
+      const exception = new ServerActionException('Unexpected error finding session')
+      exception.name = 'unexpected_error'
+      throw exception
+   }
+
+   if (!sessionData || sessionData.length === 0) {
+      const exception = new ServerActionException('Session not found')
+      exception.name = 'session_not_found'
+      throw exception
+   }
+
+   const projectSessions = await findSessionsByProjectId(Number(sessionData[0].project_id))
+
+   if (projectSessions.length <= 1) {
+      const err = new ServerActionException('No se puede eliminar la única sesión del proyecto')
+      err.name = 'cannot_delete_last_session'
+      throw err
+   }
+
+   const { error } = await db
+      .from('sessions')
+      .delete()
+      .eq('id', id)
+
+   if (error) {
+      const err = new ServerActionException('Error inesperado al eliminar la sesión')
+      err.name = 'unexpected_error'
+      throw err
+   }
+}

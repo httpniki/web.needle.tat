@@ -14,8 +14,8 @@ interface FindProjectParams {
 
 interface StoreState {
    projects: TattooProject[]
-   setProjects: (projects: TattooProject[]) => void
-   addProject: (project: TattooProject) => void
+   setProjects: (projects: (TattooProject | TattooProjectObject)[]) => void
+   addProject: (project: TattooProject | TattooProjectObject) => void
    findProject: (params: FindProjectParams) => TattooProject | undefined
    calendar: TattooCalendar
 }
@@ -51,12 +51,22 @@ export default function TattooProjectsProvider(props: Props) {
    }, [projects])
 
    function addProject(project: TattooProject | TattooProjectObject) {
-      if (project instanceof TattooProject) return setProjects((prev) => [...prev, project])
+      if (project instanceof TattooProject) {
+         if (projects.some((p) => p.id === project.id)) {
+            return setProjects((prev) => prev.map((p) => p.id === project.id ? project : p))
+         }
+
+         return setProjects((prev) => [...prev, project])
+      }
 
       const customer = new Customer({ ...project.customer })
       const sessions = project.sessions.map((s) => new TattooSession({ ...s }))
       const references = project.references.map((r) => new TattooReference({ ...r }))
       const newProject = new TattooProject({ ...project, customer, sessions, references })
+
+      if(projects.some((p) => p.id === newProject.id)) {
+         return setProjects((prev) => prev.map((p) => p.id === newProject.id ? newProject : p))
+      }
 
       setProjects((prev) => [...prev, newProject])
    }
@@ -66,12 +76,26 @@ export default function TattooProjectsProvider(props: Props) {
       if (sessionId) return projects.find((p) => p.hasSession(sessionId))
    }
 
+   function insertProjects(projects: (TattooProject | TattooProjectObject)[]) {
+      setProjects(() => {
+         return projects.map((p) => {
+            if (p instanceof TattooProject) return p
+
+            const customer = new Customer({ ...p.customer })
+            const sessions = p.sessions.map((s) => new TattooSession({ ...s }))
+            const references = p.references.map((r) => new TattooReference({ ...r }))
+
+            return new TattooProject({ ...p, customer, sessions, references })
+         })
+      })
+   }
+
    return (
       <TattooProjectsContext.Provider
          value={{
             projects,
             calendar,
-            setProjects,
+            setProjects: insertProjects,
             addProject,
             findProject
          }}

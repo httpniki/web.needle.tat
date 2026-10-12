@@ -174,3 +174,89 @@ export async function getCustomers(): Promise<CustomerObject[]> {
       email: customer.email
    }))
 }
+
+export interface UpdateCustomerParams {
+   name?: string
+   username?: string
+   phone_number?: string
+   email?: string
+}
+
+export async function updateCustomer(id: string, body: UpdateCustomerParams): Promise<CustomerObject> {
+   const cookieStore = await cookies()
+   const db = createClient(cookieStore)
+
+   const filters: string[] = []
+
+   if (body.email) filters.push(`email.eq.${body.email}`)
+   if (body.username) filters.push(`username.eq.${body.username}`)
+   if (body.phone_number) filters.push(`phone_number.eq.${body.phone_number}`)
+
+   if (filters.length > 0) {
+      const result = await db
+         .from('customers')
+         .select('id, name, username, phone_number, email')
+         .neq('id', id)
+         .or(filters.join(','))
+
+      if (result.error) {
+         const err = new ActionException('Unexpected error validating customer')
+         err.name = 'unexpected_error'
+         throw err
+      }
+
+      if (body.email && result.data.some((customer) => customer.email === body.email)) {
+         const err = new ActionException('Customer with this email already exists')
+         err.name = 'customer_with_email_exists'
+         err.data = { email: body.email }
+         throw err
+      }
+
+      if (body.username && result.data.some((customer) => customer.username === body.username)) {
+         const err = new ActionException('Customer with this username already exists')
+         err.name = 'customer_with_username_exists'
+         err.data = { username: body.username }
+         throw err
+      }
+
+      if (body.phone_number && result.data.some((customer) => customer.phone_number === body.phone_number)) {
+         const err = new ActionException('Customer with this phone number already exists')
+         err.name = 'customer_with_phone_number_exists'
+         err.data = { phone_number: body.phone_number }
+         throw err
+      }
+
+      if (body.name && result.data.some((customer) => customer.name === body.name)) {
+         const err = new ActionException('Customer with this name already exists')
+         err.name = 'customer_with_name_exists'
+         err.data = { name: body.name }
+         throw err
+      }
+   }
+
+   const results = await db
+      .from('customers')
+      .update(body)
+      .eq('id', id)
+      .select<string, CustomerModel>('*')
+
+   if (results.error) {
+      const err = new ActionException('Unexpected error updating customer')
+      err.name = 'unexpected_error'
+      throw err
+   }
+
+   if (!results.data) {
+      const err = new ActionException('Customer not found')
+      err.name = 'customer_not_found'
+      throw err
+   }
+
+   return {
+      id: results.data[0].id,
+      name: results.data[0].name,
+      username: results.data[0].username,
+      phone_number: results.data[0].phone_number,
+      email: results.data[0].email
+   }
+}

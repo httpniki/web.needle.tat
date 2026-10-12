@@ -2,17 +2,17 @@ import { type ChangeEvent, useState } from 'react'
 
 interface Props {
    onChange?: (time: string) => void
-   value?: string
+   defaultValue?: string
    error?: boolean
 }
 
 export default function TimeInput(props: Props) {
-   const [prevValue, setPrevValue] = useState<string | undefined>(props.value)
-   const [time, setTime] = useState<string>(props.value ?? '')
+   const [prevValue, setPrevValue] = useState<string | undefined>(props.defaultValue)
+   const [time, setTime] = useState<string>(props.defaultValue ?? '')
 
-   if (props.value !== prevValue) {
-      setPrevValue(props.value)
-      setTime(props.value ?? '')
+   if (props.defaultValue !== prevValue) {
+      setPrevValue(props.defaultValue)
+      setTime(props.defaultValue ?? '')
    }
 
    function handleChange(e: ChangeEvent<HTMLInputElement>): void {
@@ -98,6 +98,7 @@ export default function TimeInput(props: Props) {
             (props.error ? ' border-red-700' : '')
          }
          type="text"
+         defaultValue={props.defaultValue}
          value={time}
          onChange={handleChange}
          onBlur={handleBlur}

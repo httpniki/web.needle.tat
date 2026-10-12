@@ -197,7 +197,7 @@ export class TattooCalendar extends Calendar<TattooSession[]> {
       }
 
       const slotStart = date.getTime()
-      const slotEnd = addHours(slotStart, 1).getTime()
+      const slotEnd = addHours(date, 1).getTime()
 
       return daySessions.some((session) => {
          const sStart = session.starts_at.getTime()

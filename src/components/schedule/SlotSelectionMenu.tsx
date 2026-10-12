@@ -7,7 +7,7 @@ interface Props {
 
 export default function SlotSelectionMenu(props: Props) {
    const router = useRouter()
-   const url = `/appointments?new=true&starts_date=${props.starts_date.toISOString()}&ends_date=${props.ends_date.toISOString()}`
+   const url = `/projects?new=true&starts_date=${props.starts_date.toISOString()}&ends_date=${props.ends_date.toISOString()}`
 
    return (
       <div className="absolute inset-x-0 bottom-0 z-1000 flex flex-col gap-2 rounded-lg bg-black-primary p-6 shadow-[0_0_10px_#ffffff10]">

@@ -3,17 +3,16 @@ import { type ChangeEvent, useState } from 'react'
 interface Props {
    onChange?: (date: string) => void
    defaultValue?: string
-   value?: string
    error?: boolean
 }
 
 export default function DateInput(props: Props) {
-   const [prevValue, setPrevValue] = useState<string | undefined>(props.value)
-   const [date, setDate] = useState<string>(props.value ?? '')
+   const [prevValue, setPrevValue] = useState<string | undefined>(props.defaultValue)
+   const [date, setDate] = useState<string>(props.defaultValue ?? '')
 
-   if (props.value !== prevValue) {
-      setPrevValue(props.value)
-      setDate(props.value ?? '')
+   if (props.defaultValue !== prevValue) {
+      setPrevValue(props.defaultValue)
+      setDate(props.defaultValue ?? '')
    }
 
    function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -112,6 +111,7 @@ export default function DateInput(props: Props) {
          }
          type="text"
          value={date}
+         defaultValue={props.defaultValue}
          onChange={handleChange}
          onBlur={handleBlur}
          placeholder="DD/MM/YYYY"

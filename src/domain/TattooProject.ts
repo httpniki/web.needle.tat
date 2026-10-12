@@ -1,3 +1,5 @@
+import { addHours } from 'date-fns'
+
 import Customer, { CustomerObject } from './Customer'
 import TattooReference, { TattooReferenceObject } from './TattooReference'
 import TattooSession, { TattooSessionObject } from './TattooSession'
@@ -102,5 +104,17 @@ export default class TattooProject implements ITattooProject {
 
    public getMonthSessions(month: number): TattooSession[] {
       return this._sessions.filter((s) => s.starts_at.getMonth() === month)
+   }
+
+   public isHourOccupied(date: Date): boolean {
+      const slotStart = date.getTime()
+      const slotEnd = addHours(date, 1).getTime()
+
+      return this.sessions.some((session) => {
+         const sStart = session.starts_at.getTime()
+         const sEnd = session.ends_at.getTime()
+
+         return sStart < slotEnd && sEnd > slotStart
+      })
    }
 }

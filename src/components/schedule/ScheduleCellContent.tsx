@@ -31,7 +31,7 @@ export default function CellContentContent(props: Props) {
       <button
          style={{ gridRow: props.gridRow, gridColumn: 2 }}
          className="z-10 m-1 flex cursor-pointer flex-col justify-between rounded-lg border border-neutral-800 bg-black-secondary p-3 text-left text-white shadow-lg transition-all hover:opacity-80"
-         onClick={() => router.push('/appointments/' + props.session.projectId)}
+         onClick={() => router.push('/projects?id=' + props.session.projectId)}
          data-id={props.session.id}
       >
          <div>

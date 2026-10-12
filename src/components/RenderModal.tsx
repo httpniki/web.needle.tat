@@ -30,8 +30,8 @@ export default function RenderModal({ children, onClickOutside, className }: Pro
    return createPortal(
       <div
          id='modal'
-         className={'fixed flex items-center justify-center inset-0 z-10000 overflow-auto' +
-            (className ? ` ${className}` : ' bg-black/80')
+         className={'fixed inset-0 z-10000' +
+            (className ? ` ${className}` : ' bg-black/80 flex items-center justify-center')
          }
       >
          {children}

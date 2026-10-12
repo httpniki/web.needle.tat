@@ -129,7 +129,7 @@ function AppointmentItem({ session, customer, project_id }: SessionWithCustomer)
 
    return (
       <li className='py-1 transition-colors duration-300 hover:bg-neutral-900/50'>
-         <Link href={`/appointments/${project_id}`} className={'flex items-center justify-between gap-2 text-sm' + (session.starts_at < today ? ' text-gray-300' : '')}>
+         <Link href={`/projects?id=${project_id}`} className={'flex items-center justify-between gap-2 text-sm' + (session.starts_at < today ? ' text-gray-300' : '')}>
             <p className='flex w-full max-w-46 items-center'>
                <span>{starts_time} - {ends_time}</span>
 

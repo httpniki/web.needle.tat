@@ -1,16 +1,14 @@
 'use client'
 
 import { addDays, addHours } from 'date-fns'
-import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
-import RenderModal from '@/components/RenderModal'
-import TattooSession from '@/domain/TattooSession'
+import { CustomerObject } from '@/domain/Customer'
+import { TattooSessionObject } from '@/domain/TattooSession'
 
 import CellContentContent from './schedule/ScheduleCellContent'
 import ScheduleHeader from './schedule/ScheduleHeader'
-import SlotSelectionMenu from './schedule/SlotSelectionMenu'
 
 export type Time = {
    hours: number
@@ -18,9 +16,16 @@ export type Time = {
 }
 
 interface Props {
-   day: number
-   month: number
-   year: number
+   date: Date
+   onNextDay?: (date: Date) => void
+   onPreviousDay?: (date: Date) => void
+   onClickCaption?: () => void
+   onSelectEnd?: (starts_at: Date, ends_at: Date) => void
+   sessions: ({
+      session: Pick<TattooSessionObject, 'id' | 'starts_at' | 'ends_at' | 'status' | 'price' | 'currency' | 'booking_fee'>
+      customer: Pick<CustomerObject, 'name' | 'username'>
+      projectId: number
+   })[]
 }
 
 const DAY_TIMES: Time[] = Array.from({ length: 19 }, (_, i) => ({
@@ -33,50 +38,13 @@ function formatTime(time: Time): string {
 }
 
 export default function Schedule(props: Props) {
-   const store = useTattooProjects()
-   const router = useRouter()
-
    const [isDragging, setIsDragging] = useState(false)
-   const [date, setDate] = useState(new Date(props.year, props.month, props.day))
    const [selectedSlots, setSelectedSlots] = useState<Time[]>([])
-   const [menu, setMenu] = useState(false)
 
-   const sessionsWithCustomer = useMemo(() => {
-      let daySessions: TattooSession[] = []
+   const store = useTattooProjects()
 
-      try {
-         daySessions = store.calendar.getDaySessions(date)
-      } catch (_err: unknown) {
-         daySessions = []
-      }
-
-      return daySessions.map((session) => {
-         const project = store.findProject({ sessionId: session.id })
-
-         if (!project) throw new Error(`Project with session ${session.id} not found`)
-
-         return {
-            session,
-            customer: project.customer,
-            projectId: project.id
-         }
-      })
-   }, [store.projects, store.calendar, props.year, props.month, props.day, date])
-
-   function nextDay() {
-      const newDate = addDays(date, 1)
-      setDate(newDate)
-      window.history.replaceState(null, '', `/calendar?day=${newDate.getDate()}&month=${newDate.getMonth()}&year=${newDate.getFullYear()}`)
-   }
-
-   function prevDay() {
-      const newDate = addDays(date, -1)
-      setDate(newDate)
-      window.history.replaceState(null, '', `/calendar?day=${newDate.getDate()}&month=${newDate.getMonth()}&year=${newDate.getFullYear()}`)
-   }
-
-   const gotoCalendar = () => router.push('/calendar')
-   const closeMenu = () => { setMenu(false); setSelectedSlots([]) }
+   const nextDay = () => props.onNextDay?.(addDays(props.date, 1))
+   const prevDay = () => props.onPreviousDay?.(addDays(props.date, -1))
 
    function selectSlot(time: Time) {
       return setSelectedSlots((prev) => {
@@ -100,13 +68,12 @@ export default function Schedule(props: Props) {
    function onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
       const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement
       setIsDragging(true)
-      setMenu(false)
 
       if (!target || !target.dataset.hour || !target.dataset.minute) return
 
       const hour = Number(target.dataset.hour)
       const minute = Number(target.dataset.minute)
-      const newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute)
+      const newDate = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), hour, minute)
 
       if (store.calendar.isSlotOccupied(newDate)) return
 
@@ -118,7 +85,6 @@ export default function Schedule(props: Props) {
 
    function onDrag(e: React.DragEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) {
       const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement
-      setMenu(false)
 
       if (!isDragging || !target) return
 
@@ -127,7 +93,7 @@ export default function Schedule(props: Props) {
 
       const hour = Number(dataset.hour)
       const minute = Number(dataset.minute)
-      const newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute)
+      const newDate = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), hour, minute)
 
       if (store.calendar.isSlotOccupied(newDate)) return
 
@@ -140,7 +106,14 @@ export default function Schedule(props: Props) {
    function onMouseUp() {
       setIsDragging(false)
       if (selectedSlots.length === 0) return
-      setMenu(true)
+      const starts_at = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), selectedSlots[0].hours, selectedSlots[0].minutes)
+
+      const ends_at = addHours(
+         new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), selectedSlots[selectedSlots.length - 1].hours, selectedSlots[selectedSlots.length - 1].minutes),
+         1
+      )
+
+      props.onSelectEnd?.(starts_at, ends_at)
    }
 
    useEffect(() => {
@@ -160,14 +133,7 @@ export default function Schedule(props: Props) {
                prevDay()
                break
             case 'Escape':
-               if (menu) {
-                  closeMenu()
-                  break
-               }
-               if (!menu) {
-                  gotoCalendar()
-                  break
-               }
+               props.onClickCaption?.()
                break
          }
       }
@@ -178,16 +144,16 @@ export default function Schedule(props: Props) {
          document.removeEventListener('click', onClickOutside)
          document.removeEventListener('keydown', onKeyDown)
       }
-   }, [selectedSlots, date])
+   }, [selectedSlots, props.date])
 
    return (
-      <div className="relative flex min-h-0 w-full min-w-0 flex-1 overflow-hidden">
+      <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
          <div className="min-h-0 w-full min-w-0 flex-1 overflow-auto">
             <ScheduleHeader
-               date={date}
+               date={props.date}
                handlePrevious={prevDay}
                handleNext={nextDay}
-               handleDate={gotoCalendar}
+               handleDate={() => props.onClickCaption?.()}
             />
 
             <div
@@ -233,16 +199,16 @@ export default function Schedule(props: Props) {
                   })}
                </div>
 
-               {sessionsWithCustomer.map(({ session, customer, ...rest }) => {
+               {props.sessions.map(({ session, customer, ...rest }) => {
                   let startIndex = DAY_TIMES.findIndex((time) => {
-                     const slotEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.hours + 1, time.minutes).getTime()
+                     const slotEnd = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), time.hours + 1, time.minutes).getTime()
                      return session.starts_at.getTime() < slotEnd
                   })
 
                   if (startIndex === -1) startIndex = 0
 
                   let endIndex = DAY_TIMES.findIndex((time) => {
-                     const slotStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.hours, time.minutes).getTime()
+                     const slotStart = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), time.hours, time.minutes).getTime()
                      return slotStart >= session.ends_at.getTime()
                   })
 
@@ -274,15 +240,6 @@ export default function Schedule(props: Props) {
                })}
             </div>
          </div>
-
-         {(menu && selectedSlots.length > 0) &&
-            <RenderModal onClickOutside={closeMenu} className='slot-selection-menu bg-black/10'>
-               <SlotSelectionMenu
-                  starts_date={new Date(date.getFullYear(), date.getMonth(), date.getDate(), selectedSlots[0].hours, selectedSlots[0].minutes)}
-                  ends_date={addHours(new Date(date.getFullYear(), date.getMonth(), date.getDate(), selectedSlots[selectedSlots.length - 1].hours, selectedSlots[selectedSlots.length - 1].minutes), 1)}
-               />
-            </RenderModal>
-         }
       </div>
    )
 }

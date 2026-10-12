@@ -1,22 +1,17 @@
 'use server'
 
-import { v2 as cloudinary } from 'cloudinary'
 import { cookies } from 'next/headers'
 
 import { CustomerObject } from '@/domain/Customer'
 import { TattooProjectObject } from '@/domain/TattooProject'
 import { TattooSessionObject } from '@/domain/TattooSession'
+import { deleteFromCloudinary } from '@/lib/cloudinary/delete'
+import { uploadFile } from '@/lib/cloudinary/upload'
 import { createClient } from '@/lib/supabase/server'
 
 import ServerActionException from '../utils/exceptions/action-exception'
 import { createCustomer, findCustomerById } from './customer-actions'
 import { createSession, findSessionsByProjectId } from './session-actions'
-
-interface NewProject {
-   references: File[]
-   customer: Parameters<typeof createCustomer>[0] & { id?: string }
-   sessions: Omit<Parameters<typeof createSession>[0], 'projectId'>[]
-}
 
 interface ProjectModel {
    id: number
@@ -27,16 +22,12 @@ interface ProjectModel {
    created_at: string
 }
 
-export async function createProject(
-   customer: NewProject['customer'],
-   sessions: NewProject['sessions'],
-   references: NewProject['references']
-): Promise<TattooProjectObject> {
+export async function createProject(project: TattooProjectObject): Promise<TattooProjectObject> {
    const db = createClient(await cookies())
    let c: CustomerObject | null = null
 
-   if (customer.id) c = await findCustomerById(customer.id)
-   if (!customer.id) c = await createCustomer(customer)
+   if (project.customer.id) c = await findCustomerById(project.customer.id)
+   if (!project.customer.id) c = await createCustomer(project.customer)
 
    if (!c) {
       const exception = new ServerActionException('Unexpected error')
@@ -47,31 +38,14 @@ export async function createProject(
    let imagesUrls: string[] = []
 
    try {
-      imagesUrls = await Promise.all(
-         references.map(async (file) => {
-            const bytes = await file.arrayBuffer()
-            const buffer = Buffer.from(bytes)
-
-            return new Promise<string>((resolve, reject) => {
-               cloudinary.uploader
-                  .upload_stream(
-                     {
-                        folder: 'needle',
-                        unique_filename: true,
-                        public_id: crypto.randomUUID(),
-                     },
-                     (err, result) => {
-                        if (err || !result?.secure_url) return reject(err)
-                        resolve(result.secure_url)
-                     }
-                  )
-                  .end(buffer)
-            })
-         })
-      )
-   } catch {
+      imagesUrls = await Promise.all(project.references.map(async (r) => {
+         if (!r.file) throw new Error(`No se encontró el archivo ${r.url}`)
+         return await uploadFile(r.file)
+      }))
+   } catch (error) {
       const exception = new ServerActionException('Unexpected error uploading images')
       exception.name = 'unexpected_error'
+      console.error(error)
       throw exception
    }
 
@@ -79,7 +53,7 @@ export async function createProject(
       .from('projects')
       .insert({
          customer_id: c.id,
-         observations: sessions[0].observations,
+         observations: project.observations,
          images: [],
          references: imagesUrls
       })
@@ -93,8 +67,16 @@ export async function createProject(
    }
 
    const s: TattooSessionObject[] = await Promise.all(
-      sessions.map(async (session) => await createSession({ ...session, projectId: projectResult.data.id }))
+      project.sessions.map(async ({ id: _id, ...session }) => await createSession({ ...session, projectId: projectResult.data.id }))
    )
+      .catch(async (error) => {
+         await db
+            .from('projects')
+            .delete()
+            .eq('id', projectResult.data.id)
+
+         throw error
+      })
 
    return {
       id: projectResult.data.id,
@@ -119,7 +101,6 @@ export async function getProjects(): Promise<TattooProjectObject[]> {
       throw exception
    }
 
-
    const projects: TattooProjectObject[] = await Promise.all(data.map(async (project) => {
       const [customer, sessions] = await Promise.all([
          await findCustomerById(project.customer_id),
@@ -137,4 +118,135 @@ export async function getProjects(): Promise<TattooProjectObject[]> {
    }))
 
    return projects
+}
+
+interface GetProjectOptions {
+   projectId?: string
+}
+
+export async function getProject({ projectId }: GetProjectOptions): Promise<TattooProjectObject> {
+   const db = createClient(await cookies())
+
+   const projectResult = await db
+      .from('projects')
+      .select<string, ProjectModel>('*')
+      .eq('id', projectId)
+      .single()
+
+   if (projectResult.error || !projectResult.data) {
+      const exception = new ServerActionException('Unexpected error getting project')
+      exception.name = 'unexpected_error'
+      throw exception
+   }
+
+   const sessions = await findSessionsByProjectId(projectResult.data.id)
+   const customer = await findCustomerById(projectResult.data.customer_id)
+
+   return {
+      id: projectResult.data.id,
+      images: projectResult.data.images,
+      references: projectResult.data.references.map((url) => ({ url })),
+      sessions: sessions.map((s) => ({
+         id: s.id,
+         starts_at: s.starts_at,
+         ends_at: s.ends_at,
+         observations: s.observations,
+         status: s.status,
+         booking_fee: s.booking_fee,
+         price: s.price,
+         currency: s.currency
+      })),
+      customer: {
+         id: customer.id,
+         username: customer.username,
+         email: customer.email,
+         name: customer.name,
+         phone_number: customer.phone_number,
+      },
+      observations: projectResult.data.observations
+   }
+}
+
+export interface UpdateProjectParams {
+   observations?: string
+   addImages?: File[]
+   removeImages?: string[]
+   addReferences?: File[]
+   removeReferences?: string[]
+}
+
+export async function updateProject(id: ProjectModel['id'], data: UpdateProjectParams): Promise<TattooProjectObject> {
+   const db = createClient(await cookies())
+   const currentProject = await getProject({ projectId: String(id) })
+
+   const payload: Partial<ProjectModel> = {}
+   const urlsToDelete: string[] = []
+
+   if (data.observations !== undefined && data.observations !== currentProject.observations) {
+      payload.observations = data.observations
+   }
+
+   const hasImageRemovals = !!(data.removeImages && data.removeImages.length > 0)
+   const hasImageAdditions = !!(data.addImages && data.addImages.length > 0)
+
+   if (hasImageRemovals || hasImageAdditions) {
+      const removeSet = new Set(data.removeImages)
+
+      let updatedImages = currentProject.images
+         .filter((url) => {
+            if (removeSet.has(url)) { urlsToDelete.push(url); return false }
+            return true
+         })
+
+      if (hasImageAdditions && data.addImages) {
+         const filesToUpload = data.addImages.filter((item): item is File => item instanceof File)
+         const newUploadedUrls = await Promise.all(filesToUpload.map((file) => uploadFile(file)))
+
+         updatedImages = [...updatedImages, ...newUploadedUrls]
+      }
+
+      payload.images = updatedImages
+   }
+
+   const hasRefRemovals = !!(data.removeReferences && data.removeReferences.length > 0)
+   const hasRefAdditions = !!(data.addReferences && data.addReferences.length > 0)
+
+   if (hasRefRemovals || hasRefAdditions) {
+      const removeSet = new Set(data.removeReferences ?? [])
+      const currentRefUrls = currentProject.references.map((r) => (typeof r === 'string' ? r : r.url))
+
+      let updatedReferences = currentRefUrls.filter((url) => {
+         if (removeSet.has(url)) { urlsToDelete.push(url); return false }
+         return true
+      })
+
+      if (hasRefAdditions && data.addReferences) {
+         const filesToUpload = data.addReferences.filter((item): item is File => item instanceof File)
+         const newUploadedUrls = await Promise.all(filesToUpload.map((file) => uploadFile(file)))
+         updatedReferences = [...updatedReferences, ...newUploadedUrls]
+      }
+
+      payload.references = updatedReferences
+   }
+
+   if (Object.keys(payload).length === 0) {
+      const err = new ServerActionException('No se detectaron cambios con respecto al estado actual del proyecto')
+      err.name = 'no_changes'
+      throw err
+   }
+
+   const { data: _result, error } = await db
+      .from('projects')
+      .update(payload)
+      .eq('id', id)
+
+   if (error) {
+      const err = new ServerActionException('Error inesperado al actualizar el proyecto')
+      err.name = 'unexpected_error'
+      throw err
+   }
+
+   if (urlsToDelete.length > 0) await Promise.allSettled(urlsToDelete.map((url) => deleteFromCloudinary(url)))
+
+   return await getProject({ projectId: String(id) })
 }

@@ -2,42 +2,35 @@
 
 import { DayPicker } from '@daypicker/react'
 import { addMonths, isSameDay, subMonths } from 'date-fns'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
-import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
 import { SessionStatus } from '@/domain/TattooSession'
 
 import CalendarDayButton from './calendar/CalendarDayButton'
 import CalendarHeader from './calendar/CalendarHeader'
 
-export default function Calendar() {
-   const router = useRouter()
-   const store = useTattooProjects()
-   const [date, setDate] = useState(new Date())
+interface Props {
+   onClickDate?: (date?: Date) => void
+   date: Date
+   onNextMonth?: (date: Date) => void
+   onPreviousMonth?: (date: Date) => void
+   sessions: {
+      customer_name: string
+      session_start_at: Date
+      session_end_at: Date
+      session_status: SessionStatus
+   }[]
+}
 
-   const showPreviousMonth = () => setDate((prev) => subMonths(prev, 1))
-   const showNextMonth = () => setDate((prev) => addMonths(prev, 1))
+export default function Calendar(props: Props) {
+   function showPreviousMonth() {
+      const prevMonth = subMonths(props.date, 1)
+      props.onPreviousMonth?.(prevMonth)
+   }
 
-   function findDaySessions(date: Date) {
-      const s = store.projects.reduce((acc, project) => {
-         project.sessions.forEach((session) => {
-            const { starts_at, ends_at } = session
-
-            if (!isSameDay(starts_at, date)) return
-
-            acc.push({
-               customer_name: project.customer.name,
-               session_start_at: session.starts_at,
-               session_end_at: ends_at,
-               session_status: session.status
-            })
-         })
-
-         return acc
-      }, [] as { customer_name: string, session_start_at: Date, session_end_at: Date, session_status: SessionStatus }[])
-
-      return s.sort((a, b) => a.session_start_at.getTime() - b.session_start_at.getTime())
+   function showNextMonth() {
+      const nextMonth = addMonths(props.date, 1)
+      props.onNextMonth?.(nextMonth)
    }
 
    useEffect(() => {
@@ -46,7 +39,6 @@ export default function Calendar() {
             case 'ArrowLeft':
                showPreviousMonth()
                break
-
             case 'ArrowRight':
                showNextMonth()
                break
@@ -55,17 +47,17 @@ export default function Calendar() {
 
       window.addEventListener('keydown', onKeyDown)
       return () => window.removeEventListener('keydown', onKeyDown)
-   }, [date])
+   }, [props.date])
 
    return (
-      <div className='flex size-full min-h-0 flex-col px-8 py-4'>
+      <div className='flex size-full min-h-0 flex-1 flex-col px-8 py-4'>
          <DayPicker
             selected={new Date()}
-            month={date}
+            month={props.date}
             mode='single'
             onSelect={(_, date) => {
                if (!date) return
-               router.push(`/calendar?day=${date.getDate()}&month=${date.getMonth()}&year=${date.getFullYear()}`)
+               props.onClickDate?.(date)
             }}
             className="flex min-h-0 w-full flex-1 flex-col"
             classNames={{
@@ -87,12 +79,13 @@ export default function Calendar() {
                DayButton: (buttonProps) => (
                   <CalendarDayButton
                      {...buttonProps}
-                     sessions={findDaySessions(buttonProps.day.date)}
+                     sessions={props.sessions.filter((session) => isSameDay(session.session_start_at, buttonProps.day.date))}
+                     onClick={() => props.onClickDate?.(buttonProps.day.date)}
                   />),
                CaptionLabel: (captionProps) => (
                   <CalendarHeader
                      {...captionProps}
-                     date={date}
+                     date={props.date}
                      handlePreviousMonth={showPreviousMonth}
                      handleNextMonth={showNextMonth}
                   />

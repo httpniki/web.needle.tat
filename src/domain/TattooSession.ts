@@ -1,4 +1,4 @@
-import { addHours, addMilliseconds, differenceInMilliseconds } from 'date-fns';
+import { addHours, addMilliseconds, differenceInMilliseconds, setMinutes } from 'date-fns';
 
 import DomainException from '@/utils/exceptions/domain-exception';
 
@@ -51,9 +51,9 @@ type TattooSessionConsturctor = {
 }
 
 export default class TattooSession implements ITattooSession {
-   private _id: number = 0
-   private _starts_at: Date = new Date();
-   private _ends_at: Date = addHours(new Date(), 1);
+   private _id: number = 0;
+   private _starts_at: Date = setMinutes(new Date(), 0);
+   private _ends_at: Date = addHours(setMinutes(new Date(), 0), 1);
    private _observations: string = '';
    private _status: SessionStatus = SessionStatus.PENDING;
    private _price: number = 0;

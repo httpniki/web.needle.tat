@@ -1,14 +1,13 @@
 import { ChangeEvent, useState } from 'react'
 
 interface Props {
-   onChange: (value: number) => void
+   onChange?: (value: number) => void
    defaultValue?: number
-   value?: number
    error?: boolean
 }
 
 export default function NumberInput(props: Props) {
-   const [value, setValue] = useState<string>(String(props?.value) ?? '')
+   const [value, setValue] = useState<string>(String(props?.defaultValue) ?? '')
 
    function handleChange(e: ChangeEvent<HTMLInputElement>): void {
       const input: string = e.target.value
@@ -32,7 +31,7 @@ export default function NumberInput(props: Props) {
       if (parts.length > 2) cleaned = `${parts[0]}.${parts.slice(1).join('')}`
 
       setValue(cleaned)
-      props.onChange(Number(cleaned))
+      props.onChange?.(Number(cleaned))
    }
 
    function handleBlur(): void {
@@ -45,6 +44,7 @@ export default function NumberInput(props: Props) {
       <input
          type="text"
          value={value}
+         defaultValue={String(props?.defaultValue) ?? ''}
          onChange={handleChange}
          onBlur={handleBlur}
          placeholder="0"
