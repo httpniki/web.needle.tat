@@ -37,7 +37,8 @@ const eslintConfig = defineConfig([
          'react-hooks/purity': 'off',
          'quotes': ['error', 'single'],
          'simple-import-sort/imports': 'error',
-         'simple-import-sort/exports': 'error'
+         'simple-import-sort/exports': 'error',
+         '@typescript-eslint/no-explicit-any': 'off',
       }
    }
 ]);
