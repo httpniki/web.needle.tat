@@ -14,7 +14,9 @@ export default function NewAppointmentBtn() {
          className="fixed right-8 bottom-8 z-12 flex aspect-square w-12 cursor-pointer items-center justify-center rounded-full border border-gray-primary bg-black-primary shadow-[0_0_10px_#ffffff10] transition-colors duration-200 hover:opacity-80"
          onClick={() => router.push('/projects?new=true')}
       >
-         +
+         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" width="1em" height="1em">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+         </svg>
       </button>
    )
 }

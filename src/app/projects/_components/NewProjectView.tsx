@@ -296,10 +296,20 @@ export default function NewProjectView(props: Props) {
    return (
       <form onSubmit={(e) => e.preventDefault()} className="flex w-full flex-col gap-6">
          <header className="flex items-center justify-between">
-            <h1 className="flex items-center gap-1 text-lg font-bold">
-               <svg className='-translate-y-0.5' xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 640 640">
-                  <path d="M0 0h640v640H0z" fill="none" />
-                  <path fill="currentColor" d="M535.6 85.7c-21.9-21.9-57.3-21.9-79.2 0L432 110.1l97.9 97.9l24.4-24.4c21.9-21.9 21.9-57.3 0-79.2zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L496 241.9L398.1 144zM160 128c-53 0-96 43-96 96v256c0 53 43 96 96 96h256c53 0 96-43 96-96v-96c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32z" />
+            <h1 className="flex items-center gap-2 text-lg font-bold">
+               <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="1.1em"
+                  height="1.1em"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+               >
+                  <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
                </svg>
 
                Nuevo projecto

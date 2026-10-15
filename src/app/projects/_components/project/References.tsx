@@ -44,28 +44,9 @@ export default function References(props: Props) {
 
          <div className='size-full'>
             <div className='mt-1 flex items-center justify-end'>
-               {props.references.length > 0 &&
+               {props.references.length > 0 && props.errors &&
                   <div className='flex gap-2'>
-                     {props.errors &&
-                        <p className='text-sm text-red-700'>{props.errors}</p>
-                     }
-
-
-                     <label>
-                        <input
-                           ref={refInputFile}
-                           className="hidden"
-                           type="file"
-                           onChange={addImage}
-                        />
-
-                        <button className='ml-auto cursor-pointer text-sm hover:opacity-80 disabled:cursor-default disabled:opacity-35'
-                           onClick={() => refInputFile.current?.click()}
-                           disabled={(props.loading && props.loading.length > 0)}
-                        >
-                           Añadir referencia
-                        </button>
-                     </label>
+                     <p className='text-sm text-red-700'>{props.errors}</p>
                   </div>
                }
             </div>
@@ -115,15 +96,47 @@ export default function References(props: Props) {
                               onClick={() => removeReference(ref)}
                               disabled={props.loading?.includes(ref.url)}
                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="1.2rem" height="1.2rem" viewBox="0 0 24 24">
-                                 <path d="M0 0h24v24H0z" fill="none" />
-                                 <path fill="none" stroke="#fff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m18 9l-.84 8.398c-.127 1.273-.19 1.909-.48 2.39a2.5 2.5 0 0 1-1.075.973C15.098 21 14.46 21 13.18 21h-2.36c-1.279 0-1.918 0-2.425-.24a2.5 2.5 0 0 1-1.076-.973c-.288-.48-.352-1.116-.48-2.389L6 9m7.5 6.5v-5m-3 5v-5m-6-4h4.615m0 0l.386-2.672c.112-.486.516-.828.98-.828h3.038c.464 0 .867.342.98.828l.386 2.672m-5.77 0h5.77m0 0H19.5" />
+                              <svg
+                                 xmlns="http://www.w3.org/2000/svg"
+                                 width="1.2em"
+                                 height="1.2em"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 strokeWidth="2"
+                                 strokeLinecap="round"
+                                 strokeLinejoin="round"
+                              >
+                                 <path d="M10 11v6" />
+                                 <path d="M14 11v6" />
+                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                                 <path d="M3 6h18" />
+                                 <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                               </svg>
                            </button>
                         }
                      </li>
                   )
                })}
+
+               {props.references.length > 0 &&
+                  <label className='mx-auto'>
+                     <input
+                        ref={refInputFile}
+                        className="hidden"
+                        type="file"
+                        onChange={addImage}
+                     />
+
+                     <button
+                        className='cursor-pointer px-2 text-center text-sm hover:opacity-80 disabled:cursor-default disabled:opacity-35'
+                        onClick={() => refInputFile.current?.click()}
+                        disabled={(props.loading && props.loading.length > 0)}
+                     >
+                        Añadir referencia
+                     </button>
+                  </label>
+               }
             </ul>
          </div>
       </section>

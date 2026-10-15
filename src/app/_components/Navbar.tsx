@@ -32,11 +32,10 @@ export default function Navbar() {
          <NavItem
             href="/"
             hide={hidden}
-            label="Panel"
+            label="Inicio"
             icon={
-               <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" >
-                  <path d="M0 0h24v24H0z" fill="none" />
-                  <path fill="currentColor" d="M4 2H9C10.10457 2 11 2.89543 11 4V11C11 12.10457 10.10457 13 9 13H4C2.89543 13 2 12.10457 2 11V4C2 2.89543 2.89543 2 4 2ZM4 15H9C10.10457 15 11 15.89543 11 17V20C11 21.10457 10.10457 22 9 22H4C2.89543 22 2 21.10457 2 20V17C2 15.89543 2.89543 15 4 15ZM15 2H20C21.10457 2 22 2.89543 22 4V7C22 8.10457 21.10457 9 20 9H15C13.89543 9 13 8.10457 13 7V4C13 2.89543 13.89543 2 15 2ZM15 11H20C21.10457 11 22 11.89543 22 13V20C22 21.10457 21.10457 22 20 22H15C13.89543 22 13 21.10457 13 20V13C13 11.89543 13.89543 11 15 11Z" />
+               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="1.4em" height="1.4em">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                </svg>
             }
          />
@@ -48,22 +47,22 @@ export default function Navbar() {
             icon={
                <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 36 36">
                   <path d="M0 0h36v36H0z" fill="none" />
-                  <path fill="currentColor" d="M32 13.22V30H4V8h3V6H3.75A1.78 1.78 0 0 0 2 7.81v22.38A1.78 1.78 0 0 0 3.75 32h28.5A1.78 1.78 0 0 0 34 30.19V12.34a7.5 7.5 0 0 1-2 .88" className="clr-i-outline--badged clr-i-outline-path-1--badged" />
-                  <path fill="currentColor" d="M8 14h2v2H8z" className="clr-i-outline--badged clr-i-outline-path-2--badged" />
-                  <path fill="currentColor" d="M14 14h2v2h-2z" className="clr-i-outline--badged clr-i-outline-path-3--badged" />
-                  <path fill="currentColor" d="M20 14h2v2h-2z" className="clr-i-outline--badged clr-i-outline-path-4--badged" />
-                  <path fill="currentColor" d="M26 14h2v2h-2z" className="clr-i-outline--badged clr-i-outline-path-5--badged" />
-                  <path fill="currentColor" d="M8 19h2v2H8z" className="clr-i-outline--badged clr-i-outline-path-6--badged" />
-                  <path fill="currentColor" d="M14 19h2v2h-2z" className="clr-i-outline--badged clr-i-outline-path-7--badged" />
-                  <path fill="currentColor" d="M20 19h2v2h-2z" className="clr-i-outline--badged clr-i-outline-path-8--badged" />
-                  <path fill="currentColor" d="M26 19h2v2h-2z" className="clr-i-outline--badged clr-i-outline-path-9--badged" />
-                  <path fill="currentColor" d="M8 24h2v2H8z" className="clr-i-outline--badged clr-i-outline-path-10--badged" />
-                  <path fill="currentColor" d="M14 24h2v2h-2z" className="clr-i-outline--badged clr-i-outline-path-11--badged" />
-                  <path fill="currentColor" d="M20 24h2v2h-2z" className="clr-i-outline--badged clr-i-outline-path-12--badged" />
-                  <path fill="currentColor" d="M26 24h2v2h-2z" className="clr-i-outline--badged clr-i-outline-path-13--badged" />
-                  <path fill="currentColor" d="M10 10a1 1 0 0 0 1-1V3a1 1 0 0 0-2 0v6a1 1 0 0 0 1 1" className="clr-i-outline--badged clr-i-outline-path-14--badged" />
-                  <path fill="currentColor" d="M22.5 6H13v2h9.78a7.5 7.5 0 0 1-.28-2" className="clr-i-outline--badged clr-i-outline-path-15--badged" />
-                  <circle cx="30" cy="6" r="5" fill="currentColor" className="clr-i-outline--badged clr-i-outline-path-16--badged clr-i-badge" />
+                  <path fill="currentColor" d="M32 13.22V30H4V8h3V6H3.75A1.78 1.78 0 0 0 2 7.81v22.38A1.78 1.78 0 0 0 3.75 32h28.5A1.78 1.78 0 0 0 34 30.19V12.34a7.5 7.5 0 0 1-2 .88" />
+                  <path fill="currentColor" d="M8 14h2v2H8z" />
+                  <path fill="currentColor" d="M14 14h2v2h-2z" />
+                  <path fill="currentColor" d="M20 14h2v2h-2z" />
+                  <path fill="currentColor" d="M26 14h2v2h-2z" />
+                  <path fill="currentColor" d="M8 19h2v2H8z" />
+                  <path fill="currentColor" d="M14 19h2v2h-2z" />
+                  <path fill="currentColor" d="M20 19h2v2h-2z" />
+                  <path fill="currentColor" d="M26 19h2v2h-2z" />
+                  <path fill="currentColor" d="M8 24h2v2H8z" />
+                  <path fill="currentColor" d="M14 24h2v2h-2z" />
+                  <path fill="currentColor" d="M20 24h2v2h-2z" />
+                  <path fill="currentColor" d="M26 24h2v2h-2z" />
+                  <path fill="currentColor" d="M10 10a1 1 0 0 0 1-1V3a1 1 0 0 0-2 0v6a1 1 0 0 0 1 1" />
+                  <path fill="currentColor" d="M22.5 6H13v2h9.78a7.5 7.5 0 0 1-.28-2" />
+                  <circle cx="30" cy="6" r="5" fill="currentColor" />
                   <path fill="none" d="M0 0h36v36H0z" />
                </svg>
             }
@@ -74,9 +73,47 @@ export default function Navbar() {
             hide={hidden}
             label="Turnos"
             icon={
-               <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 1024 1024">
-                  <path d="M0 0h1024v1024H0z" fill="none" />
-                  <path fill="currentColor" d="M912 192H328c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h584c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8m0 284H328c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h584c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8m0 284H328c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h584c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8M104 228a56 56 0 1 0 112 0a56 56 0 1 0-112 0m0 284a56 56 0 1 0 112 0a56 56 0 1 0-112 0m0 284a56 56 0 1 0 112 0a56 56 0 1 0-112 0" />
+               <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="1.2em"
+                  height="1.2em"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+               >
+                  <path d="M3 5h.01" />
+                  <path d="M3 12h.01" />
+                  <path d="M3 19h.01" />
+                  <path d="M8 5h13" />
+                  <path d="M8 12h13" />
+                  <path d="M8 19h13" />
+               </svg>
+            }
+         />
+
+         <NavItem
+            href="/projects"
+            hide={hidden}
+            label="Projectos"
+            icon={
+               <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  width="1.2em"
+                  height="1.2em"
+               >
+                  <path d="M20 20H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4.5a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2z" />
+
+                  <path d="M12 10v6" />
+                  <path d="M9 13l3 3 3-3" />
                </svg>
             }
          />
@@ -109,7 +146,7 @@ function NavItem({ href, icon, label, hide }: NavItemProps) {
 
    return (
       <button
-         className={`flex h-min w-full cursor-pointer items-center gap-2 rounded-sm py-2 text-white transition-colors duration-200 hover:bg-gray-primary hover:opacity-80 ${hide ? 'items-center justify-center px-2' : 'px-4'} ${pathname === href ? 'font-bold' : 'font-medium'}`}
+         className={`flex h-min w-full cursor-pointer items-center gap-2 rounded-sm py-1.5 text-white transition-colors duration-200 hover:bg-gray-primary hover:opacity-80 ${hide ? 'items-center justify-center px-2' : 'px-4'} ${pathname === href ? 'font-bold' : 'font-medium'}`}
          onClick={() => router.push(href)}
       >
          {icon}
