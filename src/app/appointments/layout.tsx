@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-   title: 'Appointments - Needle.tat'
+   title: 'Turnos - Needle.tat'
 }
 
 export default function Layout({ children }: LayoutProps<'/appointments'>) {
