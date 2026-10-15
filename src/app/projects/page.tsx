@@ -1,4 +1,5 @@
 import NewProjectView from './_components/NewProjectView'
+import ProjectsView from './_components/ProjectsView'
 import ProjectView from './_components/ProjectView'
 
 interface SearchParams {
@@ -37,13 +38,7 @@ export default async function ProjectsPage(props: Props) {
 
    return (
       <PageWrapper>
-         <h1 className="mt-8 text-2xl font-bold">
-            PROJECTS
-         </h1>
-
-         <p className="mt-4">
-            IN PROGRESS
-         </p>
+         <ProjectsView />
       </PageWrapper>
    )
 }
