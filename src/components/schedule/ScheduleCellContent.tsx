@@ -5,6 +5,8 @@ import TattooSession, { SessionStatus } from '@/domain/TattooSession'
 import { formatPrice } from '@/utils/utils'
 
 interface Props {
+   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+   onContextMenu?: (event: React.MouseEvent<HTMLButtonElement>) => void
    session: {
       id: TattooSession['id']
       projectId: TattooProject['id']
@@ -32,6 +34,7 @@ export default function CellContentContent(props: Props) {
          style={{ gridRow: props.gridRow, gridColumn: 2 }}
          className="z-10 m-1 flex cursor-pointer flex-col justify-between rounded-lg border border-neutral-800 bg-black-secondary p-3 text-left text-white shadow-lg transition-all hover:opacity-80"
          onClick={() => router.push('/projects?id=' + props.session.projectId)}
+         onContextMenu={props.onContextMenu}
          data-id={props.session.id}
       >
          <div>

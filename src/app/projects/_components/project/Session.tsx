@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import RenderModal from '@/components/RenderModal'
 import EditSVG from '@/components/svg/EditSVG'
 import Loader from '@/components/ui/Loader'
-import { TattooSessionObject } from '@/domain/TattooSession'
+import { SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
 
 import SchedulePicker from '../SchedulePicker'
 import SessionBookingFee from './session/SessionBookingFee'
@@ -42,6 +42,29 @@ export default function Session(props: Props) {
       return () => document.removeEventListener('click', onClickOutside)
    }, [renderInput])
 
+   function toggleStatus() {
+      const now = new Date()
+      const inProgress = (props.session.starts_at <= now && props.session.ends_at > now)
+      const isPending = props.session.starts_at > now
+
+      switch (props.session.status) {
+         case SessionStatus.PENDING:
+            props.onChange?.({ status: SessionStatus.CANCELED })
+            break
+         case SessionStatus.IN_PROGRESS:
+            props.onChange?.({ status: SessionStatus.FINISHED })
+            break
+         case SessionStatus.FINISHED:
+            props.onChange?.({ status: SessionStatus.CANCELED })
+            break
+         case SessionStatus.CANCELED:
+            if(inProgress) props.onChange?.({ status: SessionStatus.IN_PROGRESS })
+            else if (isPending) props.onChange?.({ status: SessionStatus.PENDING })
+            else props.onChange?.({ status: SessionStatus.FINISHED })
+            break
+      }
+   }
+
    return (
       <li id={`session-${props.session.id}`} className='flex-1 basis-full rounded-sm border border-gray-primary p-6 sm:basis-[calc(50%-12px)] lg:basis-[calc(33.333%-16px)]'>
          <div>
@@ -49,6 +72,22 @@ export default function Session(props: Props) {
                <header className="mb-2 flex w-full items-center justify-between">
                   <div className='flex items-center gap-2'>
                      <h6 className="font-bold text-nowrap">{props.index + 1}° Sesión</h6>
+
+                     <button
+                        onClick={toggleStatus}
+                        className={'text-sm rounded-sm cursor-pointer transition-colors duration-200 hover:opacity-80' +
+                           (props.session.status === SessionStatus.PENDING ? ' text-gray-400' : '') +
+                           (props.session.status === SessionStatus.IN_PROGRESS ? ' text-orange-400' : '') +
+                           (props.session.status === SessionStatus.FINISHED ? ' text-green-400' : '') +
+                           (props.session.status === SessionStatus.CANCELED ? ' text-red-400' : '')
+                        }
+                     >
+                        {props.session.status === SessionStatus.PENDING && 'Pendiente'}
+                        {props.session.status === SessionStatus.IN_PROGRESS && 'En progreso'}
+                        {props.session.status === SessionStatus.CANCELED && 'Cancelado'}
+                        {props.session.status === SessionStatus.FINISHED && 'Finalizado'}
+                     </button>
+
                      {props.loading && <Loader size='16px' />}
                   </div>
 

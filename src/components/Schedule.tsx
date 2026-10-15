@@ -21,6 +21,7 @@ interface Props {
    onPreviousDay?: (date: Date) => void
    onClickCaption?: () => void
    onSelectEnd?: (starts_at: Date, ends_at: Date) => void
+   onRightClick?: (event: React.MouseEvent<HTMLButtonElement>, session_id: TattooSessionObject['id'], date: Date) => void
    sessions: ({
       session: Pick<TattooSessionObject, 'id' | 'starts_at' | 'ends_at' | 'status' | 'price' | 'currency' | 'booking_fee'>
       customer: Pick<CustomerObject, 'name' | 'username'>
@@ -119,7 +120,7 @@ export default function Schedule(props: Props) {
    useEffect(() => {
       function onClickOutside(e: MouseEvent) {
          const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement
-         if (target.closest('.cell') || target.closest('.slot-selection-menu')) return
+         if (target.closest('.cell') || target.closest('#context-menu')) return
 
          setSelectedSlots([])
       }
@@ -225,6 +226,7 @@ export default function Schedule(props: Props) {
                            name: customer.name,
                            username: customer.username
                         }}
+                        onContextMenu={(e) => props.onRightClick?.(e, session.id, props.date)}
                         session={{
                            id: session.id,
                            projectId: rest.projectId,

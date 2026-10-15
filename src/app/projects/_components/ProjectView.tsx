@@ -231,6 +231,9 @@ export default function ProjectView(props: Props) {
                case 'currency':
                   session.currency = value as Currency
                   break
+               case 'status':
+                  session.status = value as SessionStatus
+                  break
             }
          }
       } catch (error: unknown) {

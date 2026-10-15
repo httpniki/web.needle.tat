@@ -1,25 +1,49 @@
 'use client'
 
 import { isSameMonth } from 'date-fns'
-import { ComponentProps, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { ComponentProps, useEffect, useState } from 'react'
 
+import { updateSession } from '@/actions/session-actions'
 import Calendar from '@/components/Calendar'
-import RenderModal from '@/components/RenderModal'
 import Schedule from '@/components/Schedule'
-import SlotSelectionMenu from '@/components/schedule/SlotSelectionMenu'
-import TattooSession, { SessionStatus } from '@/domain/TattooSession'
+import ContextMenu, { Button } from '@/components/ui/ContextMenu'
+import TattooSession, { SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
 
 import { useTattooProjects } from '../_context/TattooProjectsContext'
+import { useToast } from '../_context/ToastContext'
+
+interface ContextMenu {
+   position: { x: number, y: number }
+   session_id?: TattooSessionObject['id']
+   date?: { starts_at: Date, ends_at: Date }
+}
 
 export default function CalendarPage() {
-   const [date, setDate] = useState<{ calendar: Date, schedule: Date, menu: { starts_at: Date, ends_at: Date } | null }>({
-      calendar: new Date(),
-      schedule: new Date(),
-      menu: null
-   })
+   const store = useTattooProjects()
+   const router = useRouter()
+   const toast = useToast()
 
    const [view, setView] = useState<'Calendar' | 'Schedule'>('Calendar')
-   const store = useTattooProjects()
+   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null)
+   const [mousePosition, setMousePosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
+   const [date, setDate] = useState<{ calendar: Date, schedule: Date }>({
+      calendar: new Date(),
+      schedule: new Date(),
+   })
+
+   useEffect(() => {
+      const onMouseMove = (event: MouseEvent) => {
+         setMousePosition({
+            x: event.clientX,
+            y: event.clientY
+         })
+      }
+
+      window.addEventListener('mousemove', onMouseMove)
+      return () => window.removeEventListener('mousemove', onMouseMove)
+   }, [])
+
 
    function getDaySessions(date: Date): ComponentProps<typeof Schedule>['sessions'] {
       let daySessions: TattooSession[] = []
@@ -77,24 +101,101 @@ export default function CalendarPage() {
                onNextDay={(date) => setDate((prev) => ({ ...prev, schedule: date }))}
                onPreviousDay={(date) => setDate((prev) => ({ ...prev, schedule: date }))}
                onSelectEnd={(starts_at, ends_at) => {
-                  setDate((prev) => ({
-                     ...prev,
-                     menu: {
-                        starts_at,
-                        ends_at
-                     }
-                  }))
+                  setContextMenu({
+                     position: { x: mousePosition.x, y: mousePosition.y },
+                     date: { starts_at, ends_at }
+                  })
+               }}
+               onRightClick={(event, session_id) => {
+                  event.preventDefault()
+
+                  setContextMenu({
+                     position: { x: event.clientX, y: event.clientY },
+                     session_id: session_id
+                  })
                }}
             />
          }
 
-         {(view === 'Schedule' && date.menu) &&
-            <RenderModal onClickOutside={() => setDate((prev) => ({ ...prev, menu: null }))} className='slot-selection-menu bg-black/10'>
-               <SlotSelectionMenu
-                  starts_date={date.menu.starts_at}
-                  ends_date={date.menu.ends_at}
-               />
-            </RenderModal>
+         {(view === 'Schedule' && contextMenu && contextMenu.date) &&
+            <ContextMenu
+               positionX={contextMenu.position.x}
+               positionY={contextMenu.position.y}
+               onClickOutside={() => setContextMenu(null)}
+            >
+               <Button
+                  onClick={() => {
+                     if (!contextMenu.date) return
+                     const url = `/projects?new=true&starts_date=${contextMenu.date.starts_at.toISOString()}&ends_date=${contextMenu.date.ends_at.toISOString()}`
+                     router.push(url)
+                  }}
+               >
+                  Añadir cita
+               </Button>
+            </ContextMenu>
+         }
+
+         {(view === 'Schedule' && contextMenu && contextMenu.session_id) &&
+            <ContextMenu
+               positionX={contextMenu.position.x}
+               positionY={contextMenu.position.y}
+               onClickOutside={() => setContextMenu(null)}
+            >
+               <Button
+                  onClick={() => {
+                     if (!contextMenu.session_id) throw new Error('No se encontró el id de la sesión')
+
+                     const project_id = store.findProject({ sessionId: contextMenu.session_id })?.id
+                     if (!project_id) throw new Error('No se encontró el id del proyecto')
+
+                     router.push(`/projects?id=${project_id}`)
+                  }}
+               >
+                  Modificar
+               </Button>
+
+               <Button
+                  onClick={async () => {
+                     const project = store.findProject({ sessionId: contextMenu.session_id })?.toObject()
+                     const session = project?.sessions.find((s) => s.id === contextMenu.session_id)
+
+                     if (!contextMenu.session_id) return toast.add({ title: 'Error', message: 'No se encontró la sesión ' + contextMenu.session_id, type: 'error' })
+                     if (!project) return toast.add({ title: 'Error', message: 'No se encontró el proyecto ' + contextMenu.session_id, type: 'error' })
+                     if (!session) return toast.add({ title: 'Error', message: 'No se encontró la sesión ' + contextMenu.session_id, type: 'error' })
+
+                     switch (session.status) {
+                        case SessionStatus.PENDING:
+                           session.status = SessionStatus.CANCELED
+                           break
+                        case SessionStatus.IN_PROGRESS:
+                           session.status = SessionStatus.FINISHED
+                           break
+                        case SessionStatus.FINISHED:
+                           session.status = SessionStatus.CANCELED
+                           break
+                        case SessionStatus.CANCELED:
+                           const now = new Date()
+                           const inProgress = (session.starts_at <= now && session.ends_at > now)
+                           const isPending = session.starts_at > now
+
+                           if (inProgress) session.status = SessionStatus.IN_PROGRESS
+                           else if (isPending) session.status = SessionStatus.PENDING
+                           else session.status = SessionStatus.FINISHED
+                           break
+                     }
+
+                     await updateSession(session)
+                        .catch((error) => {
+                           if (error instanceof Error && error.name === 'no_changes') return
+                           toast.add({ title: 'Error', message: 'Error inesperado al actualizar la sesión', type: 'error' })
+                        })
+
+                     store.addProject(project)
+                  }}
+               >
+                  Cambiar estado
+               </Button>
+            </ContextMenu>
          }
 
          <div className={'flex-1' + (view === 'Calendar' ? ' flex' : ' size-full max-h-124 max-w-124 hidden xl:flex')}>
