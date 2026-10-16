@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
          <body className="flex h-screen flex-col overflow-hidden bg-black-primary font-sans text-white">
             <Topbar />
 
-            <div className='flex size-full min-h-0 flex-1'>
+            <div className='flex size-full min-h-0 flex-1 flex-col-reverse md:flex-row'>
                <Navbar />
 
                <div className='relative flex size-full min-h-0 min-w-0 flex-1 overflow-y-auto'>

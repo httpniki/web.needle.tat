@@ -131,10 +131,10 @@ function AppointmentItem({ session, customer, project_id }: SessionWithCustomer)
       <li className='py-1 transition-colors duration-300 hover:bg-neutral-900/50'>
          <Link href={`/projects?id=${project_id}`} className={'flex items-center justify-between gap-2 text-sm' + (session.starts_at < today ? ' text-gray-300' : '')}>
             <p className='flex w-full max-w-46 items-center'>
-               <span>{starts_time} - {ends_time}</span>
+               <span className='text-nowrap'>{starts_time} - {ends_time}</span>
 
                <span className={
-                  'ml-2 px-1.5 py-0.5 rounded-xs text-sm font-regular' +
+                  'ml-2 px-1.5 py-0.5 rounded-xs text-sm font-regular truncate' +
                   (session.status === SessionStatus.PENDING ? ' bg-gray-400' : '') +
                   (session.status === SessionStatus.IN_PROGRESS ? ' bg-orange-700' : '') +
                   (session.status === SessionStatus.CANCELED ? ' bg-red-800' : '') +
@@ -147,9 +147,9 @@ function AppointmentItem({ session, customer, project_id }: SessionWithCustomer)
                </span>
             </p>
 
-            <p className='flex-1 text-center'>{customer.name}</p>
+            <p className='flex-1 truncate sm:text-center'>{customer.name}</p>
 
-            <p className='w-full max-w-46 text-end'>
+            <p className='max-w-46 text-end sm:w-full'>
                <span className={session.booking_fee !== 0 ? 'mr-1 text-red-400 line-through' : 'hidden'}>
                   ${total_price}
                </span>

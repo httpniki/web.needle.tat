@@ -7,8 +7,8 @@ export default function Navbar() {
    const [hidden, setHidden] = useState(false)
 
    return (
-      <nav className={`sticky inset-y-0 left-0 flex flex-col gap-2 border-r border-gray-primary bg-black-primary px-2 py-4 transition-all duration-300 ease-in-out ${hidden ? 'w-16' : 'w-52'}`}>
-         <div className={`flex w-full ${hidden ? 'justify-center' : 'justify-end'}`}>
+      <nav className={`sticky inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2 border-t border-gray-primary bg-black-primary px-2 py-4 transition-all duration-300 ease-in-out md:inset-y-0 md:flex-col md:items-start md:justify-start md:border-t-0 md:border-r lg:left-0 ${hidden ? 'md:w-16' : 'md:w-52'}`}>
+         <div className={`w-full ${hidden ? ' hidden items-center justify-center md:flex' : ' hidden justify-end md:flex'}`}>
             <button
                className="flex cursor-pointer justify-center p-1 transition-all duration-200 hover:opacity-80"
                onClick={() => setHidden((prev) => !prev)}
@@ -149,12 +149,12 @@ function NavItem({ href, icon, label, hide }: NavItemProps) {
 
    return (
       <button
-         className={`flex h-min w-full cursor-pointer items-center gap-2 rounded-sm py-1.5 text-white transition-colors duration-200 hover:bg-gray-primary hover:opacity-80 ${hide ? 'items-center justify-center px-2' : 'px-4'} ${pathname === href ? 'font-bold' : 'font-medium'}`}
+         className={`flex h-min cursor-pointer items-center gap-2 rounded-sm py-1.5 text-white transition-colors duration-200 hover:bg-gray-primary hover:opacity-80 md:w-full ${hide ? 'items-center justify-center px-2' : 'px-4'} ${pathname === href ? 'font-bold' : 'font-medium'}`}
          onClick={() => router.push(href)}
       >
          {icon}
 
-         <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${hide ? 'hidden max-w-0 opacity-0' : 'max-w-xs opacity-100'}`}>
+         <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${hide ? 'hidden max-w-0 opacity-0' : 'hidden max-w-xs opacity-100 md:inline-block'}`}>
             {label}
          </span>
       </button>

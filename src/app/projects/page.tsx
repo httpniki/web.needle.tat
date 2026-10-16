@@ -45,7 +45,7 @@ export default async function ProjectsPage(props: Props) {
 
 function PageWrapper({ children }: { children: React.ReactNode }) {
    return (
-      <main className='h-max w-full px-8 py-4'>
+      <main className='h-max w-full p-4 md:px-8'>
          {children}
       </main>
    )

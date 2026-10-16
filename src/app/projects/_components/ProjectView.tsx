@@ -12,7 +12,7 @@ import { useToast } from '@/app/_context/ToastContext';
 import CustomerDomain, { CustomerObject } from '@/domain/Customer';
 import TattooProject from '@/domain/TattooProject';
 import TattooReference, { TattooReferenceObject } from '@/domain/TattooReference';
-import TattooSession, { Currency, TattooSessionObject } from '@/domain/TattooSession';
+import TattooSession, { Currency, SessionStatus, TattooSessionObject } from '@/domain/TattooSession';
 import useDebounce from '@/hooks/useDebounce';
 import { ClassProperties } from '@/types/types';
 import DomainException from '@/utils/exceptions/domain-exception';

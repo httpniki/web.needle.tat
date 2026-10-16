@@ -50,7 +50,7 @@ export default function Calendar(props: Props) {
    }, [props.date])
 
    return (
-      <div className='flex size-full min-h-0 flex-1 flex-col px-8 py-4'>
+      <div className='flex size-full min-h-0 flex-1 flex-col p-4 md:px-8'>
          <DayPicker
             selected={new Date()}
             month={props.date}
@@ -80,7 +80,6 @@ export default function Calendar(props: Props) {
                   <CalendarDayButton
                      {...buttonProps}
                      sessions={props.sessions.filter((session) => isSameDay(session.session_start_at, buttonProps.day.date))}
-                     onClick={() => props.onClickDate?.(buttonProps.day.date)}
                   />),
                CaptionLabel: (captionProps) => (
                   <CalendarHeader

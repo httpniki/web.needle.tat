@@ -67,6 +67,7 @@ export default function Schedule(props: Props) {
    }
 
    function onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+      e.stopPropagation()
       const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement
       setIsDragging(true)
 
@@ -85,6 +86,7 @@ export default function Schedule(props: Props) {
    }
 
    function onDrag(e: React.DragEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) {
+      e.stopPropagation()
       const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement
 
       if (!isDragging || !target) return
@@ -104,7 +106,9 @@ export default function Schedule(props: Props) {
       selectSlot({ hours: hour, minutes: minute })
    }
 
-   function onMouseUp() {
+   function onMouseUp(e: React.MouseEvent<HTMLDivElement>) {
+      e.stopPropagation()
+      e.preventDefault()
       setIsDragging(false)
       if (selectedSlots.length === 0) return
       const starts_at = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), selectedSlots[0].hours, selectedSlots[0].minutes)
@@ -162,7 +166,6 @@ export default function Schedule(props: Props) {
                id='schedule'
                onDragStart={(e) => e.preventDefault()}
             >
-
                <div className="contents">
                   {DAY_TIMES.map((time, index) => {
                      const rowIndex = index + 2

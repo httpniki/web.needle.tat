@@ -1,4 +1,4 @@
-import { DayButtonProps } from '@daypicker/react'
+import { DayButton, DayButtonProps } from '@daypicker/react'
 
 import { SessionStatus } from '@/domain/TattooSession'
 
@@ -12,18 +12,18 @@ type Props = DayButtonProps & {
 }
 
 export default function CalendarDayButton(props: Props) {
-   const { day, modifiers: _modifiers, sessions, ...buttonProps } = props
+   const { sessions, ...buttonProps } = props
 
    return (
-      <button
+      <DayButton
          {...buttonProps}
          className={
-            'flex size-full cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden p-2 text-center font-normal outline-none md:p-3'
+            'flex size-full cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden p-2 text-center font-normal outline-none md:p-3 touch-manipulation'
             + (props.sessions.length > 0 ? '' : '')
          }
       >
-         <span className={_modifiers.selected ? ' font-bold' : ''}>
-            {day.date.getDate()}
+         <span className={buttonProps.modifiers.selected ? ' font-bold' : ''}>
+            {buttonProps.day.date.getDate()}
          </span>
 
          {(false) &&
@@ -75,7 +75,7 @@ export default function CalendarDayButton(props: Props) {
                })}
             </ul>
          }
-      </button>
+      </DayButton>
    )
 }
 

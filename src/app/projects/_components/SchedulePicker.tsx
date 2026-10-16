@@ -45,7 +45,7 @@ export default function SchedulePicker(props: Props) {
 
    return (
       <div className='absolute right-0 flex size-full min-h-0 flex-1 animate-slide-in-right flex-col bg-black-primary md:max-w-120'>
-         <header className="flex items-center justify-end px-4 py-6">
+         <header className="flex items-center justify-end p-2 md:py-6">
             <button
                className='cursor-pointer rounded-lg border border-gray-primary px-3 py-1.5 transition-opacity duration-200 hover:opacity-80'
                onClick={() => {
