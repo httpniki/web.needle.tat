@@ -1,6 +1,7 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link';
+import { usePathname } from 'next/navigation'
 import { useState } from 'react';
 
 export default function Navbar() {
@@ -144,19 +145,19 @@ interface NavItemProps {
 }
 
 function NavItem({ href, icon, label, hide }: NavItemProps) {
-   const router = useRouter()
    const pathname = usePathname()
 
    return (
-      <button
+      <Link
+         href={href}
+         prefetch={true}
          className={`flex h-min cursor-pointer items-center gap-2 rounded-sm py-1.5 text-white transition-colors duration-200 hover:bg-gray-primary hover:opacity-80 md:w-full ${hide ? 'items-center justify-center px-2' : 'px-4'} ${pathname === href ? 'bg-gray-primary font-bold' : 'font-medium'}`}
-         onClick={() => router.push(href)}
       >
          {icon}
 
          <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${hide ? 'hidden max-w-0 opacity-0' : 'hidden max-w-xs opacity-100 md:inline-block'}`}>
             {label}
          </span>
-      </button>
+      </Link>
    )
 }
