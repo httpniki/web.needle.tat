@@ -149,7 +149,7 @@ function NavItem({ href, icon, label, hide }: NavItemProps) {
 
    return (
       <button
-         className={`flex h-min cursor-pointer items-center gap-2 rounded-sm py-1.5 text-white transition-colors duration-200 hover:bg-gray-primary hover:opacity-80 md:w-full ${hide ? 'items-center justify-center px-2' : 'px-4'} ${pathname === href ? 'font-bold' : 'font-medium'}`}
+         className={`flex h-min cursor-pointer items-center gap-2 rounded-sm py-1.5 text-white transition-colors duration-200 hover:bg-gray-primary hover:opacity-80 md:w-full ${hide ? 'items-center justify-center px-2' : 'px-4'} ${pathname === href ? 'bg-gray-primary font-bold' : 'font-medium'}`}
          onClick={() => router.push(href)}
       >
          {icon}

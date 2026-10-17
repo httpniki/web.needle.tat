@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
          lang="en"
          className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-         <body className="flex h-screen flex-col overflow-hidden bg-black-primary font-sans text-white">
+         <body className="flex h-full min-h-screen flex-col bg-black-primary font-sans text-white">
             <Topbar />
 
             <div className='flex size-full min-h-0 flex-1 flex-col-reverse md:flex-row'>

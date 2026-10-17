@@ -11,10 +11,10 @@ export default function ProjectsView() {
    const router = useRouter()
 
    return (
-      <article className='flex flex-col gap-4'>
+      <article className='flex w-full flex-col gap-4'>
          <SearchBar placeholder='Buscar...' />
 
-         <ul className="grid grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-2">
+         <ul className="grid gap-2 md:grid-cols-[repeat(auto-fill,minmax(400px,1fr))]">
             {store.projects.map(project => (
                <li
                   className="group flex cursor-pointer flex-row overflow-hidden rounded-md border border-gray-primary bg-black-secondary shadow-lg transition-all hover:border-white/40 md:basis-[calc(50%-8px)] xl:basis-[calc(33.333%-8px)]"

@@ -59,7 +59,7 @@ export default function Appointments() {
       <div>
          <SearchBar placeholder='Buscar...' />
 
-         <ul className="mt-6 flex flex-col gap-6">
+         <ul className="mt-6 flex flex-col gap-6 pb-1">
             {
                pendingSessions.map(({ date, sessions }) => {
                   if (date < today) return null
@@ -108,7 +108,7 @@ export function AppointmentSection(props: AppointmentSectionProps) {
    today.setHours(0, 0, 0, 0)
 
    return (
-      <div className={'flex flex-col' + (props.date < today ? ' opacity-60' : '')}>
+      <div className={'flex flex-col gap-2' + (props.date < today ? ' opacity-60' : '')}>
          <p className='font-bold'>{props.label}</p>
 
          {props.items.map(({ session, customer, project_id }, index) => (

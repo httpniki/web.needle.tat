@@ -322,7 +322,7 @@ export default function ProjectView(props: Props) {
    if (!project) return <h1>Project not found</h1>
 
    return (
-      <form onSubmit={(e) => e.preventDefault()} className="flex w-full flex-1 flex-col gap-6 overflow-y-auto">
+      <form onSubmit={(e) => e.preventDefault()} className="flex size-full flex-1 flex-col gap-6">
          <div className='flex h-max w-full flex-col gap-6 xl:flex-row'>
             <Customer
                customer={project.customer}
