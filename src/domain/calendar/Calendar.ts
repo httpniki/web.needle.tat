@@ -136,7 +136,6 @@ export class Day<T> {
    set data(data: T) { this._data = data }
 }
 
-
 export class TattooCalendar extends Calendar<TattooSession[]> {
    constructor() {
       super()
@@ -242,7 +241,28 @@ export class TattooCalendar extends Calendar<TattooSession[]> {
          }
       }
 
-      return result.sort((a, b) => a.date.getTime() + b.date.getTime())
+      return result.sort((a, b) => {
+         const today = new Date()
+         today.setHours(0, 0, 0, 0)
+
+         const todayTime = today.getTime()
+         const dateA = a.date.getTime()
+         const dateB = b.date.getTime()
+
+         const distanceA = dateA - todayTime
+         const distanceB = dateB - todayTime
+
+         if (distanceA === 0) return -1
+         if (distanceB === 0) return 1
+
+         if (distanceA > 0 && distanceB > 0)
+            return distanceB - distanceA
+
+         if (distanceA < 0 && distanceB < 0)
+            return distanceB - distanceA
+
+         return distanceA > 0 ? -1 : 1
+      })
    }
 
    public clone(): TattooCalendar {
