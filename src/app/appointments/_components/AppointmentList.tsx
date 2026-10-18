@@ -128,17 +128,17 @@ function AppointmentItem({ session, customer, project_id }: SessionWithCustomer)
    today.setHours(0, 0, 0, 0)
 
    return (
-      <li className='py-1 transition-colors duration-300 hover:bg-neutral-900/50'>
+      <li className='py-2 transition-colors duration-300 hover:bg-neutral-900/50'>
          <Link href={`/projects?id=${project_id}`} className={'flex items-center justify-between gap-2 text-sm' + (session.starts_at < today ? ' text-gray-300' : '')}>
             <p className='flex w-full max-w-46 items-center'>
                <span className='text-nowrap'>{starts_time} - {ends_time}</span>
 
                <span className={
                   'ml-2 px-1.5 py-0.5 rounded-xs text-sm font-regular truncate' +
-                  (session.status === SessionStatus.PENDING ? ' bg-gray-400' : '') +
-                  (session.status === SessionStatus.IN_PROGRESS ? ' bg-orange-700' : '') +
-                  (session.status === SessionStatus.CANCELED ? ' bg-red-800' : '') +
-                  (session.status === SessionStatus.FINISHED ? ' bg-green-900' : '')
+                  (session.status === SessionStatus.PENDING ? ' bg-gray-400 hidden' : '') +
+                  (session.status === SessionStatus.IN_PROGRESS ? ' text-orange-500' : '') +
+                  (session.status === SessionStatus.CANCELED ? ' text-red-500' : '') +
+                  (session.status === SessionStatus.FINISHED ? ' text-green-400' : '')
                }>
                   {session.status === SessionStatus.PENDING && 'Pendiente'}
                   {session.status === SessionStatus.IN_PROGRESS && 'En progreso'}
