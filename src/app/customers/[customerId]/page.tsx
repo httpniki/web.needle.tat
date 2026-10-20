@@ -7,19 +7,20 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
 import { useCustomers } from '@/app/_context/CustomersContext'
+import CustomerNotFound from '@/app/customers/_components/CustomerNotFound'
 
 
 export default function CustomerPage() {
    const params = useParams()
    const customerStore = useCustomers()
 
-   if(params.customerId === undefined) return <div>No se encontró el cliente</div>
+   if(params.customerId === undefined) return <CustomerNotFound />
 
    const customer = customerStore.findCustomer(Number(params.customerId))
    const sessionsCount = customer?.tattooProjects.reduce((acc, p) => acc + p.sessions.length, 0)
    const projectCount = customer?.tattooProjects.length
 
-   if (!customer) return <div>No se encontró el cliente</div>
+   if (!customer) return <CustomerNotFound />
 
    return (
       <main className='w-full p-4 md:px-8'>
