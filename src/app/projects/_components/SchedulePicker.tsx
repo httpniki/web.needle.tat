@@ -1,6 +1,6 @@
 import { ComponentProps, useState } from 'react'
 
-import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
+import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
 import Calendar from '@/components/Calendar'
 import Schedule from '@/components/Schedule'
 import TattooSession from '@/domain/TattooSession'
@@ -16,27 +16,32 @@ export default function SchedulePicker(props: Props) {
    const [date, setDate] = useState(props?.initialStartsAt ?? new Date())
    const [view, setView] = useState<'Calendar' | 'Schedule'>('Calendar')
 
-   const store = useTattooProjects()
+   const { calendar, findProject } = useProjects()
+   const { findCustomerByProjectId } = useCustomers()
 
    function getDaySessions(date: Date): ComponentProps<typeof Schedule>['sessions'] {
       let daySessions: TattooSession[] = []
 
       try {
-         daySessions = store.calendar.getDaySessions(date)
+         daySessions = calendar.getDaySessions(date)
       } catch (_err: unknown) {
          daySessions = []
       }
 
       return daySessions.map((session) => {
-         const project = store.findProject({ sessionId: session.id })
+         const project = findProject({ sessionId: session.id })
 
          if (!project) throw new Error(`Project with session ${session.id} not found`)
+
+         const customer = findCustomerByProjectId(project.id)
+
+         if (!customer) throw new Error(`Customer for project ${project.id} not found`)
 
          return {
             session,
             customer: {
-               name: project.customer.name,
-               username: project.customer.username
+               name: customer.name,
+               username: customer.username
             },
             projectId: project.id
          }

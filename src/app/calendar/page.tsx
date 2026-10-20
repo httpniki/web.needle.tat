@@ -10,7 +10,7 @@ import Schedule from '@/components/Schedule'
 import ContextMenu, { Button } from '@/components/ui/ContextMenu'
 import TattooSession, { SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
 
-import { useTattooProjects } from '../_context/TattooProjectsContext'
+import { useCustomers, useProjects } from '../_context/CustomersContext'
 import { useToast } from '../_context/ToastContext'
 
 interface ContextMenu {
@@ -20,7 +20,8 @@ interface ContextMenu {
 }
 
 export default function CalendarPage() {
-   const store = useTattooProjects()
+   const { projects, calendar, addProject, findProject } = useProjects()
+   const { findCustomerByProjectId } = useCustomers()
    const router = useRouter()
    const toast = useToast()
 
@@ -49,21 +50,25 @@ export default function CalendarPage() {
       let daySessions: TattooSession[] = []
 
       try {
-         daySessions = store.calendar.getDaySessions(date)
+         daySessions = calendar.getDaySessions(date)
       } catch (_err: unknown) {
          daySessions = []
       }
 
       return daySessions.map((session) => {
-         const project = store.findProject({ sessionId: session.id })
+         const project = findProject({ sessionId: session.id })
 
          if (!project) throw new Error(`Project with session ${session.id} not found`)
+
+         const customer = findCustomerByProjectId(project.id)
+
+         if (!customer) throw new Error(`Customer for project ${project.id} not found`)
 
          return {
             session,
             customer: {
-               name: project.customer.name,
-               username: project.customer.username
+               name: customer.name,
+               username: customer.username
             },
             projectId: project.id
          }
@@ -71,14 +76,18 @@ export default function CalendarPage() {
    }
 
    function getMonthSessions(date: Date) {
-      const s = store.projects.reduce((acc, project) => {
+      const s = projects.reduce((acc, project) => {
+         const customer = findCustomerByProjectId(project.id)
+
+         if (!customer) return acc
+
          project.sessions.forEach((session) => {
             const { starts_at, ends_at } = session
 
             if (!isSameMonth(starts_at, date)) return
 
             acc.push({
-               customer_name: project.customer.name,
+               customer_name: customer.name,
                session_start_at: session.starts_at,
                session_end_at: ends_at,
                session_status: session.status
@@ -145,7 +154,7 @@ export default function CalendarPage() {
                   onClick={() => {
                      if (!contextMenu.session_id) throw new Error('No se encontró el id de la sesión')
 
-                     const project_id = store.findProject({ sessionId: contextMenu.session_id })?.id
+                     const project_id = findProject({ sessionId: contextMenu.session_id })?.id
                      if (!project_id) throw new Error('No se encontró el id del proyecto')
 
                      router.push(`/projects?id=${project_id}`)
@@ -156,12 +165,18 @@ export default function CalendarPage() {
 
                <Button
                   onClick={async () => {
-                     const project = store.findProject({ sessionId: contextMenu.session_id })?.toObject()
+                     const projectDomain = findProject({ sessionId: contextMenu.session_id })
+                     const project = projectDomain?.toObject()
                      const session = project?.sessions.find((s) => s.id === contextMenu.session_id)
 
                      if (!contextMenu.session_id) return toast.add({ title: 'Error', message: 'No se encontró la sesión ' + contextMenu.session_id, type: 'error' })
+                     if (!projectDomain) return toast.add({ title: 'Error', message: 'No se encontró el proyecto ' + contextMenu.session_id, type: 'error' })
                      if (!project) return toast.add({ title: 'Error', message: 'No se encontró el proyecto ' + contextMenu.session_id, type: 'error' })
                      if (!session) return toast.add({ title: 'Error', message: 'No se encontró la sesión ' + contextMenu.session_id, type: 'error' })
+
+                     const customer = findCustomerByProjectId(projectDomain.id)
+
+                     if (!customer) return toast.add({ title: 'Error', message: 'No se encontró el cliente del proyecto ' + projectDomain.id, type: 'error' })
 
                      switch (session.status) {
                         case SessionStatus.PENDING:
@@ -190,7 +205,7 @@ export default function CalendarPage() {
                            toast.add({ title: 'Error', message: 'Error inesperado al actualizar la sesión', type: 'error' })
                         })
 
-                     store.addProject(project)
+                     addProject(customer.id, project)
                   }}
                >
                   Cambiar estado

@@ -15,7 +15,7 @@ import { createSession, findSessionsByProjectId } from './session-actions'
 
 interface ProjectModel {
    id: number
-   customer_id: string
+   customer_id: number
    observations?: string
    project_name: string
    body_part: string
@@ -24,12 +24,20 @@ interface ProjectModel {
    created_at: string
 }
 
-export async function createProject(project: TattooProjectObject): Promise<TattooProjectObject> {
+interface CreateProjectParams {
+   customer: CustomerObject
+   project: TattooProjectObject
+}
+
+export async function createProject({ customer, project }: CreateProjectParams): Promise<{
+   customer: CustomerObject
+   project: TattooProjectObject
+}> {
    const db = createClient(await cookies())
    let c: CustomerObject | null = null
 
-   if (project.customer.id) c = await findCustomerById(project.customer.id)
-   if (!project.customer.id) c = await createCustomer(project.customer)
+   if (customer.id) c = await findCustomerById(customer.id)
+   if (!customer.id) c = await createCustomer(customer)
 
    if (!c) {
       const exception = new ServerActionException('Unexpected error')
@@ -56,6 +64,8 @@ export async function createProject(project: TattooProjectObject): Promise<Tatto
       .insert({
          customer_id: c.id,
          observations: project.observations,
+         project_name: project.projectName,
+         body_part: project.bodyPart,
          images: [],
          references: imagesUrls
       })
@@ -80,14 +90,22 @@ export async function createProject(project: TattooProjectObject): Promise<Tatto
          throw error
       })
 
-   return {
+   const createdProject: TattooProjectObject = {
       id: projectResult.data.id,
-      customer: c,
       projectName: projectResult.data.project_name,
       bodyPart: projectResult.data.body_part,
       images: projectResult.data.images,
       references: projectResult.data.references.map((url) => ({ url })),
-      sessions: s
+      sessions: s,
+      observations: projectResult.data.observations
+   }
+
+   return {
+      customer: {
+         ...c,
+         tattooProjects: await getProjectsByCustomerId(c.id)
+      },
+      project: createdProject
    }
 }
 
@@ -105,25 +123,49 @@ export async function getProjects(): Promise<TattooProjectObject[]> {
       throw exception
    }
 
-   const projects: TattooProjectObject[] = await Promise.all(data.map(async (project) => {
-      const [customer, sessions] = await Promise.all([
-         await findCustomerById(project.customer_id),
-         await findSessionsByProjectId(project.id)
-      ])
+   return Promise.all(data.map(async (project) => {
+      const sessions = await findSessionsByProjectId(project.id)
 
       return {
          id: project.id,
-         customer: customer,
          images: project.images,
          projectName: project.project_name,
          bodyPart: project.body_part,
          references: project.references.map((url) => ({ url })),
-         sessions: sessions,
+         sessions,
          observations: project.observations
       }
    }))
+}
 
-   return projects
+export async function getProjectsByCustomerId(customerId: number): Promise<TattooProjectObject[]> {
+   const db = createClient(await cookies())
+
+   const { data, error } = await db
+      .from('projects')
+      .select<string, ProjectModel>('*')
+      .eq('customer_id', customerId)
+      .order('created_at', { ascending: false })
+
+   if (error) {
+      const exception = new ServerActionException('Unexpected error getting projects')
+      exception.name = 'unexpected_error'
+      throw exception
+   }
+
+   return Promise.all(data.map(async (project) => {
+      const sessions = await findSessionsByProjectId(project.id)
+
+      return {
+         id: project.id,
+         images: project.images,
+         projectName: project.project_name,
+         bodyPart: project.body_part,
+         references: project.references.map((url) => ({ url })),
+         sessions,
+         observations: project.observations
+      }
+   }))
 }
 
 interface GetProjectOptions {
@@ -146,7 +188,6 @@ export async function getProject({ projectId }: GetProjectOptions): Promise<Tatt
    }
 
    const sessions = await findSessionsByProjectId(projectResult.data.id)
-   const customer = await findCustomerById(projectResult.data.customer_id)
 
    return {
       id: projectResult.data.id,
@@ -154,23 +195,7 @@ export async function getProject({ projectId }: GetProjectOptions): Promise<Tatt
       projectName: projectResult.data.project_name,
       bodyPart: projectResult.data.body_part,
       references: projectResult.data.references.map((url) => ({ url })),
-      sessions: sessions.map((s) => ({
-         id: s.id,
-         starts_at: s.starts_at,
-         ends_at: s.ends_at,
-         observations: s.observations,
-         status: s.status,
-         booking_fee: s.booking_fee,
-         price: s.price,
-         currency: s.currency
-      })),
-      customer: {
-         id: customer.id,
-         username: customer.username,
-         email: customer.email,
-         name: customer.name,
-         phone_number: customer.phone_number,
-      },
+      sessions,
       observations: projectResult.data.observations
    }
 }

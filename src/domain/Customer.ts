@@ -1,36 +1,41 @@
+import TattooProject, { TattooProjectObject } from './TattooProject'
 
 export interface ICustomer {
-   id: string
+   id: number
    name: string
    username?: string
    phone_number: string
    email?: string
+   tattooProjects: TattooProject[]
    clone(): Customer
    toObject(): CustomerObject
 }
 
 export interface CustomerObject {
-   id: string
+   id: number
    name: string
    username?: string
    phone_number: string
    email?: string
+   tattooProjects: TattooProjectObject[]
 }
 
 type CustomerConstructor = {
-   id: string
+   id: number
    name: string
    username?: string
    phone_number: string
    email?: string
+   tattooProjects: TattooProject[]
 }
 
 export default class Customer {
-   private _id!: string
+   private _id!: number
    private _name!: string
    private _username?: string
    private _phone_number!: string
    private _email?: string;
+   private _tattooProjects: TattooProject[] = []
 
    constructor(props?: CustomerConstructor) {
       if (props?.id) this._id = props.id;
@@ -38,10 +43,11 @@ export default class Customer {
       if (props?.username) this._username = props.username;
       if (props?.phone_number) this._phone_number = props.phone_number;
       if (props?.email) this._email = props.email;
+      if (props?.tattooProjects) this._tattooProjects = props.tattooProjects
    }
 
-   public get id(): string { return this._id; }
-   public set id(value: string) { this._id = value; }
+   public get id(): number { return this._id; }
+   public set id(value: number) { this._id = value; }
 
    public get name(): string { return this._name; }
    public set name(value: string) { this._name = value; }
@@ -55,6 +61,9 @@ export default class Customer {
    public get email(): string | undefined { return this._email; }
    public set email(value: string | undefined) { this._email = value; }
 
+   public get tattooProjects(): TattooProject[] { return this._tattooProjects; }
+   public set tattooProjects(value: TattooProject[]) { this._tattooProjects = value; }
+
    public clone(): Customer {
       const copy = new Customer();
       copy.id = this._id;
@@ -62,6 +71,7 @@ export default class Customer {
       copy.username = this._username;
       copy.phone_number = this._phone_number;
       copy.email = this._email;
+      copy.tattooProjects = this._tattooProjects.map((p) => p.clone());
       return copy;
    }
 
@@ -71,7 +81,8 @@ export default class Customer {
          name: this._name,
          username: this._username,
          phone_number: this._phone_number,
-         email: this._email
+         email: this._email,
+         tattooProjects: this._tattooProjects.map((p) => p.toObject())
       }
    }
 }

@@ -1,6 +1,5 @@
 import { addHours } from 'date-fns'
 
-import Customer, { CustomerObject } from './Customer'
 import TattooReference, { TattooReferenceObject } from './TattooReference'
 import TattooSession, { TattooSessionObject } from './TattooSession'
 
@@ -8,7 +7,6 @@ export interface ITattooProject {
    id: number
    images: string[]
    references: TattooReference[]
-   customer: Customer
    sessions: TattooSession[]
    projectName: string
    observations?: string
@@ -23,7 +21,6 @@ export interface TattooProjectObject {
    id: number
    projectName: string
    bodyPart: string
-   customer: CustomerObject
    images: string[]
    references: TattooReferenceObject[]
    sessions: TattooSessionObject[]
@@ -32,7 +29,6 @@ export interface TattooProjectObject {
 
 interface TattooProjectConstructor {
    id: number
-   customer: Customer
    images: string[]
    bodyPart: string
    references: TattooReference[]
@@ -47,7 +43,6 @@ export default class TattooProject implements ITattooProject {
    private _references: TattooReference[] = []
    private _sessions: TattooSession[] = []
    private _observations?: string = ''
-   private _customer: Customer = new Customer()
    private _projectName: string = ''
    private _bodyPart: string = ''
 
@@ -55,7 +50,6 @@ export default class TattooProject implements ITattooProject {
       if (!props) return
       if (typeof props.observations === 'string') this._observations = props.observations;
       this._id = props.id;
-      this._customer = props.customer;
       this._images = props.images;
       this._references = props.references;
       this._sessions = props.sessions;
@@ -65,9 +59,6 @@ export default class TattooProject implements ITattooProject {
 
    public get id(): number { return this._id; }
    public set id(value: number) { this._id = value; }
-
-   public get customer(): Customer { return this._customer; }
-   public set customer(value: Customer) { this._customer = value; }
 
    public get projectName(): string { return this._projectName; }
    public set projectName(value: string) { this._projectName = value; }
@@ -90,7 +81,6 @@ export default class TattooProject implements ITattooProject {
    public clone(): TattooProject {
       const copy = new TattooProject({
          id: this._id,
-         customer: this._customer.clone(),
          projectName: this._projectName,
          images: this._images,
          references: this._references.map((r) => r.clone()),
@@ -105,7 +95,6 @@ export default class TattooProject implements ITattooProject {
    public toObject(): ReturnType<ITattooProject['toObject']> {
       return {
          id: this._id,
-         customer: this._customer.toObject(),
          projectName: this._projectName,
          images: this._images,
          references: this._references.map((r) => r.toObject()),

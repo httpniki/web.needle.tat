@@ -4,7 +4,7 @@ import { isToday, isTomorrow } from 'date-fns'
 import Link from 'next/link'
 import { useMemo } from 'react'
 
-import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
+import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
 import SearchBar from '@/components/ui/SearchBar'
 import Customer from '@/domain/Customer'
 import TattooSession, { SessionStatus } from '@/domain/TattooSession'
@@ -22,7 +22,8 @@ interface GroupedDaySessions {
 }
 
 export default function Appointments() {
-   const { calendar, findProject } = useTattooProjects()
+   const { calendar, findProject } = useProjects()
+   const { findCustomerByProjectId } = useCustomers()
 
    const sessionsGrouped = useMemo<GroupedDaySessions[]>(() => {
       if (!calendar) return []
@@ -34,9 +35,11 @@ export default function Appointments() {
 
                if (!project) throw new Error(`No se encontró el proyecto con id ${session.id}`)
 
+               const customer = findCustomerByProjectId(project.id)
+
                return {
                   session,
-                  customer: project.customer,
+                  customer,
                   project_id: project.id
                }
             })

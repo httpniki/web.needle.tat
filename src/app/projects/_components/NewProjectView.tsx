@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
 import { createProject } from '@/actions/project-actions'
-import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
+import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
 import { useToast } from '@/app/_context/ToastContext'
 import Loader from '@/components/ui/Loader'
 import CustomerDomain, { CustomerObject } from '@/domain/Customer'
@@ -54,6 +54,8 @@ export default function NewProjectView(props: Props) {
       return project
    })
 
+   const [customer, setCustomer] = useState<CustomerDomain>(() => new CustomerDomain())
+
    const [errors, setErrors] = useState<ErrorState>({
       customer: {},
       project: {},
@@ -62,7 +64,8 @@ export default function NewProjectView(props: Props) {
 
    const router = useRouter()
    const toast = useToast()
-   const store = useTattooProjects()
+   const { calendar } = useProjects()
+   const { addCustomer } = useCustomers()
 
    const [loading, startTransition] = useTransition()
 
@@ -79,28 +82,26 @@ export default function NewProjectView(props: Props) {
    }
 
    function updateCustomer<K extends keyof Omit<CustomerObject, 'id'>>(key: K, value: NonNullable<CustomerObject[K]>) {
-      if (!project) return toast.add({ title: 'Error', message: 'Proyecto no encontrado', type: 'error' })
+      let customerCopy = customer.clone()
 
-      const projectCopy = project.clone()
-
-      if (projectCopy.customer.id) {
+      if (customerCopy.id) {
          const emptyCustomer = new CustomerDomain()
-         projectCopy.customer = emptyCustomer
+         customerCopy = emptyCustomer
       }
 
       try {
          switch (key) {
             case 'name':
-               projectCopy.customer.name = value
+               customerCopy.name = value as string
                break
             case 'username':
-               projectCopy.customer.username = value
+               customerCopy.username = value as string
                break
             case 'phone_number':
-               projectCopy.customer.phone_number = value
+               customerCopy.phone_number = value as string
                break
             case 'email':
-               projectCopy.customer.email = value
+               customerCopy.email = value as string
                break
          }
       } catch (error: unknown) {
@@ -114,17 +115,20 @@ export default function NewProjectView(props: Props) {
          }
       }
 
-      setProject(projectCopy)
+      setCustomer(customerCopy)
    }
 
    function selectCustomer(customer: CustomerObject) {
-      if (!project) return toast.add({ title: 'Error', message: 'Proyecto no encontrado', type: 'error' })
       if (!customer) return
 
-      const projectCopy = project.clone()
-      projectCopy.customer = new CustomerDomain(customer)
-
-      setProject(projectCopy)
+      setCustomer(new CustomerDomain({
+         id: customer.id,
+         name: customer.name,
+         username: customer.username,
+         phone_number: customer.phone_number,
+         email: customer.email,
+         tattooProjects: []
+      }))
    }
 
    async function addSession(session: TattooSessionObject) {
@@ -133,14 +137,14 @@ export default function NewProjectView(props: Props) {
       const newSession = new TattooSession(session)
       const projectCopy = project.clone()
 
-      let isSlotOcuppied = store.calendar.isSlotOccupied(session.starts_at)
+      let isSlotOcuppied = calendar.isSlotOccupied(session.starts_at)
       let isHourOcuppied = project.isHourOccupied(session.starts_at)
 
       while (isSlotOcuppied || isHourOcuppied) {
          const newStartsAt = addHours(newSession.starts_at, 1)
          newSession.starts_at = newStartsAt
 
-         isSlotOcuppied = store.calendar.isSlotOccupied(newStartsAt)
+         isSlotOcuppied = calendar.isSlotOccupied(newStartsAt)
          isHourOcuppied = projectCopy.isHourOccupied(newStartsAt)
       }
 
@@ -266,9 +270,9 @@ export default function NewProjectView(props: Props) {
       if (project.sessions.length === 0) disabled = true
       if (project.references.length === 0) disabled = true
 
-      for (const key in project.customer) {
-         const k = key as keyof typeof project.customer
-         const v = project.customer[k]
+      for (const key in customer) {
+         const k = key as keyof typeof customer
+         const v = customer[k]
 
          if (['_id', '_username', '_email'].includes(k)) continue
 
@@ -282,8 +286,8 @@ export default function NewProjectView(props: Props) {
       if (disableSubmit) return
 
       startTransition(async () => {
-         await createProject(project.toObject())
-            .then((project) => store.addProject(project))
+         await createProject({ customer: customer.toObject(), project: project.toObject() })
+            .then(({ customer }) => addCustomer(customer))
             .catch((err) => {
                if (err.name === 'session_time_conflict') {
                   return toast.add({ title: 'Error', message: 'La hora de inicio de la sesión ya está ocupada', type: 'error' })
@@ -340,7 +344,7 @@ export default function NewProjectView(props: Props) {
             <>
                <div className='flex h-max w-full flex-col gap-6 xl:flex-row'>
                   <Customer
-                     customer={project.customer}
+                     customer={customer}
                      onChange={(key, value) => { updateCustomer(key, value) }}
                      onSelectCustomer={(customer) => selectCustomer(customer)}
                      enableEdit={false}

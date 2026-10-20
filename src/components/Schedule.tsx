@@ -3,7 +3,7 @@
 import { addDays, addHours } from 'date-fns'
 import { useEffect, useState } from 'react'
 
-import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
+import { useProjects } from '@/app/_context/CustomersContext'
 import { CustomerObject } from '@/domain/Customer'
 import { TattooSessionObject } from '@/domain/TattooSession'
 
@@ -42,7 +42,7 @@ export default function Schedule(props: Props) {
    const [isDragging, setIsDragging] = useState(false)
    const [selectedSlots, setSelectedSlots] = useState<Time[]>([])
 
-   const store = useTattooProjects()
+   const { calendar } = useProjects()
 
    const nextDay = () => props.onNextDay?.(addDays(props.date, 1))
    const prevDay = () => props.onPreviousDay?.(addDays(props.date, -1))
@@ -77,7 +77,7 @@ export default function Schedule(props: Props) {
       const minute = Number(target.dataset.minute)
       const newDate = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), hour, minute)
 
-      if (store.calendar.isSlotOccupied(newDate)) return
+      if (calendar.isSlotOccupied(newDate)) return
 
       setSelectedSlots([{
          hours: hour,
@@ -98,7 +98,7 @@ export default function Schedule(props: Props) {
       const minute = Number(dataset.minute)
       const newDate = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), hour, minute)
 
-      if (store.calendar.isSlotOccupied(newDate)) return
+      if (calendar.isSlotOccupied(newDate)) return
 
       const currentIndex = DAY_TIMES.findIndex((t) => t.hours === hour && t.minutes === minute)
       if (currentIndex === -1) return

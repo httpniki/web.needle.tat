@@ -4,31 +4,37 @@ import Link from 'next/link'
 import { useMemo } from 'react'
 
 import SearchBar from '@/components/ui/SearchBar'
-import Customer from '@/domain/Customer'
+import CustomerDomain from '@/domain/Customer'
 
-import { useTattooProjects } from '../_context/TattooProjectsContext'
+import { useCustomers, useProjects } from '../_context/CustomersContext'
 
 export default function CustomerPage() {
-   const store = useTattooProjects()
+   const projectStore = useProjects()
+   const customersStore = useCustomers()
 
    const customers = useMemo(() => {
-      const customers: Map<string, Customer> = new Map()
+      const customersMap: Map<number, CustomerDomain> = new Map()
 
-      store.projects.forEach((project) => {
-         customers.set(project.customer.id, project.customer)
+      customersStore.customers.forEach((customer) => {
+         customersMap.set(customer.id, customer)
       })
 
-      return Array.from(customers.values()).map((customer) => {
-         return {
-            id: customer.id,
-            name: customer.name,
-            phone_number: customer.phone_number,
-            email: customer.email,
-            projects: store.projects.filter((p) => p.customer.id === customer.id).length,
-            sessions: store.projects.filter((p) => p.customer.id === customer.id).reduce((acc, p) => acc + p.sessions.length, 0)
-         }
-      })
-   }, [store.projects])
+      return Array
+         .from(customersMap.values())
+         .map((customer) => {
+            const customerProjects = customer.tattooProjects
+            const customerSessionsCount = customerProjects.reduce((acc, p) => acc + p.sessions.length, 0)
+
+            return {
+               id: customer.id,
+               name: customer.name,
+               phone_number: customer.phone_number,
+               email: customer.email,
+               projects: customerProjects.length,
+               sessions: customerSessionsCount
+            }
+         })
+   }, [projectStore.projects])
 
    return (
       <main className='flex min-h-max w-full flex-col gap-4 p-4 md:px-8'>
@@ -53,7 +59,7 @@ export default function CustomerPage() {
 }
 
 interface CustomerCardProps {
-   id: string
+   id: number
    name: string
    phone_number: string
    email?: string

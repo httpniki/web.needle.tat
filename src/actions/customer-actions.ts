@@ -6,6 +6,7 @@ import { CustomerObject } from '@/domain/Customer'
 import { createClient } from '@/lib/supabase/server'
 
 import ActionException from '../utils/exceptions/action-exception'
+import { getProjectsByCustomerId } from './project-actions'
 
 interface NewCustomer {
    name: string
@@ -15,7 +16,7 @@ interface NewCustomer {
 }
 
 interface CustomerModel {
-   id: string
+   id: number
    name: string
    email?: string
    username?: string
@@ -95,7 +96,8 @@ export async function createCustomer(body: NewCustomer): Promise<CustomerObject>
       name: results.data.name,
       username: results.data.username,
       phone_number: results.data.phone_number,
-      email: results.data.email
+      email: results.data.email,
+      tattooProjects: []
    }
 }
 
@@ -118,11 +120,12 @@ export async function findCustomers(q: string): Promise<CustomerObject[]> {
       name: customer.name,
       username: customer.username,
       phone_number: customer.phone_number,
-      email: customer.email
+      email: customer.email,
+      tattooProjects: []
    }))
 }
 
-export async function findCustomerById(id: string): Promise<CustomerObject> {
+export async function findCustomerById(id: number): Promise<CustomerObject> {
    const db = createClient(await cookies())
 
    const result = await db
@@ -148,7 +151,8 @@ export async function findCustomerById(id: string): Promise<CustomerObject> {
       name: result.data.name,
       username: result.data.username,
       phone_number: result.data.phone_number,
-      email: result.data.email
+      email: result.data.email,
+      tattooProjects: []
    }
 }
 
@@ -166,13 +170,14 @@ export async function getCustomers(): Promise<CustomerObject[]> {
       throw err
    }
 
-   return results.data.map((customer) => ({
+   return Promise.all(results.data.map(async (customer) => ({
       id: customer.id,
       name: customer.name,
       username: customer.username,
       phone_number: customer.phone_number,
-      email: customer.email
-   }))
+      email: customer.email,
+      tattooProjects: await getProjectsByCustomerId(customer.id)
+   })))
 }
 
 export interface UpdateCustomerParams {
@@ -182,7 +187,7 @@ export interface UpdateCustomerParams {
    email?: string
 }
 
-export async function updateCustomer(id: string, body: UpdateCustomerParams): Promise<CustomerObject> {
+export async function updateCustomer(id: number, body: UpdateCustomerParams): Promise<CustomerObject> {
    const cookieStore = await cookies()
    const db = createClient(cookieStore)
 
@@ -257,6 +262,7 @@ export async function updateCustomer(id: string, body: UpdateCustomerParams): Pr
       name: results.data[0].name,
       username: results.data[0].username,
       phone_number: results.data[0].phone_number,
-      email: results.data[0].email
+      email: results.data[0].email,
+      tattooProjects: []
    }
 }

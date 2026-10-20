@@ -3,11 +3,12 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
-import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
+import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
 import SearchBar from '@/components/ui/SearchBar'
 
 export default function ProjectsView() {
-   const store = useTattooProjects()
+   const { projects } = useProjects()
+   const { findCustomerByProjectId } = useCustomers()
    const router = useRouter()
 
    return (
@@ -15,7 +16,12 @@ export default function ProjectsView() {
          <SearchBar placeholder='Buscar...' />
 
          <ul className="grid gap-2 md:grid-cols-[repeat(auto-fill,minmax(400px,1fr))]">
-            {store.projects.map(project => (
+            {projects.map(project => {
+               const customer = findCustomerByProjectId(project.id)
+
+               if (!customer) return null
+
+               return (
                <li
                   className="group flex cursor-pointer flex-row overflow-hidden rounded-md border border-gray-primary bg-black-secondary shadow-lg transition-all hover:border-white/40 md:basis-[calc(50%-8px)] xl:basis-[calc(33.333%-8px)]"
                   key={project.id}
@@ -26,7 +32,7 @@ export default function ProjectsView() {
                         width={160}
                         height={160}
                         src={project.references[0].url}
-                        alt={`Proyecto de ${project.customer.name}`}
+                        alt={`Proyecto de ${customer.name}`}
                         className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                      />
                   </picture>
@@ -36,17 +42,17 @@ export default function ProjectsView() {
                         <section className="flex min-w-0 items-baseline justify-between gap-2">
                            <h3
                               className="min-w-0 truncate text-base font-semibold text-white transition-colors hover:opacity-80"
-                              onClick={(event) => { event.stopPropagation(); router.push(`/customers/${project.customer.id}`) }}
+                              onClick={(event) => { event.stopPropagation(); router.push(`/customers/${customer.id}`) }}
                            >
-                              {project.customer.name}
+                              {customer.name}
                            </h3>
 
-                           {project.customer.username &&
+                           {customer.username &&
                               <p
-                                 onClick={(event) => { event.stopPropagation(); router.push(`/customers/${project.customer.id}`) }}
+                                 onClick={(event) => { event.stopPropagation(); router.push(`/customers/${customer.id}`) }}
                                  className="font-mono text-xs text-gray-400 transition-colors hover:opacity-80"
                               >
-                                 @{project.customer.username}
+                                 @{customer.username}
                               </p>
                            }
                         </section>
@@ -58,9 +64,9 @@ export default function ProjectsView() {
 
                            <p
                               className='text-nowrap transition-colors hover:opacity-80'
-                              onClick={(event) => { event.stopPropagation(); router.push(`/customers/${project.customer.id}`) }}
+                              onClick={(event) => { event.stopPropagation(); router.push(`/customers/${customer.id}`) }}
                            >
-                              {project.customer.phone_number || 'Sin teléfono registrado'}
+                              {customer.phone_number || 'Sin teléfono registrado'}
                            </p>
                         </section>
                      </div>
@@ -87,7 +93,8 @@ export default function ProjectsView() {
                      </section>
                   </div>
                </li>
-            ))}
+               )
+            })}
          </ul>
       </article>
    )

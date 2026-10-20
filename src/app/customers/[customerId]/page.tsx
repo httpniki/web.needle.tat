@@ -6,16 +6,18 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
-import { useTattooProjects } from '@/app/_context/TattooProjectsContext'
+import { useCustomers } from '@/app/_context/CustomersContext'
+
 
 export default function CustomerPage() {
    const params = useParams()
-   const store = useTattooProjects()
+   const customerStore = useCustomers()
 
-   const projects = store.projects.filter((p) => String(p.customer.id) === params.customerId)
-   const customer = projects[0]?.customer
-   const sessionsCount = projects.reduce((acc, p) => acc + p.sessions.length, 0)
-   const projectCount = projects.length
+   if(params.customerId === undefined) return <div>No se encontró el cliente</div>
+
+   const customer = customerStore.findCustomer(Number(params.customerId))
+   const sessionsCount = customer?.tattooProjects.reduce((acc, p) => acc + p.sessions.length, 0)
+   const projectCount = customer?.tattooProjects.length
 
    if (!customer) return <div>No se encontró el cliente</div>
 
@@ -67,7 +69,7 @@ export default function CustomerPage() {
                <h2 className='mb-4 text-lg font-bold'>Projectos del cliente</h2>
 
                <ul className='flex flex-col gap-4'>
-                  {projects.map((p) => (
+                  {customer.tattooProjects.map((p) => (
                      <li key={p.id}>
                         <TattooCard
                            tattooName={p.projectName}
