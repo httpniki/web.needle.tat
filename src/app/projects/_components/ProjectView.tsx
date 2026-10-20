@@ -22,6 +22,7 @@ import Customer from './project/Customer';
 import References from './project/References';
 import Session from './project/Session';
 import Sessions from './project/Sessions';
+import ProjectNotFound from './ProjectNotFound';
 
 type ErrorState = {
    customer: {
@@ -322,7 +323,7 @@ export default function ProjectView(props: Props) {
          .finally(() => setLoading((p) => ({ ...p, references: p.references.filter((r) => r.url !== reference.url) })))
    }
 
-   if (!project || !customer) return <h1>Project not found</h1>
+   if (!project || !customer) return <ProjectNotFound />
 
    return (
       <form onSubmit={(e) => e.preventDefault()} className="flex size-full flex-1 flex-col gap-6">
