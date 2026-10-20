@@ -1,5 +1,8 @@
 'use client'
 
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
@@ -64,13 +67,18 @@ export default function CustomerPage() {
                <h2 className='mb-4 text-lg font-bold'>Projectos del cliente</h2>
 
                <ul className='flex flex-col gap-4'>
-                  <li>
-                     <TattooCard />
-                  </li>
-
-                  <li>
-                     <TattooCard />
-                  </li>
+                  {projects.map((p) => (
+                     <li key={p.id}>
+                        <TattooCard
+                           tattooName={p.projectName}
+                           projectId={p.id}
+                           lastSession={p.sessions.find((s) => s.status === 'FINISHED')?.starts_at}
+                           bodyPart={p.bodyPart}
+                           thumbnailUrl={p.references[0].url}
+                           sessionsCount={p.sessions.length}
+                        />
+                     </li>
+                  ))}
                </ul>
             </section>
          </article>
@@ -78,34 +86,43 @@ export default function CustomerPage() {
    )
 }
 
-function TattooCard() {
+interface TattooCardProps {
+   tattooName: string
+   projectId: number
+   lastSession?: Date
+   bodyPart: string
+   thumbnailUrl: string
+   sessionsCount: number
+}
+
+function TattooCard(props: TattooCardProps) {
    return (
-      <div className='flex gap-4'>
-         <div className='aspect-video h-33 w-23 rounded-xl bg-white' />
+      <Link href={`/projects?id=${props.projectId}`} className='group flex cursor-pointer gap-4'>
+         <Image className='aspect-video h-33 w-23 rounded-xl bg-white object-contain' src={props.thumbnailUrl} alt='tattoo-thumbnail' width={92} height={132} />
 
          <div className='flex w-full flex-col gap-1'>
-            <div className='flex w-full items-center justify-between'>
-               <h6 className='font-bold'>Rosa Minimalista</h6>
-
-               <Link href={'/projects?id=1'} className='cursor-pointer pl-4 hover:opacity-80'>
-                  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
-                     <path d="M8.293 4.293a1 1 0 0 1 1.414 0l7 7a1 1 0 0 1 0 1.414l-7 7a1 1 0 0 1-1.414-1.414L14.586 12 8.293 5.707a1 1 0 0 1 0-1.414Z" />
-                  </svg>
-               </Link>
-            </div>
+            {props.tattooName && <h6 className='font-bold'>{props.tattooName}</h6>}
 
             <p className='truncate text-sm text-white/70'>
-               Antebrazo izquierdo · 2 sesiones
+               {props.bodyPart ? `${props.bodyPart} · ` : ''}{props.sessionsCount} sesiones
             </p>
 
             <p className='truncate text-sm'>
                Completado
             </p>
 
-            <p className='truncate text-xs text-white'>
-               Última sesión: 21 oct. 2022
-            </p>
+            {props.lastSession &&
+               <p className='truncate text-xs text-white'>
+                  Última sesión: {props.lastSession.getDate()} {format(props.lastSession.getDate(), 'MMM', { locale: es })}. {format(props.lastSession, 'yyyy')}
+               </p>
+            }
          </div>
-      </div>
+
+         <div className='my-auto flex justify-center'>
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" className='group-hover:opacity-80'>
+               <path d="M8.293 4.293a1 1 0 0 1 1.414 0l7 7a1 1 0 0 1 0 1.414l-7 7a1 1 0 0 1-1.414-1.414L14.586 12 8.293 5.707a1 1 0 0 1 0-1.414Z" />
+            </svg>
+         </div>
+      </Link>
    )
 }

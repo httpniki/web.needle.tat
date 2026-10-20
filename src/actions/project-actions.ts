@@ -17,6 +17,8 @@ interface ProjectModel {
    id: number
    customer_id: string
    observations?: string
+   project_name: string
+   body_part: string
    images: string[]
    references: string[]
    created_at: string
@@ -81,6 +83,8 @@ export async function createProject(project: TattooProjectObject): Promise<Tatto
    return {
       id: projectResult.data.id,
       customer: c,
+      projectName: projectResult.data.project_name,
+      bodyPart: projectResult.data.body_part,
       images: projectResult.data.images,
       references: projectResult.data.references.map((url) => ({ url })),
       sessions: s
@@ -111,6 +115,8 @@ export async function getProjects(): Promise<TattooProjectObject[]> {
          id: project.id,
          customer: customer,
          images: project.images,
+         projectName: project.project_name,
+         bodyPart: project.body_part,
          references: project.references.map((url) => ({ url })),
          sessions: sessions,
          observations: project.observations
@@ -145,6 +151,8 @@ export async function getProject({ projectId }: GetProjectOptions): Promise<Tatt
    return {
       id: projectResult.data.id,
       images: projectResult.data.images,
+      projectName: projectResult.data.project_name,
+      bodyPart: projectResult.data.body_part,
       references: projectResult.data.references.map((url) => ({ url })),
       sessions: sessions.map((s) => ({
          id: s.id,

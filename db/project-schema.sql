@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS projects (
    images TEXT[] default '{}',
    "references" TEXT[] default '{}',
    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+   project_name VARCHAR(150) NOT NULL DEFAULT '',
+   body_part VARCHAR(100) NOT NULL DEFAULT '',
 
    CONSTRAINT fk_project_customer
       FOREIGN KEY (customer_id)

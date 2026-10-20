@@ -8,9 +8,11 @@ export interface ITattooProject {
    id: number
    images: string[]
    references: TattooReference[]
-   sessions: TattooSession[]
-   observations?: string
    customer: Customer
+   sessions: TattooSession[]
+   projectName: string
+   observations?: string
+   bodyPart: string
    clone(): TattooProject
    toObject(): TattooProjectObject
    hasSession(session: TattooSession | number): boolean
@@ -19,6 +21,8 @@ export interface ITattooProject {
 
 export interface TattooProjectObject {
    id: number
+   projectName: string
+   bodyPart: string
    customer: CustomerObject
    images: string[]
    references: TattooReferenceObject[]
@@ -30,9 +34,11 @@ interface TattooProjectConstructor {
    id: number
    customer: Customer
    images: string[]
+   bodyPart: string
    references: TattooReference[]
    sessions: TattooSession[]
    observations?: string
+   projectName: string
 }
 
 export default class TattooProject implements ITattooProject {
@@ -42,6 +48,8 @@ export default class TattooProject implements ITattooProject {
    private _sessions: TattooSession[] = []
    private _observations?: string = ''
    private _customer: Customer = new Customer()
+   private _projectName: string = ''
+   private _bodyPart: string = ''
 
    constructor(props?: TattooProjectConstructor) {
       if (!props) return
@@ -51,6 +59,8 @@ export default class TattooProject implements ITattooProject {
       this._images = props.images;
       this._references = props.references;
       this._sessions = props.sessions;
+      this._projectName = props.projectName;
+      this._bodyPart = props.bodyPart;
    }
 
    public get id(): number { return this._id; }
@@ -58,6 +68,12 @@ export default class TattooProject implements ITattooProject {
 
    public get customer(): Customer { return this._customer; }
    public set customer(value: Customer) { this._customer = value; }
+
+   public get projectName(): string { return this._projectName; }
+   public set projectName(value: string) { this._projectName = value; }
+
+   public get bodyPart(): string { return this._bodyPart; }
+   public set bodyPart(value: string) { this._bodyPart = value; }
 
    public get images(): string[] { return this._images; }
    public set images(value: string[]) { this._images = value }
@@ -75,10 +91,12 @@ export default class TattooProject implements ITattooProject {
       const copy = new TattooProject({
          id: this._id,
          customer: this._customer.clone(),
+         projectName: this._projectName,
          images: this._images,
          references: this._references.map((r) => r.clone()),
          sessions: this._sessions.map((s) => s.clone()),
-         observations: this._observations
+         observations: this._observations,
+         bodyPart: this._bodyPart
       });
 
       return copy;
@@ -88,10 +106,12 @@ export default class TattooProject implements ITattooProject {
       return {
          id: this._id,
          customer: this._customer.toObject(),
+         projectName: this._projectName,
          images: this._images,
          references: this._references.map((r) => r.toObject()),
          sessions: this._sessions.map((s) => s.toObject()),
-         observations: this._observations
+         observations: this._observations,
+         bodyPart: this._bodyPart
       }
    }
 

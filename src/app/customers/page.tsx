@@ -31,7 +31,7 @@ export default function CustomerPage() {
    }, [store.projects])
 
    return (
-      <main className='flex w-full flex-col gap-4 p-4 md:px-8'>
+      <main className='flex min-h-max w-full flex-col gap-4 p-4 md:px-8'>
          <SearchBar placeholder='Buscar cliente...' />
 
          <ul className='grid gap-2 md:grid-cols-[repeat(auto-fill,minmax(400px,1fr))]'>
