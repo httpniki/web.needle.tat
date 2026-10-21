@@ -130,48 +130,35 @@ export default function ProjectView(props: Props) {
    async function addSession(session: TattooSessionObject) {
       if (!project || !customer) return toast.add({ title: 'Error', message: 'Proyecto no encontrado', type: 'error' })
 
-      const projectCopy = project?.clone()
-      let isSlotOcuppied = calendar.isSlotOccupied(session.starts_at)
+      const projectCopy = project.clone()
+      const newSession = new TattooSession(session)
+      let isSlotOccupied = calendar.isSlotOccupied(newSession.starts_at)
 
-      while (isSlotOcuppied) {
-         const newStartsAt = addHours(session.starts_at, 1)
-         session.starts_at = newStartsAt
+      while (isSlotOccupied) {
+         newSession.starts_at = addHours(newSession.starts_at, 1)
 
-         isSlotOcuppied = calendar.isSlotOccupied(newStartsAt)
+         isSlotOccupied = calendar.isSlotOccupied(newSession.starts_at)
       }
 
-      const newSessionClass = new TattooSession(session)
-      projectCopy.sessions.push(newSessionClass)
+      projectCopy.sessions.push(newSession)
       addProject(customer.id, projectCopy)
 
-      let f = true
-
       setLoading((p) => {
-         const sessions = p.sessions.filter(id => id !== newSessionClass.id)
-         return { ...p, sessions: [...sessions, newSessionClass.id] }
+         const sessions = p.sessions.filter(id => id !== newSession.id)
+         return { ...p, sessions: [...sessions, newSession.id] }
       })
 
-      while (f) {
-         await createSession({ ...session, projectId: project.id })
-            .then((newSession) => {
-               f = false
-               const savedSession = new TattooSession({ ...newSession })
+      try {
+         const saved = await createSessionWithRetry(newSession, project.id)
+         const savedSession = new TattooSession({ ...saved })
 
-               projectCopy.sessions = projectCopy.sessions.map((s) => s.id === session.id ? savedSession : s)
-
-               addProject(customer.id, projectCopy)
-            })
-            .catch((error) => {
-               if (error instanceof Error && error.name === 'session_time_conflict') {
-                  session.starts_at = addHours(session.starts_at, 1)
-                  return
-               }
-
-               addProject(customer.id, project)
-               toast.add({ title: 'Error', message: 'Error inesperado al agregar la sesión', type: 'error' })
-               f = false
-            })
-            .finally(() => setLoading((p) => ({ ...p, sessions: p.sessions.filter(id => id !== newSessionClass.id) })))
+         projectCopy.sessions = projectCopy.sessions.map((s) => s.id === newSession.id ? savedSession : s)
+         addProject(customer.id, projectCopy)
+      } catch {
+         addProject(customer.id, project)
+         toast.add({ title: 'Error', message: 'Error inesperado al agregar la sesión', type: 'error' })
+      } finally {
+         setLoading((p) => ({ ...p, sessions: p.sessions.filter(id => id !== newSession.id) }))
       }
    }
 
@@ -378,4 +365,17 @@ export default function ProjectView(props: Props) {
          </Sessions>
       </form>
    )
+}
+
+async function createSessionWithRetry(session: TattooSession, projectId: number): Promise<TattooSessionObject> {
+   try {
+      return await createSession({ ...session.toObject(), projectId })
+   } catch (error) {
+      if (!(error instanceof Error) || error.name !== 'session_time_conflict') throw error
+
+      const shiftedSession = new TattooSession(session.toObject())
+      shiftedSession.starts_at = addHours(shiftedSession.starts_at, 1)
+
+      return createSessionWithRetry(shiftedSession, projectId)
+   }
 }

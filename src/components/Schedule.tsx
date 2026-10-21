@@ -1,7 +1,7 @@
 'use client'
 
 import { addDays, addHours } from 'date-fns'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useProjects } from '@/app/_context/CustomersContext'
 import { CustomerObject } from '@/domain/Customer'
@@ -17,6 +17,8 @@ export type Time = {
 
 interface Props {
    date: Date
+   focusAt?: Date
+   editingSessionId?: TattooSessionObject['id']
    onNextDay?: (date: Date) => void
    onPreviousDay?: (date: Date) => void
    onClickCaption?: () => void
@@ -41,8 +43,29 @@ function formatTime(time: Time): string {
 export default function Schedule(props: Props) {
    const [isDragging, setIsDragging] = useState(false)
    const [selectedSlots, setSelectedSlots] = useState<Time[]>([])
+   const scrollRef = useRef<HTMLDivElement>(null)
 
    const { calendar } = useProjects()
+
+   useEffect(() => {
+      const container = scrollRef.current
+
+      if (!props.focusAt || !container) return
+
+      const hour = props.focusAt.getHours()
+      const cell = container.querySelector<HTMLElement>(`[data-hour="${hour}"]`)
+
+      if (!cell) return
+
+      const containerRect = container.getBoundingClientRect()
+      const cellRect = cell.getBoundingClientRect()
+      const cellTop = cellRect.top - containerRect.top + container.scrollTop
+
+      container.scrollTo({
+         top: cellTop - container.clientHeight / 2,
+         behavior: 'smooth'
+      })
+   }, [props.focusAt])
 
    const nextDay = () => props.onNextDay?.(addDays(props.date, 1))
    const prevDay = () => props.onPreviousDay?.(addDays(props.date, -1))
@@ -66,18 +89,18 @@ export default function Schedule(props: Props) {
       })
    }
 
-   function onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+   function onMouseDown(e: React.PointerEvent<HTMLDivElement>) {
       e.stopPropagation()
-      const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement
+      const target = e.currentTarget
       setIsDragging(true)
 
-      if (!target || !target.dataset.hour || !target.dataset.minute) return
+      if (!target.dataset.hour || !target.dataset.minute) return
 
       const hour = Number(target.dataset.hour)
       const minute = Number(target.dataset.minute)
       const newDate = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), hour, minute)
 
-      if (calendar.isSlotOccupied(newDate)) return
+      if (calendar.isSlotOccupied(newDate, props.editingSessionId)) return
 
       setSelectedSlots([{
          hours: hour,
@@ -85,11 +108,16 @@ export default function Schedule(props: Props) {
       }])
    }
 
-   function onDrag(e: React.DragEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) {
+   function onDrag(e: React.PointerEvent<HTMLDivElement>) {
       e.stopPropagation()
-      const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement
 
-      if (!isDragging || !target) return
+      if (!isDragging) return
+
+      const target = document
+         .elementsFromPoint(e.clientX, e.clientY)
+         .find((element): element is HTMLElement => element instanceof HTMLElement && element.dataset.hour !== undefined)
+
+      if (!target) return
 
       const dataset = target.dataset
       if (!dataset.hour || !dataset.minute) return
@@ -98,7 +126,7 @@ export default function Schedule(props: Props) {
       const minute = Number(dataset.minute)
       const newDate = new Date(props.date.getFullYear(), props.date.getMonth(), props.date.getDate(), hour, minute)
 
-      if (calendar.isSlotOccupied(newDate)) return
+      if (calendar.isSlotOccupied(newDate, props.editingSessionId)) return
 
       const currentIndex = DAY_TIMES.findIndex((t) => t.hours === hour && t.minutes === minute)
       if (currentIndex === -1) return
@@ -106,7 +134,7 @@ export default function Schedule(props: Props) {
       selectSlot({ hours: hour, minutes: minute })
    }
 
-   function onMouseUp(e: React.MouseEvent<HTMLDivElement>) {
+   function onMouseUp(e: React.PointerEvent<HTMLDivElement>) {
       e.stopPropagation()
       e.preventDefault()
       setIsDragging(false)
@@ -153,7 +181,7 @@ export default function Schedule(props: Props) {
 
    return (
       <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
-         <div className="min-h-0 w-full min-w-0 flex-1 overflow-auto">
+         <div className="min-h-0 w-full min-w-0 flex-1 overflow-auto" ref={scrollRef}>
             <ScheduleHeader
                date={props.date}
                handlePrevious={prevDay}
@@ -164,6 +192,10 @@ export default function Schedule(props: Props) {
             <div
                className="relative mx-auto grid w-full max-w-4xl min-w-0 auto-rows-24 grid-cols-[80px_1fr] grid-rows-[auto] border-x border-gray-primary text-center select-none"
                id='schedule'
+               onPointerMove={onDrag}
+               onPointerUp={onMouseUp}
+               onPointerCancel={() => setIsDragging(false)}
+               onPointerLeave={() => setIsDragging(false)}
                onDragStart={(e) => e.preventDefault()}
             >
                <div className="contents">
@@ -191,12 +223,7 @@ export default function Schedule(props: Props) {
                               }
                               data-hour={time.hours}
                               data-minute={time.minutes}
-                              onMouseDown={onMouseDown}
-                              onDrag={onDrag}
-                              onMouseUp={onMouseUp}
                               onPointerDown={onMouseDown}
-                              onPointerUp={onMouseUp}
-                              onPointerMove={onDrag}
                            />
                         </div>
                      )
@@ -225,6 +252,8 @@ export default function Schedule(props: Props) {
                      <CellContentContent
                         key={session.id}
                         gridRow={`${startRow} / ${endRow}`}
+                        highlighted={session.id === props.editingSessionId}
+                        interactive={session.id !== props.editingSessionId}
                         customer={{
                            name: customer.name,
                            username: customer.username

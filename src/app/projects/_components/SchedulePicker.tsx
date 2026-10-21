@@ -1,3 +1,4 @@
+import { startOfDay } from 'date-fns'
 import { ComponentProps, useState } from 'react'
 
 import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
@@ -9,12 +10,13 @@ interface Props {
    onSelectAppointment?: (starts_at: Date, ends_at: Date) => void
    initialStartsAt?: Date
    initialEndsAt?: Date
+   editingSessionId?: number
    onClose?: () => void
 }
 
 export default function SchedulePicker(props: Props) {
-   const [date, setDate] = useState(props?.initialStartsAt ?? new Date())
-   const [view, setView] = useState<'Calendar' | 'Schedule'>('Calendar')
+   const [date, setDate] = useState(() => startOfDay(props.initialStartsAt ?? new Date()))
+   const [view, setView] = useState<'Calendar' | 'Schedule'>('Schedule')
 
    const { calendar, findProject } = useProjects()
    const { findCustomerByProjectId } = useCustomers()
@@ -83,6 +85,8 @@ export default function SchedulePicker(props: Props) {
             (view === 'Schedule') &&
             <Schedule
                date={date}
+               focusAt={props.initialStartsAt}
+               editingSessionId={props.editingSessionId}
                sessions={getDaySessions(date)}
                onClickCaption={() => setView('Calendar')}
                onNextDay={(date) => setDate(date)}

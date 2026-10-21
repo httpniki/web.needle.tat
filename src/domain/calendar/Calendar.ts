@@ -186,7 +186,7 @@ export class TattooCalendar extends Calendar<TattooSession[]> {
       return []
    }
 
-   public isSlotOccupied(date: Date): boolean {
+   public isSlotOccupied(date: Date, excludeSessionId?: number): boolean {
       let daySessions: TattooSession[] = []
 
       try {
@@ -199,6 +199,8 @@ export class TattooCalendar extends Calendar<TattooSession[]> {
       const slotEnd = addHours(date, 1).getTime()
 
       return daySessions.some((session) => {
+         if (excludeSessionId !== undefined && String(session.id) === String(excludeSessionId)) return false
+
          const sStart = session.starts_at.getTime()
          const sEnd = session.ends_at.getTime()
 

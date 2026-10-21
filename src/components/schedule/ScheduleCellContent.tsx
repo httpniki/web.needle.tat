@@ -22,6 +22,8 @@ interface Props {
       username?: string
    }
    gridRow: string
+   highlighted?: boolean
+   interactive?: boolean
 }
 
 export default function CellContentContent(props: Props) {
@@ -31,8 +33,15 @@ export default function CellContentContent(props: Props) {
 
    return (
       <button
-         style={{ gridRow: props.gridRow, gridColumn: 2 }}
-         className="z-10 m-1 flex cursor-pointer flex-col justify-between rounded-lg border border-neutral-800 bg-black-secondary p-3 text-left text-white shadow-lg transition-all hover:opacity-80"
+         style={{
+            gridRow: props.gridRow,
+            gridColumn: 2,
+            pointerEvents: props.interactive === false ? 'none' : undefined
+         }}
+         className={
+            'z-10 m-1 flex cursor-pointer flex-col justify-between rounded-lg border border-neutral-800 bg-black-secondary p-3 text-left text-white shadow-lg transition-all hover:opacity-80' +
+            (props.highlighted ? ' ring-2 ring-white/60' : '')
+         }
          onClick={() => router.push('/projects?id=' + props.session.projectId)}
          onContextMenu={props.onContextMenu}
          data-id={props.session.id}

@@ -159,6 +159,7 @@ export default function Session(props: Props) {
                <SchedulePicker
                   initialStartsAt={props.session.starts_at}
                   initialEndsAt={props.session.ends_at}
+                  editingSessionId={props.session.id}
                   onClose={() => setShowPicker(null)}
                   onSelectAppointment={(starts_at, ends_at) => {
                      props.onChange?.({ starts_at, ends_at })
