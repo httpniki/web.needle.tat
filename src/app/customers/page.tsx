@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import SearchBar from '@/components/ui/SearchBar'
 import CustomerDomain from '@/domain/Customer'
@@ -11,6 +11,7 @@ import { useCustomers, useProjects } from '../_context/CustomersContext'
 export default function CustomerPage() {
    const projectStore = useProjects()
    const customersStore = useCustomers()
+   const [query, setQuery] = useState('')
 
    const customers = useMemo(() => {
       const customersMap: Map<number, CustomerDomain> = new Map()
@@ -28,6 +29,7 @@ export default function CustomerPage() {
             return {
                id: customer.id,
                name: customer.name,
+               username: customer.username,
                phone_number: customer.phone_number,
                email: customer.email,
                projects: customerProjects.length,
@@ -36,12 +38,27 @@ export default function CustomerPage() {
          })
    }, [projectStore.projects])
 
+   const filteredCustomers = useMemo(() => {
+      if (!query.trim()) return customers
+
+      return customers.filter((customer) => matchesCustomer(customer, query))
+   }, [customers, query])
+
    return (
       <main className='flex min-h-max w-full flex-col gap-4 p-4 md:px-8'>
-         <SearchBar placeholder='Buscar cliente...' />
+         <SearchBar
+            placeholder='Buscar cliente...'
+            onChange={(event) => setQuery(event.target.value)}
+         />
+
+         {filteredCustomers.length === 0 && (
+            <p className='text-sm text-gray-400'>
+               No se encontraron clientes.
+            </p>
+         )}
 
          <ul className='grid gap-2 md:grid-cols-[repeat(auto-fill,minmax(400px,1fr))]'>
-            {customers.map((customer) => (
+            {filteredCustomers.map((customer) => (
                <li key={customer.id}>
                   <CustomerCard
                      id={customer.id}
@@ -112,4 +129,25 @@ function CustomerCard(props: CustomerCardProps) {
          </section>
       </Link>
    )
+}
+
+function matchesCustomer(
+   customer: Pick<CustomerDomain, 'name' | 'username' | 'phone_number' | 'email'>,
+   query: string
+) {
+   const term = normalize(query)
+
+   const customerText = normalize(
+      `${customer.name} ${customer.username ?? ''} ${customer.phone_number} ${customer.email ?? ''}`
+   )
+
+   return customerText.includes(term)
+}
+
+function normalize(value: string) {
+   return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
 }

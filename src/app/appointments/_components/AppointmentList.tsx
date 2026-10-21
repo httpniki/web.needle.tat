@@ -1,8 +1,8 @@
 'use client'
 
-import { isToday, isTomorrow } from 'date-fns'
+import { format, isToday, isTomorrow, startOfDay } from 'date-fns'
 import Link from 'next/link'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
 import SearchBar from '@/components/ui/SearchBar'
@@ -24,6 +24,7 @@ interface GroupedDaySessions {
 export default function Appointments() {
    const { calendar, findProject } = useProjects()
    const { findCustomerByProjectId } = useCustomers()
+   const [query, setQuery] = useState('')
 
    const sessionsGrouped = useMemo<GroupedDaySessions[]>(() => {
       if (!calendar) return []
@@ -52,48 +53,58 @@ export default function Appointments() {
       })
    }, [calendar])
 
-   const today = new Date()
-   today.setHours(0, 0, 0, 0)
+   const filteredSessions = useMemo(() => {
+      if (!query.trim()) return sessionsGrouped
 
-   const pendingSessions = sessionsGrouped.filter(({ date }) => date >= today)
-   const finishedSessions = sessionsGrouped.filter(({ date }) => date < today)
+      return sessionsGrouped
+         .map(({ date, sessions }) => ({
+            date,
+            sessions: sessions.filter((item) => matchesSession(item, query))
+         }))
+         .filter(({ sessions }) => sessions.length > 0)
+   }, [sessionsGrouped, query])
+
+   const today = startOfDay(new Date())
+
+   const pendingSessions = filteredSessions.filter(({ date }) => date >= today)
+   const finishedSessions = filteredSessions.filter(({ date }) => date < today)
 
    return (
       <div>
-         <SearchBar placeholder='Buscar...' />
+         <SearchBar
+            placeholder='Buscar por cliente, hora o precio...'
+            onChange={(event) => setQuery(event.target.value)}
+         />
+
+         {filteredSessions.length === 0 &&
+            <p className='mt-6 text-sm text-gray-400'>
+               {query.trim() ? 'No se encontraron turnos.' : 'No hay turnos.'}
+            </p>
+         }
 
          <ul className="mt-6 flex flex-col gap-6 pb-1">
             {
-               pendingSessions.map(({ date, sessions }) => {
-                  if (date < today) return null
-
-                  if (isToday(date))
-                     return <AppointmentSection key={date.toString()} label='Turnos de hoy' items={sessions} date={date} />
-                  if (isTomorrow(date))
-                     return <AppointmentSection key={date.toString()} label='Turnos de mañana' items={sessions} date={date} />
-
-                  return <AppointmentSection
+               pendingSessions.map(({ date, sessions }) => (
+                  <AppointmentSection
                      key={date.toString()}
-                     label={`${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`}
+                     label={getSectionLabel(date)}
                      items={sessions}
                      date={date}
                   />
-               })
+               ))
             }
 
             {finishedSessions.length > 0 && <hr className='my-1 border-gray-primary' />}
 
             {
-               finishedSessions.map(({ date, sessions }) => {
-                  return (
-                     <AppointmentSection
-                        key={date.toString()}
-                        label={`${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`}
-                        items={sessions}
-                        date={date}
-                     />
-                  )
-               })
+               finishedSessions.map(({ date, sessions }) => (
+                  <AppointmentSection
+                     key={date.toString()}
+                     label={getSectionLabel(date)}
+                     items={sessions}
+                     date={date}
+                  />
+               ))
             }
          </ul>
       </div>
@@ -164,5 +175,39 @@ function AppointmentItem({ session, customer, project_id }: SessionWithCustomer)
          </Link>
       </li>
    )
+}
+
+function getSectionLabel(date: Date): string {
+   if (isToday(date)) return 'Turnos de hoy'
+   if (isTomorrow(date)) return 'Turnos de mañana'
+
+   return format(date, 'd/M/yy')
+}
+
+function matchesSession(item: SessionWithCustomer, query: string): boolean {
+   const term = normalize(query)
+   const digits = query.replace(/\D/g, '')
+
+   const customerText = normalize(
+      `${item.customer.name} ${item.customer.username ?? ''} ${item.customer.phone_number ?? ''}`
+   )
+
+   const timeText = `${format(item.session.starts_at, 'HH:mm')} ${format(item.session.ends_at, 'HH:mm')}`
+   const finalPrice = item.session.price - item.session.booking_fee
+   const priceDigits = String(finalPrice).replace(/\D/g, '')
+
+   return (
+      customerText.includes(term) ||
+      timeText.includes(term) ||
+      (digits.length > 0 && priceDigits.includes(digits))
+   )
+}
+
+function normalize(value: string): string {
+   return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
 }
 
