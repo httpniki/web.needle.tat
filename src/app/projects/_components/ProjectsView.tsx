@@ -39,18 +39,24 @@ export default function ProjectsView() {
 
                   <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 p-4">
                      <div className="flex flex-col gap-1">
+                        {project.projectName &&
+                           <h3 className="min-w-0 truncate text-base font-semibold text-white">
+                              {project.projectName}
+                           </h3>
+                        }
+
                         <section className="flex min-w-0 items-baseline justify-between gap-2">
-                           <h3
-                              className="min-w-0 truncate text-base font-semibold text-white transition-colors hover:opacity-80"
+                           <p
+                              className="min-w-0 truncate text-sm text-white/60 transition-colors hover:opacity-80"
                               onClick={(event) => { event.stopPropagation(); router.push(`/customers/${customer.id}`) }}
                            >
                               {customer.name}
-                           </h3>
+                           </p>
 
                            {customer.username &&
                               <p
                                  onClick={(event) => { event.stopPropagation(); router.push(`/customers/${customer.id}`) }}
-                                 className="font-mono text-xs text-gray-400 transition-colors hover:opacity-80"
+                                 className="font-mono text-xs text-gray-500 transition-colors hover:opacity-80"
                               >
                                  @{customer.username}
                               </p>

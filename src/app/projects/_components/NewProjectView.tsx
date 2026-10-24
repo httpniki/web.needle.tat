@@ -17,6 +17,7 @@ import DomainException from '@/utils/exceptions/domain-exception'
 import { isKeyOf } from '@/utils/utils'
 
 import Customer from './project/Customer'
+import ProjectTitle from './project/ProjectTitle'
 import References from './project/References'
 import Session from './project/Session'
 import Sessions from './project/Sessions'
@@ -342,6 +343,16 @@ export default function NewProjectView(props: Props) {
 
          {(!loading) &&
             <>
+               <ProjectTitle
+                  projectName={project.projectName}
+                  defaultView='Input'
+                  onChange={(value) => {
+                     const projectCopy = project.clone()
+                     projectCopy.projectName = value
+                     setProject(projectCopy)
+                  }}
+               />
+
                <div className='flex h-max w-full flex-col gap-6 xl:flex-row'>
                   <Customer
                      customer={customer}
@@ -365,10 +376,11 @@ export default function NewProjectView(props: Props) {
                      onAddReference={(reference) => addReference(reference)}
                      onRemoveReference={(reference) => removeReference(reference)}
                      errors={errors.references}
+                     enableEdit
                   />
                </div>
 
-               <Sessions onAddSession={(session) => addSession(session)}>
+               <Sessions onAddSession={(session) => addSession(session)} enableEdit>
                   {project.sessions.map((session, index) => (
                      <Session
                         key={session.id}
@@ -376,7 +388,7 @@ export default function NewProjectView(props: Props) {
                         index={index}
                         onDelete={(id) => removeSession(id)}
                         onChange={(changes) => updateSession(session.id, changes)}
-                        enableEdit={false}
+                        enableEdit
                         defaultView='Input'
                         errors={(errors.sessions.some(el => el.id === session.id))
                            ? Object.keys(errors.sessions.find(el => el.id === session.id) ?? {}).map(key => {

@@ -1,6 +1,3 @@
-import { useState } from 'react';
-
-import EditSVG from '@/components/svg/EditSVG';
 import TextInput from '@/components/ui/inputs/TextInput';
 import Loader from '@/components/ui/Loader';
 import { CustomerObject } from '@/domain/Customer';
@@ -19,12 +16,7 @@ interface Props {
 }
 
 export default function CustomerName(props: Props) {
-   const [renderInput, setRenderInput] = useState(props.defaultView === 'Input')
-
-   function showInput() {
-      if (!props.enableEdit) return
-      setRenderInput(true)
-   }
+   const renderInput = props.defaultView === 'Input'
 
    return (
       <section className='w-full overflow-hidden'>
@@ -33,35 +25,17 @@ export default function CustomerName(props: Props) {
             {props.loading && <Loader size='16px' />}
          </div>
 
-
          <div className='flex items-center gap-2'>
             {(!renderInput && props.defaultView === 'Summary') &&
-               <>
-                  <p className={'truncate' + (renderInput ? ' hidden' : '')}>
-                     {props.customerName}
-                  </p>
-
-                  {props.enableEdit &&
-                     <button
-                        className='shrink-0 cursor-pointer text-white/70 transition-all duration-200 hover:opacity-80'
-                        onClick={(event) => { event.preventDefault(); showInput() }}
-                     >
-                        <EditSVG size='1.2em' />
-                     </button>
-                  }
-               </>
+               <p className='truncate'>
+                  {props.customerName}
+               </p>
             }
 
-            {(renderInput) &&
+            {renderInput &&
                <CustomerSearchWrapper
-                  onSelectCustomer={(customer) => {
-                     props.onSelectCustomer?.(customer)
-                     if (props.enableEdit) setRenderInput(false)
-                  }}
-                  onSelectCustomValue={(value) => {
-                     props.onChange?.(value)
-                     if (props.enableEdit) setRenderInput(false)
-                  }}
+                  onSelectCustomer={(customer) => props.onSelectCustomer?.(customer)}
+                  onSelectCustomValue={(value) => props.onChange?.(value)}
                >
                   {({ openOverlay, closeOverlay, setSearchParam }) => (
                      <TextInput
@@ -72,14 +46,12 @@ export default function CustomerName(props: Props) {
                         error={!!props.error}
                         onBlur={(event) => {
                            event.preventDefault();
-                           if (props.enableEdit && renderInput) setRenderInput(true);
                            if (props.enableCustomerSearch) closeOverlay(event)
                         }}
                         onChange={(event) => {
                            props.onChange?.(event.target.value)
-                           if(props.enableCustomerSearch) setSearchParam(event.target.value)
+                           if (props.enableCustomerSearch) setSearchParam(event.target.value)
                         }}
-                        autoFocus={props.defaultView === 'Summary'}
                         onFocus={() => {
                            if (props.enableCustomerSearch) openOverlay()
                         }}

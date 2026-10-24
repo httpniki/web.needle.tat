@@ -9,6 +9,7 @@ interface Props {
    onRemoveReference?: (reference: TattooReferenceObject) => void
    loading?: string[]
    errors?: string
+   enableEdit?: boolean
 }
 
 export default function References(props: Props) {
@@ -52,8 +53,8 @@ export default function References(props: Props) {
             </div>
 
             <ul className='flex size-full min-w-0 flex-col items-start gap-2'>
-               {props.references.length === 0 &&
-                  <label className={'flex size-full justify-center items-center bg-black-main border border-gray-primary text-nowrap cursor-pointer hover:opacity-80 p-4 overflow-hidden' + (props.references.length === 0 ? ' max-h-54' : ' max-size-28')}>
+               {props.references.length === 0 && props.enableEdit &&
+                  <label className='flex size-full justify-center items-center bg-black-main border border-gray-primary text-nowrap cursor-pointer hover:opacity-80 p-4 overflow-hidden max-h-54'>
                      <input
                         ref={refInputFile}
                         className="hidden"
@@ -67,11 +68,17 @@ export default function References(props: Props) {
                            <path fill="currentColor" d="M854.6 288.6L639.4 73.4c-6-6-14.1-9.4-22.6-9.4H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V311.3c0-8.5-3.4-16.7-9.4-22.7M790.2 326H602V137.8zm1.8 562H232V136h302v216a42 42 0 0 0 42 42h216zM544 472c0-4.4-3.6-8-8-8h-48c-4.4 0-8 3.6-8 8v108H372c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h108v108c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V644h108c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H544z" />
                         </svg>
 
-                        <span className={props.references.length === 0 ? '' : 'hidden'}>
+                        <span>
                            Añadir referencia
                         </span>
                      </span>
                   </label>
+               }
+
+               {props.references.length === 0 && !props.enableEdit &&
+                  <li className='flex min-h-54 items-center justify-center p-4 text-sm text-white/50'>
+                     Sin referencias
+                  </li>
                }
 
                {props.references.map((ref, index) => {
@@ -90,7 +97,7 @@ export default function References(props: Props) {
                            {ref.file?.name ?? refName}
                         </button>
 
-                        {!(props.loading && props.loading.includes(ref.url)) &&
+                        {props.enableEdit && !(props.loading && props.loading.includes(ref.url)) &&
                            <button
                               className='size-max cursor-pointer rounded-full transition-opacity duration-200 hover:opacity-80 disabled:opacity-35'
                               onClick={() => removeReference(ref)}
@@ -119,7 +126,7 @@ export default function References(props: Props) {
                   )
                })}
 
-               {props.references.length > 0 &&
+               {props.enableEdit && props.references.length > 0 &&
                   <label className='mx-auto'>
                      <input
                         ref={refInputFile}

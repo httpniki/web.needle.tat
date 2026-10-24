@@ -180,14 +180,7 @@ export async function getCustomers(): Promise<CustomerObject[]> {
    })))
 }
 
-export interface UpdateCustomerParams {
-   name?: string
-   username?: string
-   phone_number?: string
-   email?: string
-}
-
-export async function updateCustomer(id: number, body: UpdateCustomerParams): Promise<CustomerObject> {
+export async function updateCustomer(id: number, body: CustomerObject): Promise<CustomerObject> {
    const cookieStore = await cookies()
    const db = createClient(cookieStore)
 
@@ -241,7 +234,12 @@ export async function updateCustomer(id: number, body: UpdateCustomerParams): Pr
 
    const results = await db
       .from('customers')
-      .update(body)
+      .update({
+         name: body.name,
+         username: body.username,
+         phone_number: body.phone_number,
+         email: body.email
+      })
       .eq('id', id)
       .select<string, CustomerModel>('*')
 

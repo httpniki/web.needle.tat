@@ -201,6 +201,7 @@ export async function getProject({ projectId }: GetProjectOptions): Promise<Tatt
 }
 
 export interface UpdateProjectParams {
+   projectName?: string
    observations?: string
    addImages?: File[]
    removeImages?: string[]
@@ -214,6 +215,10 @@ export async function updateProject(id: ProjectModel['id'], data: UpdateProjectP
 
    const payload: Partial<ProjectModel> = {}
    const urlsToDelete: string[] = []
+
+   if (data.projectName !== undefined && data.projectName !== currentProject.projectName) {
+      payload.project_name = data.projectName
+   }
 
    if (data.observations !== undefined && data.observations !== currentProject.observations) {
       payload.observations = data.observations

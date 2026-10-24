@@ -1,28 +1,27 @@
 'use client'
 
-import { addHours } from 'date-fns';
-import { useMemo, useState } from 'react';
+import { addHours } from 'date-fns'
+import { useMemo, useState } from 'react'
 
-import { updateCustomer as updateCustomerAction } from '@/actions/customer-actions';
-import { updateProject } from '@/actions/project-actions';
-import { createSession, deleteSession } from '@/actions/session-actions';
-import { updateSession as updateSessionAction } from '@/actions/session-actions';
-import { useCustomers, useProjects } from '@/app/_context/CustomersContext';
-import { useToast } from '@/app/_context/ToastContext';
-import CustomerDomain, { CustomerObject } from '@/domain/Customer';
-import TattooProject from '@/domain/TattooProject';
-import TattooReference, { TattooReferenceObject } from '@/domain/TattooReference';
-import TattooSession, { Currency, SessionStatus, TattooSessionObject } from '@/domain/TattooSession';
-import useDebounce from '@/hooks/useDebounce';
-import { ClassProperties } from '@/types/types';
-import DomainException from '@/utils/exceptions/domain-exception';
-import { isKeyOf } from '@/utils/utils';
+import { getCustomers, updateCustomer as updateCustomerAction } from '@/actions/customer-actions'
+import { updateProject } from '@/actions/project-actions'
+import { createSession, deleteSession, updateSession as updateSessionAction } from '@/actions/session-actions'
+import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
+import { useToast } from '@/app/_context/ToastContext'
+import CustomerDomain, { CustomerObject } from '@/domain/Customer'
+import TattooProject from '@/domain/TattooProject'
+import TattooReference, { TattooReferenceObject } from '@/domain/TattooReference'
+import TattooSession, { Currency, SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
+import { ClassProperties } from '@/types/types'
+import DomainException from '@/utils/exceptions/domain-exception'
+import { isKeyOf } from '@/utils/utils'
 
-import Customer from './project/Customer';
-import References from './project/References';
-import Session from './project/Session';
-import Sessions from './project/Sessions';
-import ProjectNotFound from './ProjectNotFound';
+import Customer from './project/Customer'
+import ProjectTitle from './project/ProjectTitle'
+import References from './project/References'
+import Session from './project/Session'
+import Sessions from './project/Sessions'
+import ProjectNotFound from './ProjectNotFound'
 
 type ErrorState = {
    customer: {
@@ -37,14 +36,6 @@ type ErrorState = {
    references?: string
 }
 
-type LoadingState = {
-   customer: {
-      [K in keyof Omit<CustomerObject, 'id'>]?: boolean
-   }
-   sessions: number[]
-   references: { url: string }[]
-}
-
 interface Props {
    id: number
    view: 'Summary' | 'Form'
@@ -52,11 +43,17 @@ interface Props {
 
 export default function ProjectView(props: Props) {
    const toast = useToast()
-   const debounce = useDebounce(500)
-   const { projects, calendar, addProject } = useProjects()
-   const { findCustomerByProjectId, addCustomer } = useCustomers()
+   const { projects, calendar } = useProjects()
+   const { findCustomerByProjectId, setCustomers } = useCustomers()
+
    const project = useMemo(() => projects.find((p) => p.id === props.id), [projects, props.id])
    const customer = project ? findCustomerByProjectId(project.id) : undefined
+
+   const [draftProject, setDraftProject] = useState<TattooProject | null>(null)
+   const [draftCustomer, setDraftCustomer] = useState<CustomerDomain | null>(null)
+
+   const [isEditing, setIsEditing] = useState(false)
+   const [isSaving, setIsSaving] = useState(false)
 
    const [errors, setErrors] = useState<ErrorState>({
       customer: {},
@@ -64,11 +61,8 @@ export default function ProjectView(props: Props) {
       sessions: []
    })
 
-   const [loading, setLoading] = useState<LoadingState>({
-      customer: {},
-      sessions: [],
-      references: []
-   })
+   const viewProject = draftProject ?? project
+   const viewCustomer = draftCustomer ?? customer
 
    function setSessionError(id: number, field: keyof typeof errors['sessions'][number], message: string) {
       let sessionErr = errors.sessions.find((s) => s.id === id)
@@ -82,10 +76,35 @@ export default function ProjectView(props: Props) {
       setErrors({ ...errors, sessions: updateSessions })
    }
 
-   function updateCustomer<K extends keyof Omit<CustomerObject, 'id'>>(key: K, value: NonNullable<CustomerObject[K]>) {
+   function startEditing() {
       if (!project || !customer) return toast.add({ title: 'Error', message: 'Proyecto no encontrado', type: 'error' })
 
-      const customerCopy = customer.clone()
+      setDraftProject(project.clone())
+      setDraftCustomer(customer.clone())
+      setErrors({ customer: {}, project: {}, sessions: [] })
+      setIsEditing(true)
+   }
+
+   function cancelEditing() {
+      setDraftProject(null)
+      setDraftCustomer(null)
+      setErrors({ customer: {}, project: {}, sessions: [] })
+      setIsEditing(false)
+   }
+
+   function updateProjectName(projectName: string) {
+      if (!draftProject) return
+
+      const projectCopy = draftProject.clone()
+      projectCopy.projectName = projectName
+
+      setDraftProject(projectCopy)
+   }
+
+   function updateCustomer<K extends keyof Omit<CustomerObject, 'id'>>(key: K, value: NonNullable<CustomerObject[K]>) {
+      if (!draftCustomer) return
+
+      const customerCopy = draftCustomer.clone()
 
       try {
          switch (key) {
@@ -113,102 +132,52 @@ export default function ProjectView(props: Props) {
          }
       }
 
-      addCustomer(customerCopy)
-
-      debounce(async () => {
-         setLoading((p) => ({ ...p, customer: { [key]: true } }))
-
-         await updateCustomerAction(customer.id, { [key]: value })
-            .catch((error) => {
-               if (error instanceof Error && error.name === 'no_changes') return
-               toast.add({ title: 'Error', message: 'Error inesperado al actualizar el customer', type: 'error' })
-            })
-            .finally(() => setLoading((p) => ({ ...p, customer: { [key]: false } })))
-      })
+      setDraftCustomer(customerCopy)
    }
 
-   async function addSession(session: TattooSessionObject) {
-      if (!project || !customer) return toast.add({ title: 'Error', message: 'Proyecto no encontrado', type: 'error' })
+   function addSession(session: TattooSessionObject) {
+      if (!draftProject) return
 
-      const projectCopy = project.clone()
+      const projectCopy = draftProject.clone()
       const newSession = new TattooSession(session)
-      let isSlotOccupied = calendar.isSlotOccupied(newSession.starts_at)
 
-      while (isSlotOccupied) {
+      while (calendar.isSlotOccupied(newSession.starts_at) || projectCopy.isHourOccupied(newSession.starts_at)) {
          newSession.starts_at = addHours(newSession.starts_at, 1)
-
-         isSlotOccupied = calendar.isSlotOccupied(newSession.starts_at)
       }
 
       projectCopy.sessions.push(newSession)
-      addProject(customer.id, projectCopy)
+      setDraftProject(projectCopy)
+   }
 
-      setLoading((p) => {
-         const sessions = p.sessions.filter(id => id !== newSession.id)
-         return { ...p, sessions: [...sessions, newSession.id] }
-      })
+   function removeSession(id: number) {
+      if (!draftProject) return
 
-      try {
-         const saved = await createSessionWithRetry(newSession, project.id)
-         const savedSession = new TattooSession({ ...saved })
+      const projectCopy = draftProject.clone()
+      projectCopy.sessions = projectCopy.sessions.filter((s) => s.id !== id)
 
-         projectCopy.sessions = projectCopy.sessions.map((s) => s.id === newSession.id ? savedSession : s)
-         addProject(customer.id, projectCopy)
-      } catch {
-         addProject(customer.id, project)
-         toast.add({ title: 'Error', message: 'Error inesperado al agregar la sesión', type: 'error' })
-      } finally {
-         setLoading((p) => ({ ...p, sessions: p.sessions.filter(id => id !== newSession.id) }))
+      setDraftProject(projectCopy)
+
+      if (errors.sessions.some((e) => e.id === id)) {
+         setErrors({ ...errors, sessions: errors.sessions.filter((s) => s.id !== id) })
       }
    }
 
-   async function removeSession(id: number) {
-      if (!project || !customer) return toast.add({ title: 'Error', message: 'Proyecto no encontrado', type: 'error' })
+   function updateSession(id: number, changes: Partial<Omit<TattooSessionObject, 'id'>>) {
+      if (!draftProject) return
 
-      const projectCopy = project.clone()
-      const sessionsCopy = project.sessions
-
-      projectCopy.sessions = projectCopy.sessions.filter((s) => s.id !== id)
-      addProject(customer.id, projectCopy)
-
-      setLoading((p) => {
-         const sessions = p.sessions.filter(sessionId => sessionId !== id)
-         return { ...p, sessions: [...sessions, id] }
-      })
-
-      await deleteSession(id)
-         .catch(() => {
-            projectCopy.sessions = sessionsCopy
-            addProject(customer.id, projectCopy)
-
-            toast.add({
-               title: 'Error',
-               message: 'Error inesperado al eliminar la sesión',
-               type: 'error'
-            })
-         })
-         .finally(() => setLoading((p) => ({ ...p, sessions: p.sessions.filter(sessionId => sessionId !== id) })))
-   }
-
-   async function updateSession(id: number, changes: Partial<Omit<TattooSessionObject, 'id'>>) {
-      if (!project || !customer) return toast.add({ title: 'Error', message: 'Proyecto no encontrado', type: 'error' })
-
-      const projectCopy = project.clone()
+      const projectCopy = draftProject.clone()
       const session = projectCopy.sessions.find((s) => s.id === id)
 
       if (!session) return toast.add({ title: 'Error', message: 'Sesión no encontrada', type: 'error' })
-      const sessionClone = session.clone()
 
       try {
          for (const [key, value] of Object.entries(changes)) {
             switch (key) {
                case 'starts_at':
-                  const newStartsAt = value as Date
-                  session.starts_at = newStartsAt
+                  session.starts_at = value as Date
                   break
                case 'ends_at':
-                  const newEndsAt = value as Date
-                  session.ends_at = newEndsAt
+                  session.ends_at = value as Date
                   break
                case 'observations':
                   session.observations = value as string
@@ -233,93 +202,146 @@ export default function ProjectView(props: Props) {
       }
 
       projectCopy.sessions = projectCopy.sessions.map(s => s.id === session.id ? session : s)
-      addProject(customer.id, projectCopy)
-
-      debounce(async () => {
-         setLoading((p) => {
-            const sessions = p.sessions.filter(sessionId => sessionId !== id)
-            return { ...p, sessions: [...sessions, id] }
-         })
-
-         await updateSessionAction(session.toObject())
-            .catch((error) => {
-               if (error instanceof Error && error.name === 'no_changes') return
-
-               toast.add({ title: 'Error', message: 'Error inesperado al actualizar la sesión', type: 'error' })
-
-               projectCopy.sessions = projectCopy.sessions.map(s => s.id === session.id ? sessionClone : s)
-               addProject(customer.id, projectCopy)
-            })
-            .finally(() => setLoading((p) => ({ ...p, sessions: p.sessions.filter(sessionId => sessionId !== id) })))
-      })
+      setDraftProject(projectCopy)
    }
 
-   async function addReference(reference: TattooReferenceObject) {
-      if (!project || !customer) return toast.add({ title: 'Error', message: 'Proyecto no encontrado', type: 'error' })
+   function addReference(reference: TattooReferenceObject) {
+      if (!draftProject) return
       if (!reference.file) return toast.add({ title: 'Error', message: 'Archivo no encontrado', type: 'error' })
 
-      const projectCopy = project.clone()
-      const ref = new TattooReference(reference)
-      projectCopy.references.push(ref)
+      const projectCopy = draftProject.clone()
+      projectCopy.references.push(new TattooReference(reference))
 
-      addProject(customer.id, projectCopy)
-      setLoading((p) => ({
-         ...p,
-         references: p.references.filter((r) => r.url !== ref.url).concat({ url: ref.url })
-      }))
-
-
-      await updateProject(project.id, { addReferences: [reference.file] })
-         .then((project) => {
-            addProject(customer.id, project)
-         })
-         .catch((error) => {
-            if (error instanceof Error && error.name === 'no_changes') return
-            projectCopy.references = projectCopy.references.filter((r) => r.url !== ref.url)
-            addProject(customer.id, projectCopy)
-            toast.add({ title: 'Error', message: 'Error inesperado al agregar la referencia', type: 'error' })
-         })
-         .finally(() => setLoading((p) => ({ ...p, references: p.references.filter((r) => r.url !== ref.url) })))
+      setDraftProject(projectCopy)
    }
 
-   async function removeReference(reference: TattooReferenceObject) {
-      if (!project || !customer) return toast.add({ title: 'Error', message: 'Proyecto no encontrado', type: 'error' })
+   function removeReference(reference: TattooReferenceObject) {
+      if (!draftProject) return
       if (!reference.url) return toast.add({ title: 'Error', message: 'URL no encontrada', type: 'error' })
 
-      const projectCopy = project.clone()
-      const ref = projectCopy.references.find((r) => r.url === reference.url)
+      const projectCopy = draftProject.clone()
 
-      if (!ref) return toast.add({ title: 'Error', message: 'Referencia no encontrada', type: 'error' })
+      if (!projectCopy.references.some((r) => r.url === reference.url)) {
+         return toast.add({ title: 'Error', message: 'Referencia no encontrada', type: 'error' })
+      }
 
       projectCopy.references = projectCopy.references.filter((r) => r.url !== reference.url)
-      setLoading((p) => ({
-         ...p,
-         references: p.references.filter((r) => r.url !== reference.url).concat({ url: ref.url })
-      }))
-
-      await updateProject(project.id, { removeReferences: [reference.url] })
-         .then((project) => {
-            addProject(customer.id, project)
-         })
-         .catch((error) => {
-            if (error instanceof Error && error.name === 'no_changes') return
-            projectCopy.references.push(ref)
-            addProject(customer.id, projectCopy)
-            toast.add({ title: 'Error', message: 'Error inesperado al eliminar la referencia', type: 'error' })
-         })
-         .finally(() => setLoading((p) => ({ ...p, references: p.references.filter((r) => r.url !== reference.url) })))
+      setDraftProject(projectCopy)
    }
 
-   if (!project || !customer) return <ProjectNotFound />
+   async function saveProject() {
+      if (!project || !customer || !draftProject || !draftCustomer || isSaving) return
+
+      setIsSaving(true)
+
+      try {
+         await updateCustomerAction(customer.id, draftCustomer.toObject())
+
+         const originalReferenceUrls = new Set(project.references.map((ref) => ref.url))
+         const draftReferenceUrls = new Set(draftProject.references.map((ref) => ref.url))
+         const removeReferences = [...originalReferenceUrls].filter((url) => !draftReferenceUrls.has(url))
+         const addReferences = draftProject.references
+            .filter((ref) => !originalReferenceUrls.has(ref.url) && ref.file)
+            .map((ref) => ref.file as File)
+
+         const projectChanges: {
+            projectName?: string
+            removeReferences?: string[]
+            addReferences?: File[]
+         } = {}
+
+         if (draftProject.projectName !== project.projectName) projectChanges.projectName = draftProject.projectName
+         if (removeReferences.length > 0) projectChanges.removeReferences = removeReferences
+         if (addReferences.length > 0) projectChanges.addReferences = addReferences
+         if (Object.keys(projectChanges).length > 0) await updateProject(project.id, projectChanges)
+
+         const originalSessionIds = new Set(project.sessions.map((session) => session.id))
+         const draftSessionIds = new Set(draftProject.sessions.map((session) => session.id))
+         const newSessions = draftProject.sessions.filter((session) => !originalSessionIds.has(session.id))
+         const existingSessions = draftProject.sessions.filter((session) => originalSessionIds.has(session.id))
+         const removedSessionIds = project.sessions
+            .filter((session) => !draftSessionIds.has(session.id))
+            .map((session) => session.id)
+
+         for (const session of existingSessions) {
+            const originalSession = project.sessions.find((s) => s.id === session.id)
+            if (!originalSession) continue
+
+            const sessionObject = session.toObject()
+            if (JSON.stringify(sessionObject) === JSON.stringify(originalSession.toObject())) continue
+
+            await updateSessionAction(sessionObject)
+         }
+         for (const session of newSessions) await createSessionWithRetry(session, project.id)
+         for (const sessionId of removedSessionIds) await deleteSession(sessionId)
+
+         setCustomers(await getCustomers())
+
+         setDraftProject(null)
+         setDraftCustomer(null)
+         setErrors({ customer: {}, project: {}, sessions: [] })
+         setIsEditing(false)
+      } catch (error: unknown) {
+         const message = error instanceof Error && error.name === 'session_time_conflict'
+            ? 'La hora de inicio de la sesión ya está ocupada'
+            : 'Error inesperado al actualizar el proyecto'
+
+         toast.add({ title: 'Error', message, type: 'error' })
+      } finally {
+         setIsSaving(false)
+      }
+   }
+
+   if (!project || !customer || !viewProject || !viewCustomer) return <ProjectNotFound />
 
    return (
       <form onSubmit={(e) => e.preventDefault()} className="flex size-full flex-1 flex-col gap-6">
+         <header className='flex items-center justify-end gap-2'>
+            {!isEditing &&
+               <button
+                  type='button'
+                  className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+                  onClick={startEditing}
+               >
+                  Actualizar projecto
+               </button>
+            }
+
+            {isEditing &&
+               <>
+                  <button
+                     type='button'
+                     className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+                     onClick={cancelEditing}
+                     disabled={isSaving}
+                  >
+                     Cancelar
+                  </button>
+
+                  <button
+                     type='button'
+                     className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+                     onClick={saveProject}
+                     disabled={isSaving}
+                  >
+                     {isSaving ? 'Guardando...' : 'Guardar projecto'}
+                  </button>
+               </>
+            }
+         </header>
+
+         <ProjectTitle
+            projectName={viewProject.projectName}
+            defaultView={isEditing ? 'Input' : 'Summary'}
+            onChange={updateProjectName}
+         />
+
          <div className='flex h-max w-full flex-col gap-6 xl:flex-row'>
             <Customer
-               customer={customer}
+               customer={viewCustomer}
                onChange={(key, value) => { updateCustomer(key, value) }}
-               loading={loading.customer}
-               enableEdit
+               enableEdit={isEditing}
+               view={isEditing ? 'Input' : 'Summary'}
                errors={Object.keys(errors.customer).map(key => {
                   const k = key as keyof typeof errors.customer
                   const v = errors.customer[k]
@@ -331,24 +353,24 @@ export default function ProjectView(props: Props) {
             />
 
             <References
-               references={project.references}
+               references={viewProject.references}
                onAddReference={(reference) => addReference(reference)}
                onRemoveReference={(reference) => removeReference(reference)}
-               loading={loading.references.map((r) => r.url)}
                errors={errors.references}
+               enableEdit={isEditing}
             />
          </div>
 
-         <Sessions onAddSession={(session) => addSession(session)}>
-            {project.sessions.map((session, index) => (
+         <Sessions onAddSession={(session) => addSession(session)} enableEdit={isEditing}>
+            {viewProject.sessions.map((session, index) => (
                <Session
                   key={session.id}
                   session={session}
                   index={index}
                   onDelete={(id) => removeSession(id)}
                   onChange={(changes) => updateSession(session.id, changes)}
-                  loading={loading.sessions.includes(session.id)}
-                  enableEdit
+                  enableEdit={isEditing}
+                  defaultView={isEditing ? 'Input' : 'Summary'}
                   errors={(errors.sessions.some(el => el.id === session.id))
                      ? Object.keys(errors.sessions.find(el => el.id === session.id) ?? {}).map(key => {
                         const k = key as keyof ErrorState['sessions'][number]

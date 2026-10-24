@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import RenderModal from '@/components/RenderModal'
-import EditSVG from '@/components/svg/EditSVG'
 import Loader from '@/components/ui/Loader'
 import { SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
 
@@ -26,21 +25,30 @@ interface Props {
 }
 
 export default function Session(props: Props) {
-   const [renderInput, setRenderInput] = useState(props.defaultView === 'Input')
    const [showPicker, setShowPicker] = useState<null | { starts_at: Date, ends_at: Date }>(null)
+   const renderInput = props.defaultView === 'Input'
 
-   useEffect(() => {
-      if (!renderInput || !props.enableEdit) return
+   let statusLabel = ''
+   let statusColor = ''
 
-      function onClickOutside(event: MouseEvent) {
-         const target = event.target as HTMLElement
-         if (!target || target.closest(`#session-${props.session.id}`)) return
-         setRenderInput(false)
-      }
-
-      document.addEventListener('click', onClickOutside)
-      return () => document.removeEventListener('click', onClickOutside)
-   }, [renderInput])
+   switch (props.session.status) {
+      case SessionStatus.PENDING:
+         statusLabel = 'Pendiente'
+         statusColor = 'text-gray-400'
+         break
+      case SessionStatus.IN_PROGRESS:
+         statusLabel = 'En progreso'
+         statusColor = 'text-orange-400'
+         break
+      case SessionStatus.FINISHED:
+         statusLabel = 'Finalizado'
+         statusColor = 'text-green-400'
+         break
+      case SessionStatus.CANCELED:
+         statusLabel = 'Cancelado'
+         statusColor = 'text-red-400'
+         break
+   }
 
    function toggleStatus() {
       const now = new Date()
@@ -73,46 +81,33 @@ export default function Session(props: Props) {
                   <div className='flex items-center gap-2'>
                      <h6 className="font-bold text-nowrap">{props.index + 1}° Sesión</h6>
 
-                     <button
-                        onClick={toggleStatus}
-                        className={'text-sm rounded-sm cursor-pointer transition-colors duration-200 hover:opacity-80' +
-                           (props.session.status === SessionStatus.PENDING ? ' text-gray-400' : '') +
-                           (props.session.status === SessionStatus.IN_PROGRESS ? ' text-orange-400' : '') +
-                           (props.session.status === SessionStatus.FINISHED ? ' text-green-400' : '') +
-                           (props.session.status === SessionStatus.CANCELED ? ' text-red-400' : '')
-                        }
-                     >
-                        {props.session.status === SessionStatus.PENDING && 'Pendiente'}
-                        {props.session.status === SessionStatus.IN_PROGRESS && 'En progreso'}
-                        {props.session.status === SessionStatus.CANCELED && 'Cancelado'}
-                        {props.session.status === SessionStatus.FINISHED && 'Finalizado'}
-                     </button>
+                     {props.enableEdit
+                        ? <button
+                           onClick={toggleStatus}
+                           className={'text-sm rounded-sm cursor-pointer transition-colors duration-200 hover:opacity-80 ' + statusColor}
+                        >
+                           {statusLabel}
+                        </button>
+                        : <p className={'text-sm ' + statusColor}>{statusLabel}</p>
+                     }
 
                      {props.loading && <Loader size='16px' />}
                   </div>
 
-                  <div className='flex items-center gap-2'>
-                     {(props.enableEdit) &&
+                  {props.enableEdit &&
+                     <div className='flex items-center gap-2'>
                         <button
-                           onClick={() => setRenderInput((prev) => !prev)}
-                           className='cursor-pointer transition-opacity duration-200 hover:opacity-80 disabled:cursor-default disabled:opacity-0'
-                           disabled={renderInput}
+                           onClick={() => props.onDelete?.(props.session.id)}
+                           className='cursor-pointer transition-opacity duration-200 hover:opacity-80 disabled:cursor-default disabled:opacity-35'
+                           disabled={props.loading}
                         >
-                           <EditSVG size='1em' />
+                           <svg xmlns="http://www.w3.org/2000/svg" width="1.4em" height="1.4em" viewBox="0 0 24 24">
+                              <path d="M0 0h24v24H0z" fill="none" />
+                              <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m16 16l-4-4m0 0L8 8m4 4l4-4m-4 4l-4 4" />
+                           </svg>
                         </button>
-                     }
-
-                     <button
-                        onClick={() => props.onDelete?.(props.session.id)}
-                        className='cursor-pointer transition-opacity duration-200 hover:opacity-80 disabled:cursor-default disabled:opacity-35'
-                        disabled={props.loading}
-                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="1.4em" height="1.4em" viewBox="0 0 24 24">
-                           <path d="M0 0h24v24H0z" fill="none" />
-                           <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m16 16l-4-4m0 0L8 8m4 4l4-4m-4 4l-4 4" />
-                        </svg>
-                     </button>
-                  </div>
+                     </div>
+                  }
                </header>
             </div>
 
