@@ -9,7 +9,6 @@ import { useParams } from 'next/navigation'
 import { useCustomers } from '@/app/_context/CustomersContext'
 import CustomerNotFound from '@/app/customers/_components/CustomerNotFound'
 
-
 export default function CustomerPage() {
    const params = useParams()
    const customerStore = useCustomers()

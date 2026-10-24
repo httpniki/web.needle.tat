@@ -4,11 +4,13 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import { getCustomers } from '@/actions/customer-actions';
+import { getInventory } from '@/actions/inventory-actions';
 
 import Navbar from './_components/Navbar';
 import NewAppointmentBtn from './_components/NewAppointmentBtn';
 import Topbar from './_components/Topbar';
 import CustomersProvider from './_context/CustomersContext'
+import InventoryProvider from './_context/InventoryContext'
 import ToastProvider from './_context/ToastContext'
 
 const geistSans = Geist({
@@ -26,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
-   const customers = await getCustomers()
+   const [customers, inventory] = await Promise.all([getCustomers(), getInventory()])
 
    return (
       <html
@@ -42,7 +44,9 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                <div className='relative flex size-full min-h-0 min-w-0 flex-1 overflow-y-auto'>
                   <ToastProvider>
                      <CustomersProvider customers={customers}>
-                        {children}
+                        <InventoryProvider inventory={inventory}>
+                           {children}
+                        </InventoryProvider>
                      </CustomersProvider>
                   </ToastProvider>
 

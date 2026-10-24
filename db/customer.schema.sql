@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS customers (
+   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   name VARCHAR(255) NOT NULL,
+   email VARCHAR(50) UNIQUE,
+   username VARCHAR(100) UNIQUE,
+   phone_number VARCHAR(50) UNIQUE,
+   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+   CONSTRAINT chk_customer_name_not_empty CHECK (length(trim(name)) > 0)
+);

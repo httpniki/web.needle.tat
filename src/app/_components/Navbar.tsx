@@ -147,9 +147,9 @@ export default function Navbar() {
          />
 
          <NavItem
-            href="/stock"
+            href="/inventory"
             hide={hidden}
-            label="Stock"
+            label="Inventario"
             icon={
                <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 1024 1024">
                   <path d="M0 0h1024v1024H0z" fill="none" />
