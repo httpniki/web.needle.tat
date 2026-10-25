@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ComponentProps, useEffect, useState } from 'react'
 
 import { updateSession } from '@/actions/session-actions'
+import { usePageHeader } from '@/app/_components/AppShell'
 import Calendar from '@/components/Calendar'
 import Schedule from '@/components/Schedule'
 import ContextMenu, { Button } from '@/components/ui/ContextMenu'
@@ -20,6 +21,8 @@ interface ContextMenu {
 }
 
 export default function CalendarPage() {
+   usePageHeader('Calendario')
+
    const { projects, calendar, addProject, findProject } = useProjects()
    const { findCustomerByProjectId } = useCustomers()
    const router = useRouter()

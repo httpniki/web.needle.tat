@@ -6,9 +6,8 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { getCustomers } from '@/actions/customer-actions';
 import { getInventory } from '@/actions/inventory-actions';
 
-import Navbar from './_components/Navbar';
+import AppShell from './_components/AppShell';
 import NewAppointmentBtn from './_components/NewAppointmentBtn';
-import Topbar from './_components/Topbar';
 import CustomersProvider from './_context/CustomersContext'
 import InventoryProvider from './_context/InventoryContext'
 import ToastProvider from './_context/ToastContext'
@@ -24,7 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-   title: 'Dashboard - Needle.tat'
+   title: 'Inicio - Needle.tat'
 };
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
@@ -35,24 +34,18 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
          lang="en"
          className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-         <body className="flex h-full min-h-screen flex-col bg-black-primary font-sans text-white">
-            <Topbar />
+         <body className="flex h-full min-h-screen flex-col font-sans text-white">
+            <AppShell>
+               <ToastProvider>
+                  <CustomersProvider customers={customers}>
+                     <InventoryProvider inventory={inventory}>
+                        {children}
+                     </InventoryProvider>
+                  </CustomersProvider>
+               </ToastProvider>
 
-            <div className='flex size-full min-h-0 flex-1 flex-col-reverse md:flex-row'>
-               <Navbar />
-
-               <div className='relative flex size-full min-h-0 min-w-0 flex-1 overflow-y-auto'>
-                  <ToastProvider>
-                     <CustomersProvider customers={customers}>
-                        <InventoryProvider inventory={inventory}>
-                           {children}
-                        </InventoryProvider>
-                     </CustomersProvider>
-                  </ToastProvider>
-
-                  <NewAppointmentBtn />
-               </div>
-            </div>
+               <NewAppointmentBtn />
+            </AppShell>
          </body>
       </html>
    );

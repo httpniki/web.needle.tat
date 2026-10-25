@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 
 import { createProduct, createProductType, decreaseProductStock, deleteProduct, increaseProductStock } from '@/actions/inventory-actions'
+import { usePageHeader } from '@/app/_components/AppShell'
 import { useInventory } from '@/app/_context/InventoryContext'
 import { useToast } from '@/app/_context/ToastContext'
 import SearchBar from '@/components/ui/SearchBar'
@@ -13,6 +14,8 @@ import NewProductForm from './_components/NewProductForm'
 import ProductCard from './_components/ProductCard'
 
 export default function InventoryPage() {
+   usePageHeader('Stock')
+
    const inventoryStore = useInventory()
    const toast = useToast()
 
@@ -105,8 +108,8 @@ export default function InventoryPage() {
 
    return (
       <main className='flex w-full flex-col gap-4 p-4 md:px-8'>
-         <header className='mt-4 flex items-start justify-between gap-4'>
-            <div className='flex flex-col gap-1'>
+         <header className='mt-4 flex items-start justify-between gap-4 md:justify-end'>
+            <div className='flex flex-col gap-1 md:hidden'>
                <h1 className='text-2xl font-bold'>
                   Stock
                </h1>

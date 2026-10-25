@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import { getCustomers, updateCustomer as updateCustomerAction } from '@/actions/customer-actions'
 import { updateProject } from '@/actions/project-actions'
 import { createSession, deleteSession, updateSession as updateSessionAction } from '@/actions/session-actions'
+import { usePageHeader } from '@/app/_components/AppShell'
 import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
 import { useToast } from '@/app/_context/ToastContext'
 import CustomerDomain, { CustomerObject } from '@/domain/Customer'
@@ -17,7 +18,7 @@ import DomainException from '@/utils/exceptions/domain-exception'
 import { isKeyOf } from '@/utils/utils'
 
 import Customer from './project/Customer'
-import ProjectTitle from './project/ProjectTitle'
+import ProjectDetails from './project/ProjectDetails'
 import References from './project/References'
 import Session from './project/Session'
 import Sessions from './project/Sessions'
@@ -42,6 +43,8 @@ interface Props {
 }
 
 export default function ProjectView(props: Props) {
+   usePageHeader('Proyecto')
+
    const toast = useToast()
    const { projects, calendar } = useProjects()
    const { findCustomerByProjectId, setCustomers } = useCustomers()
@@ -296,41 +299,53 @@ export default function ProjectView(props: Props) {
 
    return (
       <form onSubmit={(e) => e.preventDefault()} className="flex size-full flex-1 flex-col gap-6">
-         <header className='flex items-center justify-end gap-2'>
-            {!isEditing &&
-               <button
-                  type='button'
-                  className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
-                  onClick={startEditing}
-               >
-                  Actualizar projecto
-               </button>
-            }
+         <header className='mt-4 flex items-start justify-between gap-4 md:justify-end'>
+            <div className='flex min-w-0 flex-col gap-1 md:hidden'>
+               <h1 className='text-2xl font-bold'>
+                  Proyecto
+               </h1>
 
-            {isEditing &&
-               <>
+               <p className='truncate text-sm text-gray-400'>
+                  Proyecto de {viewCustomer.name}
+               </p>
+            </div>
+
+            <div className='flex shrink-0 items-center gap-2'>
+               {!isEditing &&
                   <button
                      type='button'
                      className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
-                     onClick={cancelEditing}
-                     disabled={isSaving}
+                     onClick={startEditing}
                   >
-                     Cancelar
+                     Actualizar projecto
                   </button>
+               }
 
-                  <button
-                     type='button'
-                     className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
-                     onClick={saveProject}
-                     disabled={isSaving}
-                  >
-                     {isSaving ? 'Guardando...' : 'Guardar projecto'}
-                  </button>
-               </>
-            }
+               {isEditing &&
+                  <>
+                     <button
+                        type='button'
+                        className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+                        onClick={cancelEditing}
+                        disabled={isSaving}
+                     >
+                        Cancelar
+                     </button>
+
+                     <button
+                        type='button'
+                        className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+                        onClick={saveProject}
+                        disabled={isSaving}
+                     >
+                        {isSaving ? 'Guardando...' : 'Guardar projecto'}
+                     </button>
+                  </>
+               }
+            </div>
          </header>
 
-         <ProjectTitle
+         <ProjectDetails
             projectName={viewProject.projectName}
             defaultView={isEditing ? 'Input' : 'Summary'}
             onChange={updateProjectName}

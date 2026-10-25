@@ -43,7 +43,7 @@ export default function References(props: Props) {
       <section className="flex-1 rounded-sm border border-gray-primary p-6 xl:max-w-2/4">
          {(preview) && <ReferencePreview url={preview} />}
 
-         <div className='size-full'>
+         <div>
             <div className='mt-1 flex items-center justify-end'>
                {props.references.length > 0 && props.errors &&
                   <div className='flex gap-2'>
@@ -52,9 +52,9 @@ export default function References(props: Props) {
                }
             </div>
 
-            <ul className='flex size-full min-w-0 flex-col items-start gap-2'>
+            <ul className='flex min-w-0 flex-col items-start gap-2'>
                {props.references.length === 0 && props.enableEdit &&
-                  <label className='flex size-full justify-center items-center bg-black-main border border-gray-primary text-nowrap cursor-pointer hover:opacity-80 p-4 overflow-hidden max-h-54'>
+                  <label className='flex size-full max-h-54 cursor-pointer items-center justify-center overflow-hidden border border-gray-primary bg-black-primary p-4 text-nowrap hover:opacity-80'>
                      <input
                         ref={refInputFile}
                         className="hidden"

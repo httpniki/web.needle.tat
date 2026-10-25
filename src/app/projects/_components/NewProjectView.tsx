@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
 import { createProject } from '@/actions/project-actions'
+import { usePageHeader } from '@/app/_components/AppShell'
 import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
 import { useToast } from '@/app/_context/ToastContext'
 import Loader from '@/components/ui/Loader'
@@ -17,7 +18,7 @@ import DomainException from '@/utils/exceptions/domain-exception'
 import { isKeyOf } from '@/utils/utils'
 
 import Customer from './project/Customer'
-import ProjectTitle from './project/ProjectTitle'
+import ProjectDetails from './project/ProjectDetails'
 import References from './project/References'
 import Session from './project/Session'
 import Sessions from './project/Sessions'
@@ -41,6 +42,8 @@ interface Props {
 }
 
 export default function NewProjectView(props: Props) {
+   usePageHeader('Nuevo proyecto')
+
    const [project, setProject] = useState<TattooProject>(() => {
       const project = new TattooProject()
       const newSession = new TattooSession()
@@ -300,25 +303,16 @@ export default function NewProjectView(props: Props) {
 
    return (
       <form onSubmit={(e) => e.preventDefault()} className="flex w-full flex-col gap-6">
-         <header className="flex items-center justify-between">
-            <h1 className="flex items-center gap-2 text-lg font-bold">
-               <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="1.1em"
-                  height="1.1em"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-               >
-                  <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
-               </svg>
+         <header className="mt-4 flex items-start justify-between gap-4 md:justify-end">
+            <div className='flex flex-col gap-1 md:hidden'>
+               <h1 className='text-2xl font-bold'>
+                  Nuevo proyecto
+               </h1>
 
-               Nuevo projecto
-            </h1>
+               <p className='text-sm text-gray-400'>
+                  Crea un nuevo proyecto y agenda su primera sesión.
+               </p>
+            </div>
 
             <div className='flex items-center gap-2'>
                <button
@@ -343,7 +337,7 @@ export default function NewProjectView(props: Props) {
 
          {(!loading) &&
             <>
-               <ProjectTitle
+               <ProjectDetails
                   projectName={project.projectName}
                   defaultView='Input'
                   onChange={(value) => {

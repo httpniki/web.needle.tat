@@ -1,3 +1,7 @@
+import type { Metadata } from 'next'
+
+import { getProject } from '@/actions/project-actions'
+
 import NewProjectView from './_components/NewProjectView'
 import ProjectsView from './_components/ProjectsView'
 import ProjectView from './_components/ProjectView'
@@ -12,6 +16,23 @@ interface SearchParams {
 
 interface Props {
    searchParams: Promise<SearchParams>
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+   const paramsObj = await searchParams
+
+   if (paramsObj.new === 'true') return { title: 'Nuevo projecto - Needle.tat' }
+
+   if (paramsObj.id) {
+      try {
+         const project = await getProject({ projectId: paramsObj.id })
+         return { title: `${project.projectName || 'Proyecto'} - Needle.tat` }
+      } catch {
+         return { title: 'Proyecto - Needle.tat' }
+      }
+   }
+
+   return { title: 'Projectos - Needle.tat' }
 }
 
 export default async function ProjectsPage(props: Props) {

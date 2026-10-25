@@ -3,16 +3,31 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
+import { usePageHeader } from '@/app/_components/AppShell'
 import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
 import SearchBar from '@/components/ui/SearchBar'
 
 export default function ProjectsView() {
+   usePageHeader('Proyectos')
+
    const { projects } = useProjects()
    const { findCustomerByProjectId } = useCustomers()
    const router = useRouter()
 
    return (
       <article className='flex w-full flex-col gap-4'>
+         <header className='mt-4 flex items-start justify-between gap-4 md:hidden'>
+            <div className='flex flex-col gap-1'>
+               <h1 className='text-2xl font-bold'>
+                  Proyectos
+               </h1>
+
+               <p className='text-sm text-gray-400'>
+                  Proyectos de tatuaje y su avance en el estudio.
+               </p>
+            </div>
+         </header>
+
          <SearchBar placeholder='Buscar...' />
 
          <ul className="grid gap-2 md:grid-cols-[repeat(auto-fill,minmax(400px,1fr))]">

@@ -1,9 +1,9 @@
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
    title: 'Projectos - Needle.tat'
 }
 
-export default function Layout({ children }: LayoutProps<'/projects'>) {
+export default function ProjectsLayout({ children }: LayoutProps<'/projects'>) {
    return children
 }

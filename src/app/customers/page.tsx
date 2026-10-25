@@ -6,9 +6,12 @@ import { useMemo, useState } from 'react'
 import SearchBar from '@/components/ui/SearchBar'
 import CustomerDomain from '@/domain/Customer'
 
+import { usePageHeader } from '../_components/AppShell'
 import { useCustomers, useProjects } from '../_context/CustomersContext'
 
 export default function CustomerPage() {
+   usePageHeader('Clientes')
+
    const projectStore = useProjects()
    const customersStore = useCustomers()
    const [query, setQuery] = useState('')
@@ -46,6 +49,18 @@ export default function CustomerPage() {
 
    return (
       <main className='flex min-h-max w-full flex-col gap-4 p-4 md:px-8'>
+         <header className='mt-4 flex items-start justify-between gap-4 md:hidden'>
+            <div className='flex flex-col gap-1'>
+               <h1 className='text-2xl font-bold'>
+                  Clientes
+               </h1>
+
+               <p className='text-sm text-gray-400'>
+                  Clientes registrados en el estudio.
+               </p>
+            </div>
+         </header>
+
          <SearchBar
             placeholder='Buscar cliente...'
             onChange={(event) => setQuery(event.target.value)}

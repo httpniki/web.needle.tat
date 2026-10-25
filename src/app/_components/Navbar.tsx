@@ -2,33 +2,24 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'
-import { useState } from 'react';
 
-export default function Navbar() {
-   const [hidden, setHidden] = useState(false)
+interface NavbarProps {
+   hidden: boolean
+}
 
+export default function Navbar({ hidden }: NavbarProps) {
    return (
-      <nav className={`sticky inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2 border-t border-gray-primary bg-black-primary px-2 py-4 transition-all duration-300 ease-in-out md:inset-y-0 md:flex-col md:items-start md:justify-start md:border-t-0 md:border-r lg:left-0 ${hidden ? 'md:w-16' : 'md:w-52'}`}>
-         <div className={`w-full ${hidden ? ' hidden items-center justify-center md:flex' : ' hidden justify-end md:flex'}`}>
-            <button
-               className="flex cursor-pointer justify-center p-1 transition-all duration-200 hover:opacity-80"
-               onClick={() => setHidden((prev) => !prev)}
-            >
-               <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="1.5em"
-                  height="1.5em"
-                  viewBox="0 0 24 24"
-                  className={'transition-transform duration-300' + (hidden ? ' rotate-180' : '')}
-               >
-                  <path d="M0 0h24v24H0z" fill="none" />
-                  <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
-                     <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm11-2v16" />
-                     <path d="m10 10l-2 2l2 2" />
-                  </g>
-               </svg>
-            </button>
-         </div>
+      <nav className={`sticky inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2 border-t border-gray-primary bg-black-secondary px-2 py-4 transition-all duration-300 ease-in-out md:inset-y-0 md:h-full md:flex-col md:items-start md:justify-start md:border-t-0 lg:left-0 ${hidden ? 'md:w-16' : 'md:w-52'}`}>
+         <Link href="/" className={`hidden cursor-pointer items-center gap-2 py-2 text-lg font-bold text-white transition-colors duration-200 hover:opacity-80 md:flex md:w-full ${hidden ? 'justify-center px-2' : 'px-4'}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 15 15">
+               <path d="M0 0h15v15H0z" fill="none" />
+               <path fill="currentColor" d="M8.55 2.03a3.006 3.006 0 0 1 4.19-.67c.23.17.28.48.11.7c-.16.23-.47.28-.69.11c-.9-.65-2.15-.45-2.8.45l5.26 3.82c.22.16.27.47.11.69c-.16.23-.47.28-.7.12l-.4-.3l-1.77 2.43l-.4-.3l-.59.81l.81.59c.22.16.27.48.11.7s-.47.27-.7.11L5.84 7.47l-.59.81l.4.29a.5.5 0 0 1 .11.7l-2.35 3.24c-.16.22-.47.27-.7.11l-.4-.3l-.59.81l-1.58 1.33l.77-1.91l.59-.81l-.41-.3a.506.506 0 0 1-.11-.7l2.36-3.23c.16-.23.47-.27.69-.11l.41.29l.59-.81l-1.62-1.17l-.3.4c-.16.22-.47.27-.69.11l-.81-.59a.48.48 0 0 1-.11-.69l1.17-1.62a.49.49 0 0 1 .7-.11l.81.58c.22.17.27.48.11.7L4 4.9l1.61 1.17l2.36-3.23l-.41-.3a.506.506 0 0 1-.11-.7c.16-.22.47-.27.7-.11zm.22 1.39L6.42 6.66l1.22.88l.58-.81l-.4-.29l1.76-2.43zm3.24 2.36l-.81-.59l-1.76 2.43l-.41-.3l-.58.81l1.61 1.18l.59-.81l-.4-.3z" />
+            </svg>
+
+            <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${hidden ? 'hidden max-w-0 opacity-0' : 'hidden max-w-xs opacity-100 md:inline-block'}`}>
+               Needle.tat
+            </span>
+         </Link>
 
          <NavItem
             href="/"

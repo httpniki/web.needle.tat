@@ -7,7 +7,7 @@ interface Props {
    defaultView?: 'Input' | 'Summary'
 }
 
-export default function ProjectTitle(props: Props) {
+export default function ProjectDetails(props: Props) {
    const renderInput = props.defaultView === 'Input'
 
    return (

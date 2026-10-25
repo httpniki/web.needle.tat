@@ -1,7 +1,13 @@
+'use client'
+
+import { usePageHeader } from '@/app/_components/AppShell'
+
 export default function Home() {
+   usePageHeader('Home')
+
    return (
       <main className='flex w-full flex-col items-center p-4 md:px-8'>
-         <h1 className="mt-8 text-2xl font-bold">
+         <h1 className="mt-8 text-2xl font-bold md:hidden">
             Home
          </h1>
 
