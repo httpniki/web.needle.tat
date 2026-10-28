@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'
 
+import { logout } from '@/actions/auth-actions'
+
 interface NavbarProps {
    hidden: boolean
 }
@@ -148,6 +150,23 @@ export default function Navbar({ hidden }: NavbarProps) {
                </svg>
             }
          />
+
+         <form action={logout} className='md:mt-auto md:w-full'>
+            <button
+               type='submit'
+               className={`flex h-min w-full cursor-pointer items-center gap-2 rounded-sm py-1.5 text-white transition-colors duration-200 hover:bg-gray-primary hover:opacity-80 ${hidden ? 'items-center justify-center px-2' : 'px-4'}`}
+            >
+               <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <path d="m16 17 5-5-5-5" />
+                  <path d="M21 12H9" />
+               </svg>
+
+               <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${hidden ? 'hidden max-w-0 opacity-0' : 'hidden max-w-xs opacity-100 md:inline-block'}`}>
+                  Cerrar sesión
+               </span>
+            </button>
+         </form>
       </nav>
    )
 }

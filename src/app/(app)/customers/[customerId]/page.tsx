@@ -8,7 +8,8 @@ import { useParams } from 'next/navigation'
 
 import { usePageHeader } from '@/app/_components/AppShell'
 import { useCustomers } from '@/app/_context/CustomersContext'
-import CustomerNotFound from '@/app/customers/_components/CustomerNotFound'
+
+import CustomerNotFound from '../_components/CustomerNotFound'
 
 export default function CustomerPage() {
    const params = useParams()

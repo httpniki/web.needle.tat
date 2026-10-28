@@ -6,13 +6,12 @@ import { ComponentProps, useEffect, useState } from 'react'
 
 import { updateSession } from '@/actions/session-actions'
 import { usePageHeader } from '@/app/_components/AppShell'
+import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
+import { useToast } from '@/app/_context/ToastContext'
 import Calendar from '@/components/Calendar'
 import Schedule from '@/components/Schedule'
 import ContextMenu, { Button } from '@/components/ui/ContextMenu'
 import TattooSession, { SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
-
-import { useCustomers, useProjects } from '../_context/CustomersContext'
-import { useToast } from '../_context/ToastContext'
 
 interface ContextMenu {
    position: { x: number, y: number }

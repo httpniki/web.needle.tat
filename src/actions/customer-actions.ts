@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers'
 
 import { CustomerObject } from '@/domain/Customer'
+import { requireArtist } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 
 import ActionException from '../utils/exceptions/action-exception'
@@ -25,6 +26,8 @@ interface CustomerModel {
 }
 
 export async function createCustomer(body: NewCustomer): Promise<CustomerObject> {
+   await requireArtist()
+
    const cookieStore = await cookies()
    const db = createClient(cookieStore)
 
@@ -181,6 +184,8 @@ export async function getCustomers(): Promise<CustomerObject[]> {
 }
 
 export async function updateCustomer(id: number, body: CustomerObject): Promise<CustomerObject> {
+   await requireArtist()
+
    const cookieStore = await cookies()
    const db = createClient(cookieStore)
 

@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers'
 
 import { Currency, SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
+import { requireArtist } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 
 import ServerActionException from '../utils/exceptions/action-exception'
@@ -31,6 +32,8 @@ interface SessionModel {
 }
 
 export async function createSession(newSession: NewSession): Promise<TattooSessionObject> {
+   await requireArtist()
+
    const db = createClient(await cookies())
 
    if (newSession.starts_at instanceof Date && isNaN(newSession.starts_at.getTime())) {
@@ -182,6 +185,8 @@ export async function findSessionsByProjectId(projectId: number): Promise<Tattoo
 }
 
 export async function updateSession(session: TattooSessionObject): Promise<TattooSessionObject> {
+   await requireArtist()
+
    const db = createClient(await cookies())
    const { id, ...payload } = session
 
@@ -244,6 +249,8 @@ export async function updateSession(session: TattooSessionObject): Promise<Tatto
 }
 
 export async function deleteSession(id: TattooSessionObject['id']): Promise<void> {
+   await requireArtist()
+
    const db = createClient(await cookies())
 
    const { data: sessionData, error: sessionError } = await db

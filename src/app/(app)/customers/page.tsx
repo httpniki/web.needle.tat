@@ -3,11 +3,10 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
+import { usePageHeader } from '@/app/_components/AppShell'
+import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
 import SearchBar from '@/components/ui/SearchBar'
 import CustomerDomain from '@/domain/Customer'
-
-import { usePageHeader } from '../_components/AppShell'
-import { useCustomers, useProjects } from '../_context/CustomersContext'
 
 export default function CustomerPage() {
    usePageHeader('Clientes')

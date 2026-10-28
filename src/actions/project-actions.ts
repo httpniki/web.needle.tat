@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { CustomerObject } from '@/domain/Customer'
 import { TattooProjectObject } from '@/domain/TattooProject'
 import { TattooSessionObject } from '@/domain/TattooSession'
+import { requireArtist } from '@/lib/auth'
 import { deleteFromCloudinary } from '@/lib/cloudinary/delete'
 import { uploadFile } from '@/lib/cloudinary/upload'
 import { createClient } from '@/lib/supabase/server'
@@ -33,6 +34,8 @@ export async function createProject({ customer, project }: CreateProjectParams):
    customer: CustomerObject
    project: TattooProjectObject
 }> {
+   await requireArtist()
+
    const db = createClient(await cookies())
    let c: CustomerObject | null = null
 
@@ -210,6 +213,8 @@ export interface UpdateProjectParams {
 }
 
 export async function updateProject(id: ProjectModel['id'], data: UpdateProjectParams): Promise<TattooProjectObject> {
+   await requireArtist()
+
    const db = createClient(await cookies())
    const currentProject = await getProject({ projectId: String(id) })
 

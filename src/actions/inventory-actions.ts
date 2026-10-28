@@ -6,6 +6,7 @@ import { InventoryObject } from '@/domain/inventory/Inventory'
 import { ProductObject } from '@/domain/inventory/Product'
 import { ProductAttributeObject } from '@/domain/inventory/ProductAttribute'
 import { ProductTypeObject } from '@/domain/inventory/ProductType'
+import { requireArtist } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 
 import ActionException from '../utils/exceptions/action-exception'
@@ -52,6 +53,8 @@ export interface NewProduct {
 }
 
 export async function createProduct(body: NewProduct): Promise<ProductObject> {
+   await requireArtist()
+
    const db = createClient(await cookies())
 
    const name = body.name.trim()
@@ -245,6 +248,8 @@ async function updateProductStock(id: number, stock: number): Promise<ProductObj
 }
 
 export async function increaseProductStock(id: number, quantity: number = 1): Promise<ProductObject> {
+   await requireArtist()
+
    if (!Number.isInteger(quantity) || quantity <= 0) {
       const err = new ActionException('Quantity must be a positive integer')
       err.name = 'invalid_quantity'
@@ -256,6 +261,8 @@ export async function increaseProductStock(id: number, quantity: number = 1): Pr
 }
 
 export async function decreaseProductStock(id: number, quantity: number = 1): Promise<ProductObject> {
+   await requireArtist()
+
    if (!Number.isInteger(quantity) || quantity <= 0) {
       const err = new ActionException('Quantity must be a positive integer')
       err.name = 'invalid_quantity'
@@ -275,6 +282,8 @@ export async function decreaseProductStock(id: number, quantity: number = 1): Pr
 }
 
 export async function deleteProduct(id: number): Promise<void> {
+   await requireArtist()
+
    const db = createClient(await cookies())
 
    await findProductById(id)
@@ -289,6 +298,8 @@ export async function deleteProduct(id: number): Promise<void> {
 }
 
 export async function createProductType(value: string): Promise<ProductTypeObject> {
+   await requireArtist()
+
    const db = createClient(await cookies())
    const normalizedValue = value.trim()
 
