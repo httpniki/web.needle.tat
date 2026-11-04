@@ -3,14 +3,16 @@
 import { useMemo, useState } from 'react'
 
 import { createProduct, createProductType, decreaseProductStock, deleteProduct, increaseProductStock } from '@/actions/inventory-actions'
-import { usePageHeader } from '@/app/_components/AppShell'
-import { useInventory } from '@/app/_context/InventoryContext'
-import { useToast } from '@/app/_context/ToastContext'
+import { usePageHeader } from '@/app/(app)/_components/AppShell'
+import { useInventory } from '@/app/(app)/_context/InventoryContext'
+import { useToast } from '@/app/(app)/_context/ToastContext'
+import Button from '@/components/ui/buttons/Button'
 import SearchBar from '@/components/ui/SearchBar'
 import { Product } from '@/domain/inventory/Product'
+import { ProductType } from '@/domain/inventory/ProductType'
 
+import AddProductForm from './_components/AddProductForm'
 import DeleteProductModal from './_components/DeleteProductModal'
-import NewProductForm from './_components/NewProductForm'
 import ProductCard from './_components/ProductCard'
 
 export default function InventoryPage() {
@@ -40,27 +42,26 @@ export default function InventoryPage() {
       })
    }, [inventoryStore.products, searchQuery, typeFilter])
 
+   async function handleCreateProductType(value: string): Promise<ProductType> {
+      const existingType = inventoryStore.productTypes.find((type) => normalize(type.value) === normalize(value))
+
+      if (existingType) return existingType
+
+      const createdType = await createProductType(value)
+
+      return inventoryStore.addProductType(createdType)
+   }
+
    async function handleAddProduct(product: Product) {
       try {
          let typeId = product.type.id
 
-         if (typeId === 0) {
-            const existingType = inventoryStore.productTypes.find((type) => normalize(type.value) === normalize(product.type.value))
+         if (typeId === 0) typeId = (await handleCreateProductType(product.type.value)).id
 
-            if (existingType) typeId = existingType.id
+         const productObject = product.toObject()
+         productObject.type = { id: typeId, value: product.type.value }
 
-            if (!existingType) {
-               const createdType = await createProductType(product.type.value)
-               typeId = inventoryStore.addProductType(createdType).id
-            }
-         }
-
-         const createdProduct = await createProduct({
-            name: product.name,
-            brand: product.brand,
-            stock: product.stock,
-            typeId
-         })
+         const createdProduct = await createProduct(productObject)
 
          inventoryStore.addProduct(createdProduct)
          setIsAddingProduct(false)
@@ -108,8 +109,8 @@ export default function InventoryPage() {
 
    return (
       <main className='flex w-full flex-col gap-4 p-4 md:px-8'>
-         <header className='mt-4 flex items-start justify-between gap-4 md:justify-end'>
-            <div className='flex flex-col gap-1 md:hidden'>
+         <header className='mt-4 flex items-start justify-between gap-4'>
+            <div className='flex flex-col gap-1'>
                <h1 className='text-2xl font-bold'>
                   Stock
                </h1>
@@ -119,8 +120,9 @@ export default function InventoryPage() {
                </p>
             </div>
 
-            <button
-               className='flex shrink-0 cursor-pointer items-center gap-2 rounded-md border bg-gray-primary px-3 py-2 text-sm text-white transition-opacity hover:opacity-80'
+            <Button
+               variant='filled'
+               className='shrink-0'
                onClick={() => setIsAddingProduct(true)}
             >
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" width="1em" height="1em">
@@ -128,7 +130,7 @@ export default function InventoryPage() {
                </svg>
 
                Agregar producto
-            </button>
+            </Button>
          </header>
 
          <section className='flex flex-wrap items-center gap-2 text-xs'>
@@ -185,9 +187,11 @@ export default function InventoryPage() {
          </ul>
 
          {isAddingProduct &&
-            <NewProductForm
+            <AddProductForm
                productTypes={inventoryStore.productTypes}
+               brands={inventoryStore.brands}
                onAdd={handleAddProduct}
+               onCreateType={handleCreateProductType}
                onClose={() => setIsAddingProduct(false)}
             />
          }

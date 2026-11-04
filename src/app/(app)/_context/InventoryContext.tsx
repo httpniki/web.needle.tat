@@ -4,7 +4,7 @@ import React, { createContext, useContext, useMemo, useState } from 'react'
 
 import Inventory, { InventoryObject } from '@/domain/inventory/Inventory'
 import { Product, ProductObject } from '@/domain/inventory/Product'
-import { ProductAttribute } from '@/domain/inventory/ProductAttribute'
+import { createProductFromObject } from '@/domain/inventory/products'
 import { ProductType, ProductTypeObject } from '@/domain/inventory/ProductType'
 
 type ProductInput = Product | ProductObject
@@ -106,15 +106,7 @@ function toInventory(inventory: InventoryObject): Inventory {
 function toProduct(product: ProductInput): Product {
    if (product instanceof Product) return product
 
-   return new Product({
-      ...product,
-      type: toProductType(product.type),
-      attributes: product.attributes.map((attribute) => new ProductAttribute({
-         attributeId: attribute.attributeId,
-         name: attribute.name,
-         value: attribute.value
-      }))
-   })
+   return createProductFromObject(product)
 }
 
 function toProductType(productType: ProductTypeInput): ProductType {

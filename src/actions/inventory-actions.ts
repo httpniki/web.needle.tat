@@ -44,15 +44,7 @@ export interface NewProductAttribute {
    value: string
 }
 
-export interface NewProduct {
-   name: string
-   brand: string
-   stock: number
-   typeId: number
-   attributes?: NewProductAttribute[]
-}
-
-export async function createProduct(body: NewProduct): Promise<ProductObject> {
+export async function createProduct(body: ProductObject): Promise<ProductObject> {
    await requireArtist()
 
    const db = createClient(await cookies())
@@ -78,13 +70,13 @@ export async function createProduct(body: NewProduct): Promise<ProductObject> {
       throw err
    }
 
-   if (!Number.isInteger(body.typeId) || body.typeId <= 0) {
+   if (!Number.isInteger(body.type.id) || body.type.id <= 0) {
       const err = new ActionException('Invalid product type')
       err.name = 'invalid_product_type'
       throw err
    }
 
-   const typeResult = await db.from('product_type').select<string, ProductTypeModel>('*').eq('product_type_id', body.typeId).limit(1)
+   const typeResult = await db.from('product_type').select<string, ProductTypeModel>('*').eq('product_type_id', body.type.id).limit(1)
 
    if (typeResult.error) {
       const err = new ActionException('Unexpected error validating product type')
@@ -95,7 +87,7 @@ export async function createProduct(body: NewProduct): Promise<ProductObject> {
    if (typeResult.data.length === 0) {
       const err = new ActionException('Product type not found')
       err.name = 'product_type_not_found'
-      err.data = { typeId: String(body.typeId) }
+      err.data = { typeId: String(body.type.id) }
       throw err
    }
 
@@ -118,7 +110,7 @@ export async function createProduct(body: NewProduct): Promise<ProductObject> {
 
    const result = await db
       .from('products')
-      .insert({ name, stock: body.stock, product_type_id: body.typeId })
+      .insert({ name, stock: body.stock, product_type_id: body.type.id })
       .select<string, ProductModel>('*')
       .single()
 
