@@ -1,5 +1,7 @@
 import { CaptionLabelProps } from '@daypicker/react'
 
+import Button from '../ui/buttons/Button'
+
 type Props = CaptionLabelProps & {
    date: Date
    handlePreviousMonth: () => void
@@ -12,10 +14,10 @@ export default function CalendarHeader(props: Props) {
    return (
       <div className="mb-4 flex w-full items-center justify-between px-2">
          <div className="flex w-full items-center justify-between">
-            <button
-               type="button"
+            <Button
+               variant='outline'
                onClick={handlePreviousMonth}
-               className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-primary px-3 py-1 transition-all hover:opacity-80"
+               className="flex items-center gap-2 py-1.5!"
                aria-label="Mes anterior"
             >
                <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">
@@ -24,7 +26,7 @@ export default function CalendarHeader(props: Props) {
                </svg>
 
                Anterior
-            </button>
+            </Button>
          </div>
 
          <div>
@@ -37,11 +39,11 @@ export default function CalendarHeader(props: Props) {
          </div>
 
          <div className="flex w-full items-center justify-end">
-            <button
-               type="button"
+            <Button
                onClick={handleNextMonth}
-               className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-primary px-3 py-1 transition-all hover:opacity-80"
+               className="flex items-center gap-2 py-1.5!"
                aria-label="Mes siguiente"
+               variant='outline'
             >
                Siguiente
 
@@ -49,7 +51,7 @@ export default function CalendarHeader(props: Props) {
                   <path d="M0 0h24v24H0z" fill="none" />
                   <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M4 12h15m-5 5.657L19.657 12L14 6.343" />
                </svg>
-            </button>
+            </Button>
          </div>
 
       </div>

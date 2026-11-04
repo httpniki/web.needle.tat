@@ -1,6 +1,6 @@
 'use client'
 
-import { usePageHeader } from '@/app/_components/AppShell'
+import { usePageHeader } from '@/app/(app)/_components/AppShell'
 
 export default function Home() {
    usePageHeader('Home')

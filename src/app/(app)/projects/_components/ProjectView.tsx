@@ -6,9 +6,7 @@ import { useMemo, useState } from 'react'
 import { getCustomers, updateCustomer as updateCustomerAction } from '@/actions/customer-actions'
 import { updateProject } from '@/actions/project-actions'
 import { createSession, deleteSession, updateSession as updateSessionAction } from '@/actions/session-actions'
-import { usePageHeader } from '@/app/_components/AppShell'
-import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
-import { useToast } from '@/app/_context/ToastContext'
+import Button from '@/components/ui/buttons/Button'
 import CustomerDomain, { CustomerObject } from '@/domain/Customer'
 import TattooProject from '@/domain/TattooProject'
 import TattooReference, { TattooReferenceObject } from '@/domain/TattooReference'
@@ -17,6 +15,9 @@ import { ClassProperties } from '@/types/types'
 import DomainException from '@/utils/exceptions/domain-exception'
 import { isKeyOf } from '@/utils/utils'
 
+import { usePageHeader } from '../../_components/AppShell'
+import { useCustomers, useProjects } from '../../_context/CustomersContext'
+import { useToast } from '../../_context/ToastContext'
 import Customer from './project/Customer'
 import ProjectDetails from './project/ProjectDetails'
 import References from './project/References'
@@ -299,8 +300,8 @@ export default function ProjectView(props: Props) {
 
    return (
       <form onSubmit={(e) => e.preventDefault()} className="flex size-full flex-1 flex-col gap-6">
-         <header className='mt-4 flex items-start justify-between gap-4 md:justify-end'>
-            <div className='flex min-w-0 flex-col gap-1 md:hidden'>
+         <header className='mt-4 flex items-start justify-between gap-4'>
+            <div className='flex min-w-0 flex-col gap-1'>
                <h1 className='text-2xl font-bold'>
                   Proyecto
                </h1>
@@ -312,34 +313,34 @@ export default function ProjectView(props: Props) {
 
             <div className='flex shrink-0 items-center gap-2'>
                {!isEditing &&
-                  <button
-                     type='button'
-                     className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+                  <Button
+                     variant='filled'
+                     className='w-min text-nowrap'
                      onClick={startEditing}
                   >
                      Actualizar projecto
-                  </button>
+                  </Button>
                }
 
                {isEditing &&
                   <>
-                     <button
-                        type='button'
-                        className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+                     <Button
+                        variant='outline'
+                        className='w-min text-nowrap'
                         onClick={cancelEditing}
                         disabled={isSaving}
                      >
                         Cancelar
-                     </button>
+                     </Button>
 
-                     <button
-                        type='button'
-                        className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+                     <Button
+                        variant='filled'
+                        className='w-min text-nowrap'
                         onClick={saveProject}
                         disabled={isSaving}
                      >
                         {isSaving ? 'Guardando...' : 'Guardar projecto'}
-                     </button>
+                     </Button>
                   </>
                }
             </div>

@@ -6,8 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
-import { usePageHeader } from '@/app/_components/AppShell'
-import { useCustomers } from '@/app/_context/CustomersContext'
+import { usePageHeader } from '@/app/(app)/_components/AppShell'
+import { useCustomers } from '@/app/(app)/_context/CustomersContext'
 
 import CustomerNotFound from '../_components/CustomerNotFound'
 

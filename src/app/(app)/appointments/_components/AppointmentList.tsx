@@ -4,7 +4,7 @@ import { format, isToday, isTomorrow, startOfDay } from 'date-fns'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
-import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
+import { useCustomers, useProjects } from '@/app/(app)/_context/CustomersContext'
 import SearchBar from '@/components/ui/SearchBar'
 import Customer from '@/domain/Customer'
 import TattooSession, { SessionStatus } from '@/domain/TattooSession'

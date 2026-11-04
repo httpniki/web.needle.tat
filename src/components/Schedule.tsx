@@ -3,7 +3,7 @@
 import { addDays, addHours } from 'date-fns'
 import { useEffect, useRef, useState } from 'react'
 
-import { useProjects } from '@/app/_context/CustomersContext'
+import { useProjects } from '@/app/(app)/_context/CustomersContext'
 import { CustomerObject } from '@/domain/Customer'
 import { TattooSessionObject } from '@/domain/TattooSession'
 

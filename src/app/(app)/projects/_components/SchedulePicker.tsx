@@ -1,7 +1,7 @@
 import { startOfDay } from 'date-fns'
 import { ComponentProps, useState } from 'react'
 
-import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
+import { useCustomers, useProjects } from '@/app/(app)/_context/CustomersContext'
 import Calendar from '@/components/Calendar'
 import Schedule from '@/components/Schedule'
 import TattooSession from '@/domain/TattooSession'

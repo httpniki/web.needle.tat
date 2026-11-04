@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
-import { usePageHeader } from '@/app/_components/AppShell'
-import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
+import { usePageHeader } from '@/app/(app)/_components/AppShell'
+import { useCustomers, useProjects } from '@/app/(app)/_context/CustomersContext'
 import SearchBar from '@/components/ui/SearchBar'
 import CustomerDomain from '@/domain/Customer'
 
@@ -48,7 +48,7 @@ export default function CustomerPage() {
 
    return (
       <main className='flex min-h-max w-full flex-col gap-4 p-4 md:px-8'>
-         <header className='mt-4 flex items-start justify-between gap-4 md:hidden'>
+         <header className='mt-4 flex items-start justify-between gap-4'>
             <div className='flex flex-col gap-1'>
                <h1 className='text-2xl font-bold'>
                   Clientes

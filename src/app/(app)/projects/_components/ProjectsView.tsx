@@ -3,8 +3,8 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
-import { usePageHeader } from '@/app/_components/AppShell'
-import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
+import { usePageHeader } from '@/app/(app)/_components/AppShell'
+import { useCustomers, useProjects } from '@/app/(app)/_context/CustomersContext'
 import SearchBar from '@/components/ui/SearchBar'
 
 export default function ProjectsView() {
@@ -16,7 +16,7 @@ export default function ProjectsView() {
 
    return (
       <article className='flex w-full flex-col gap-4'>
-         <header className='mt-4 flex items-start justify-between gap-4 md:hidden'>
+         <header className='mt-4 flex items-start justify-between gap-4'>
             <div className='flex flex-col gap-1'>
                <h1 className='text-2xl font-bold'>
                   Proyectos

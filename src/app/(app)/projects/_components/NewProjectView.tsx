@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
 import { createProject } from '@/actions/project-actions'
-import { usePageHeader } from '@/app/_components/AppShell'
-import { useCustomers, useProjects } from '@/app/_context/CustomersContext'
-import { useToast } from '@/app/_context/ToastContext'
+import Button from '@/components/ui/buttons/Button'
 import Loader from '@/components/ui/Loader'
 import CustomerDomain, { CustomerObject } from '@/domain/Customer'
 import TattooProject from '@/domain/TattooProject'
@@ -17,6 +15,9 @@ import { ClassProperties } from '@/types/types'
 import DomainException from '@/utils/exceptions/domain-exception'
 import { isKeyOf } from '@/utils/utils'
 
+import { usePageHeader } from '../../_components/AppShell'
+import { useCustomers, useProjects } from '../../_context/CustomersContext'
+import { useToast } from '../../_context/ToastContext'
 import Customer from './project/Customer'
 import ProjectDetails from './project/ProjectDetails'
 import References from './project/References'
@@ -303,8 +304,8 @@ export default function NewProjectView(props: Props) {
 
    return (
       <form onSubmit={(e) => e.preventDefault()} className="flex w-full flex-col gap-6">
-         <header className="mt-4 flex items-start justify-between gap-4 md:justify-end">
-            <div className='flex flex-col gap-1 md:hidden'>
+         <header className="mt-4 flex items-start justify-between gap-4">
+            <div className='flex flex-col gap-1'>
                <h1 className='text-2xl font-bold'>
                   Nuevo proyecto
                </h1>
@@ -315,21 +316,23 @@ export default function NewProjectView(props: Props) {
             </div>
 
             <div className='flex items-center gap-2'>
-               <button
-                  className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+               <Button
+                  variant='filled'
+                  className='w-min text-nowrap'
                   onClick={() => router.back()}
                   disabled={loading}
                >
                   Cancelar
-               </button>
+               </Button>
 
-               <button
-                  className='w-min rounded-xs border border-white/40 bg-gray-primary p-2 text-sm text-nowrap hover:opacity-80 enabled:cursor-pointer disabled:opacity-25'
+               <Button
+                  variant='filled'
+                  className='w-min text-nowrap'
                   onClick={submitForm}
                   disabled={disableSubmit}
                >
                   Agregar
-               </button>
+               </Button>
             </div>
          </header>
 
