@@ -1,16 +1,43 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
+
+import AccountModal from './AccountModal'
+
+export interface AccountSummary {
+   email: string
+   role: string
+}
 
 interface TopbarProps {
    hidden: boolean
    title: string
+   account: AccountSummary
    onToggle: () => void
 }
 
-export default function Topbar({ hidden, title, onToggle }: TopbarProps) {
+export default function Topbar({ hidden, title, account, onToggle }: TopbarProps) {
+   const topbarRef = useRef<HTMLDivElement | null>(null)
+   const [isAccountOpen, setIsAccountOpen] = useState({
+      render: false,
+      positionY: 0
+   })
+
+   useEffect(() => {
+      if (!topbarRef) return
+      const positionY = topbarRef.current?.getBoundingClientRect().top ?? 0
+      const height = topbarRef.current?.getBoundingClientRect().height ?? 0
+
+      setIsAccountOpen((prev) => ({
+         ...prev,
+         positionY: height + positionY
+      }))
+
+   }, [topbarRef])
+
    return (
-      <div className="sticky inset-x-0 top-0 z-10 flex min-w-0 items-center justify-start rounded-t-2xl border-b border-gray-primary bg-black-primary py-2 md:p-4">
+      <div ref={topbarRef} className="sticky inset-x-0 top-0 z-10 flex min-w-0 items-center justify-start rounded-t-2xl border-b border-gray-primary bg-black-primary py-2 md:p-4">
          <Link href="/" className="flex cursor-pointer items-center gap-2 px-4 text-lg font-bold text-white transition-colors duration-200 hover:opacity-80 md:hidden md:py-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 15 15">
                <path d="M0 0h15v15H0z" fill="none" />
@@ -44,6 +71,29 @@ export default function Topbar({ hidden, title, onToggle }: TopbarProps) {
          <span className='hidden min-w-0 truncate pl-4 font-semibold md:block'>
             {title}
          </span>
+
+         <button
+            type='button'
+            aria-label='Abrir mi cuenta'
+            className='mr-4 ml-auto flex cursor-pointer items-center justify-center rounded-full border border-gray-primary p-2 text-white transition-colors hover:bg-gray-primary md:mr-0'
+            onClick={() => setIsAccountOpen((prev) => ({ ...prev, render: true }))}
+         >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.75" stroke="currentColor" width="1.2em" height="1.2em">
+               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0" />
+            </svg>
+         </button>
+
+         {isAccountOpen.render && (
+            <AccountModal
+               position={{
+                  y: isAccountOpen.positionY,
+                  x: 0
+               }}
+               email={account.email}
+               role={account.role}
+               onClose={() => setIsAccountOpen((prev) => ({ ...prev, render: false }))}
+            />
+         )}
       </div>
    )
 }

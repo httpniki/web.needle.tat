@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+import { hasAppAccess } from '@/lib/roles'
 import { createClient } from '@/lib/supabase/server'
 
 export interface LoginState {
@@ -24,9 +25,9 @@ export async function login(_previousState: LoginState, formData: FormData): Pro
       return { error: 'Email o contraseña incorrectos.' }
    }
 
-   if (data.user.app_metadata.role !== 'artist') {
+   if (!hasAppAccess(data.user.app_metadata.role)) {
       await supabase.auth.signOut()
-      return { error: 'Esta cuenta no tiene acceso de artista.' }
+      return { error: 'Esta cuenta no tiene acceso a la aplicación.' }
    }
 
    redirect('/')

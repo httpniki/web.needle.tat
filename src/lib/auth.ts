@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
 
+import { hasAppAccess } from '@/lib/roles'
 import { createClient } from '@/lib/supabase/server'
 
 export const getCurrentArtist = cache(async (): Promise<User | null> => {
@@ -10,7 +11,7 @@ export const getCurrentArtist = cache(async (): Promise<User | null> => {
    const { data: { user }, error } = await supabase.auth.getUser()
 
    if (error || !user) return null
-   if (user.app_metadata.role !== 'artist') return null
+   if (!hasAppAccess(user.app_metadata.role)) return null
 
    return user
 })

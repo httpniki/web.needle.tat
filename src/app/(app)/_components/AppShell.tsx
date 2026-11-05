@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
 import Navbar from './Navbar'
-import Topbar from './Topbar'
+import Topbar, { type AccountSummary } from './Topbar'
 
 interface AppShellContextValue {
    title: string
@@ -22,7 +22,12 @@ export function usePageHeader(title: string) {
    }, [context.setTitle, title])
 }
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+interface AppShellProps {
+   children: React.ReactNode
+   account: AccountSummary
+}
+
+export default function AppShell({ children, account }: AppShellProps) {
    const [hidden, setHidden] = useState(false)
    const [title, setTitle] = useState('')
 
@@ -32,7 +37,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Navbar hidden={hidden} />
 
             <div className='flex min-h-0 min-w-0 flex-1 flex-col bg-black-primary md:mt-2 md:rounded-t-2xl'>
-               <Topbar hidden={hidden} title={title} onToggle={() => setHidden((prev) => !prev)} />
+               <Topbar hidden={hidden} title={title} account={account} onToggle={() => setHidden((prev) => !prev)} />
 
                <div className='relative flex min-h-0 min-w-0 flex-1 overflow-y-auto'>
                   {children}

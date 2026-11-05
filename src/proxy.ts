@@ -1,13 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
+import { hasAppAccess } from '@/lib/roles'
 import { updateSession } from '@/lib/supabase/middleware'
 
 export default async function proxy(request: NextRequest) {
    const { response, user } = await updateSession(request)
-   const isArtist = user?.app_metadata.role === 'artist'
+   const hasAccess = hasAppAccess(user?.app_metadata.role)
    const isLoginRoute = request.nextUrl.pathname === '/login'
 
-   if (!isArtist && !isLoginRoute) {
+   if (!hasAccess && !isLoginRoute) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       url.search = ''
@@ -15,7 +16,7 @@ export default async function proxy(request: NextRequest) {
       return redirectWithCookies(url, response)
    }
 
-   if (isArtist && isLoginRoute) {
+   if (hasAccess && isLoginRoute) {
       const url = request.nextUrl.clone()
       url.pathname = '/'
       url.search = ''

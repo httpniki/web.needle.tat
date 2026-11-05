@@ -19,7 +19,7 @@ export default function LoginPage() {
 
                   <h1 className='text-3xl font-bold'>Needle.tat</h1>
                </div>
-               <p className='text-white/60'>Ingresá con tu cuenta de artista.</p>
+               <p className='text-white/60'>Ingresá con tu cuenta de artista o propietario.</p>
             </header>
 
             <LoginForm />

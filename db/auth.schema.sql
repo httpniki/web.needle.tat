@@ -1,11 +1,11 @@
--- Los artistas se identifican con app_metadata.role = 'artist'.
+-- Los artistas y propietarios se identifican con app_metadata.role = 'artist' | 'owner'.
 
 create or replace function public.is_artist()
 returns boolean
 language sql
 stable
 as $$
-   select coalesce((auth.jwt() -> 'app_metadata' ->> 'role') = 'artist', false)
+   select coalesce((auth.jwt() -> 'app_metadata' ->> 'role') in ('artist', 'owner'), false)
 $$;
 
 revoke all on function public.is_artist() from public;
