@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { createProduct, createProductType, decreaseProductStock, deleteProduct, increaseProductStock } from '@/actions/inventory-actions'
 import { usePageHeader } from '@/app/(app)/_components/AppShell'
@@ -14,20 +14,23 @@ import { ProductType } from '@/domain/inventory/ProductType'
 import AddProductForm from './_components/AddProductForm'
 import DeleteProductModal from './_components/DeleteProductModal'
 import ProductCard from './_components/ProductCard'
+import SortProductsModal, { ProductSortField, SortDirection } from './_components/SortProductsModal'
 
 export default function InventoryPage() {
    usePageHeader('Stock')
-
    const inventoryStore = useInventory()
    const toast = useToast()
 
    const [searchQuery, setSearchQuery] = useState('')
    const [typeFilter, setTypeFilter] = useState<number | null>(null)
+   const [sortField, setSortField] = useState<ProductSortField>('name')
+   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+   const [isSortModalOpen, setIsSortModalOpen] = useState(false)
+   const sortMenuRef = useRef<HTMLDivElement>(null)
 
    const [isAddingProduct, setIsAddingProduct] = useState(false)
 
    const [updatingStockProductId, setUpdatingStockProductId] = useState<number | null>(null)
-
    const [deletingProductId, setDeletingProductId] = useState<number | null>(null)
    const [productToDelete, setProductToDelete] = useState<Product | null>(null)
 
@@ -41,6 +44,35 @@ export default function InventoryPage() {
          return matchesType && matchesQuery
       })
    }, [inventoryStore.products, searchQuery, typeFilter])
+
+   const sortedProducts = useMemo(() => {
+      const collator = new Intl.Collator('es', { sensitivity: 'base' })
+
+      return [...filteredProducts].sort((a, b) => {
+         let result = 0
+
+         if (sortField === 'name') result = collator.compare(a.name, b.name)
+         if (sortField === 'stock') result = a.stock - b.stock || collator.compare(a.name, b.name)
+         if (sortField === 'type') result = collator.compare(a.type.value, b.type.value) || collator.compare(a.name, b.name)
+
+         return sortDirection === 'asc' ? result : -result
+      })
+   }, [filteredProducts, sortField, sortDirection])
+
+   useEffect(() => {
+      if (!isSortModalOpen) return
+
+      function handleMouseDown(event: MouseEvent) {
+         if (window.matchMedia('(max-width: 767px)').matches) return
+         if (sortMenuRef.current?.contains(event.target as Node)) return
+
+         setIsSortModalOpen(false)
+      }
+
+      document.addEventListener('mousedown', handleMouseDown)
+
+      return () => document.removeEventListener('mousedown', handleMouseDown)
+   }, [isSortModalOpen])
 
    async function handleCreateProductType(value: string): Promise<ProductType> {
       const existingType = inventoryStore.productTypes.find((type) => normalize(type.value) === normalize(value))
@@ -163,6 +195,35 @@ export default function InventoryPage() {
                   onClick={() => setTypeFilter(type.id)}
                />
             )}
+
+            <div ref={sortMenuRef} className='relative ml-auto'>
+               <button
+                  type='button'
+                  aria-haspopup='dialog'
+                  aria-expanded={isSortModalOpen}
+                  className='flex cursor-pointer items-center gap-2 rounded-full border border-gray-primary bg-black-secondary px-3 py-1.5 text-xs text-gray-400 transition-colors hover:text-white'
+                  onClick={() => setIsSortModalOpen((open) => !open)}
+               >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" width="1em" height="1em">
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 5v14m0 0-3-3m3 3 3-3M16 19V5m0 0-3 3m3-3 3 3" />
+                  </svg>
+
+                  Ordenar
+               </button>
+
+               {isSortModalOpen &&
+                  <SortProductsModal
+                     field={sortField}
+                     direction={sortDirection}
+                     onApply={(field, direction) => {
+                        setSortField(field)
+                        setSortDirection(direction)
+                        setIsSortModalOpen(false)
+                     }}
+                     onClose={() => setIsSortModalOpen(false)}
+                  />
+               }
+            </div>
          </section>
 
          {filteredProducts.length === 0 &&
@@ -172,7 +233,7 @@ export default function InventoryPage() {
          }
 
          <ul className='grid gap-2 md:grid-cols-[repeat(auto-fill,minmax(340px,1fr))]'>
-            {filteredProducts.map((product) =>
+            {sortedProducts.map((product) =>
                <li key={product.id}>
                   <ProductCard
                      product={product}

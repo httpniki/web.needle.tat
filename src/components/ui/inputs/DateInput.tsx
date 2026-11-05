@@ -21,6 +21,9 @@ export default function DateInput(props: Props) {
       // Permitir borrar (Backspace) libremente
       if (input.length < date.length) {
          setDate(input)
+
+         if (!input) props.onChange?.('')
+
          return
       }
 
@@ -74,7 +77,10 @@ export default function DateInput(props: Props) {
    }
 
    function handleBlur() {
-      if (!date) return
+      if (!date) {
+         props.onChange?.('')
+         return
+      }
 
       const today: Date = new Date()
       const currentDay = String(today.getDate()).padStart(2, '0')

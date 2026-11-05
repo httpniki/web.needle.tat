@@ -80,7 +80,6 @@ export class Product implements IProduct {
    public get brand(): string { return this._brand; }
    public set brand(value: string) {
       const trimmedValue = value.trim()
-      if (!trimmedValue) throw new DomainException('brand', 'La marca del producto es obligatoria')
       if (trimmedValue.length > 100) throw new DomainException('brand', 'La marca del producto no puede superar los 100 caracteres')
 
       this._brand = trimmedValue

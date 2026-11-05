@@ -5,6 +5,7 @@ import InputSelect from '@/components/ui/InputSelect'
 interface Props {
    brands: string[]
    value: string
+   optional?: boolean
    onChange: (brand: string) => void
    onError: (message: string) => void
 }
@@ -17,7 +18,10 @@ export default function ProductBrandField(props: Props) {
    const addBrandRef = useRef<HTMLDivElement>(null)
 
    const brandOptions = Array.from(new Set([...props.brands, ...customBrands]))
-   const selectOptions = brandOptions.map((brand) => ({ value: brand, label: brand }))
+   const selectOptions = [
+      ...(props.optional ? [{ value: '', label: 'Sin marca' }] : []),
+      ...brandOptions.map((brand) => ({ value: brand, label: brand }))
+   ]
 
    useEffect(() => {
       if (!isAddingBrand) return
@@ -72,7 +76,7 @@ export default function ProductBrandField(props: Props) {
       <div className='flex flex-col gap-1.5'>
          <div className='flex items-center justify-between gap-2'>
             <span className='text-xs text-gray-400'>
-               Marca
+               Marca{props.optional ? ' (opcional)' : ''}
             </span>
 
             {!isAddingBrand && (

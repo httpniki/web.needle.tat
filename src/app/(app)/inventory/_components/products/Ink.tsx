@@ -45,7 +45,7 @@ export default function Ink({ sizeInOz, color, expirationDate, stock, onChange }
 
          <label className='flex flex-col gap-1.5'>
             <span className='text-xs text-gray-400'>
-               Fecha de vencimiento
+               Fecha de vencimiento (opcional)
             </span>
 
             <DateInput

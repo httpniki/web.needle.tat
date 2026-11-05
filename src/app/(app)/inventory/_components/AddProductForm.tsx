@@ -4,16 +4,22 @@ import RenderModal from '@/components/RenderModal'
 import Button from '@/components/ui/buttons/Button'
 import Loader from '@/components/ui/Loader'
 import { Product } from '@/domain/inventory/Product'
-import { getProductKind, Ink as InkProduct, Needle as NeedleProduct, PenCartridge as PenCartridgeProduct, SolidVaseline as SolidVaselineProduct } from '@/domain/inventory/products'
+import { Cups as CupsProduct, getProductKind, Ink as InkProduct, LiquidSoap as LiquidSoapProduct, Needle as NeedleProduct, NitrileGloves as NitrileGlovesProduct, PenCartridge as PenCartridgeProduct, SolidVaseline as SolidVaselineProduct, Stencil as StencilProduct, TongueDepressor as TongueDepressorProduct } from '@/domain/inventory/products'
 import { ProductType } from '@/domain/inventory/ProductType'
 
 import ProductBrandField from './form/ProductBrandField'
 import ProductTypeField from './form/ProductTypeField'
+import Cups, { CupsField } from './products/Cups'
 import DefaultProduct from './products/DefaultProduct'
+import HectographPaper from './products/HectographPaper'
 import Ink, { InkField } from './products/Ink'
+import LiquidSoap, { LiquidSoapField } from './products/LiquidSoap'
 import Needle from './products/Needle'
+import NitrileGloves, { NitrileGlovesField } from './products/NitrileGloves'
 import PenCartridges, { PenCartridgesField } from './products/PenCartridges'
 import SolidVaseline from './products/SolidVaseline'
+import Stencil, { StencilField } from './products/Stencil'
+import TongueDepressor from './products/TongueDepressor'
 
 interface Props {
    productTypes: ProductType[]
@@ -29,12 +35,20 @@ interface ProductFormState {
    stock: string
    measure: string
    expirationDate: string
+   cupsSize: string
    quantityInGrams: string
    penCartridgeMeasure: string
    penCartridgeExpirationDate: string
    inkSizeInOz: string
    inkColor: string
    inkExpirationDate: string
+   liquidSoapLiters: string
+   liquidSoapExpirationDate: string
+   nitrileGlovesSize: string
+   nitrileGlovesExpirationDate: string
+   stencilMilliliters: string
+   stencilExpirationDate: string
+   tongueDepressorExpirationDate: string
    error: string
 }
 
@@ -45,12 +59,20 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
       stock: '0',
       measure: '',
       expirationDate: '',
+      cupsSize: '',
       quantityInGrams: '',
       penCartridgeMeasure: '',
       penCartridgeExpirationDate: '',
       inkSizeInOz: '',
       inkColor: '',
       inkExpirationDate: '',
+      liquidSoapLiters: '',
+      liquidSoapExpirationDate: '',
+      nitrileGlovesSize: '',
+      nitrileGlovesExpirationDate: '',
+      stencilMilliliters: '',
+      stencilExpirationDate: '',
+      tongueDepressorExpirationDate: '',
       error: ''
    })
    const [isSubmitting, setIsSubmitting] = useState(false)
@@ -59,13 +81,14 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
 
    const selectedType = productTypes.find((type) => type.id === selectedTypeId) ?? productTypes[0]
    const selectedProductKind = getProductKind(selectedType?.value)
+   const brandIsOptional = selectedProductKind === 'tongue-depressor' || selectedProductKind === 'liquid-soap' || selectedProductKind === 'nitrile-gloves' || selectedProductKind === 'cups' || selectedProductKind === 'hectograph-paper'
 
    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
       event.preventDefault()
       const parsedStock = Number(formState.stock)
       const brand = formState.brand.trim()
 
-      if (!brand) {
+      if (!brand && !brandIsOptional) {
          setFormState((current) => ({ ...current, error: 'La marca es obligatoria.' }))
          return
       }
@@ -162,6 +185,105 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
                measure,
                expirationDate
             })
+         } else if (selectedProductKind === 'liquid-soap') {
+            const liters = Number(formState.liquidSoapLiters)
+
+            if (!Number.isFinite(liters) || liters <= 0) {
+               setFormState((current) => ({ ...current, error: 'La medida en litros debe ser mayor a cero.' }))
+               return
+            }
+
+            const expirationDate = expirationDateToIso(formState.liquidSoapExpirationDate)
+
+            if (formState.liquidSoapExpirationDate.trim() && !expirationDate) {
+               setFormState((current) => ({ ...current, error: 'La fecha de vencimiento no es válida.' }))
+               return
+            }
+
+            product = new LiquidSoapProduct({
+               name: buildProductName(type.value, `${liters} L`, brand),
+               brand,
+               type,
+               stock: parsedStock,
+               liters,
+               expirationDate
+            })
+         } else if (selectedProductKind === 'cups') {
+            const size = formState.cupsSize.trim()
+
+            if (!size) {
+               setFormState((current) => ({ ...current, error: 'La medida de las tetinas es obligatoria.' }))
+               return
+            }
+
+            product = new CupsProduct({
+               name: buildProductName(type.value, size, brand),
+               brand,
+               type,
+               stock: parsedStock,
+               size
+            })
+         } else if (selectedProductKind === 'nitrile-gloves') {
+            const size = formState.nitrileGlovesSize.trim()
+
+            if (!size) {
+               setFormState((current) => ({ ...current, error: 'La medida de los guantes es obligatoria.' }))
+               return
+            }
+
+            const expirationDate = expirationDateToIso(formState.nitrileGlovesExpirationDate)
+
+            if (formState.nitrileGlovesExpirationDate.trim() && !expirationDate) {
+               setFormState((current) => ({ ...current, error: 'La fecha de vencimiento no es válida.' }))
+               return
+            }
+
+            product = new NitrileGlovesProduct({
+               name: buildProductName(type.value, size, brand),
+               brand,
+               type,
+               stock: parsedStock,
+               size,
+               expirationDate
+            })
+         } else if (selectedProductKind === 'stencil') {
+            const milliliters = Number(formState.stencilMilliliters)
+
+            if (!Number.isFinite(milliliters) || milliliters <= 0) {
+               setFormState((current) => ({ ...current, error: 'La medida en mililitros debe ser mayor a cero.' }))
+               return
+            }
+
+            const expirationDate = expirationDateToIso(formState.stencilExpirationDate)
+
+            if (formState.stencilExpirationDate.trim() && !expirationDate) {
+               setFormState((current) => ({ ...current, error: 'La fecha de vencimiento no es válida.' }))
+               return
+            }
+
+            product = new StencilProduct({
+               name: buildProductName(type.value, `${milliliters} ml`, brand),
+               brand,
+               type,
+               stock: parsedStock,
+               milliliters,
+               expirationDate
+            })
+         } else if (selectedProductKind === 'tongue-depressor') {
+            const expirationDate = expirationDateToIso(formState.tongueDepressorExpirationDate)
+
+            if (formState.tongueDepressorExpirationDate.trim() && !expirationDate) {
+               setFormState((current) => ({ ...current, error: 'La fecha de vencimiento no es válida.' }))
+               return
+            }
+
+            product = new TongueDepressorProduct({
+               name: buildProductName(type.value, '', brand),
+               brand,
+               type,
+               stock: parsedStock,
+               expirationDate
+            })
          } else if (selectedProductKind === 'solid-vaseline') {
             const quantityInGrams = Number(formState.quantityInGrams)
 
@@ -176,6 +298,13 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
                type,
                stock: parsedStock,
                quantityInGrams
+            })
+         } else if (selectedProductKind === 'hectograph-paper') {
+            product = new Product({
+               name: type.value,
+               brand: '',
+               type,
+               stock: parsedStock
             })
          } else {
             if (!formState.name.trim()) {
@@ -239,17 +368,60 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
       })
    }
 
+   function handleLiquidSoapChange(field: LiquidSoapField, value: string) {
+      setFormState((current) => {
+         if (field === 'liters') return { ...current, liquidSoapLiters: value }
+         if (field === 'expirationDate') return { ...current, liquidSoapExpirationDate: value }
+
+         return { ...current, [field]: value }
+      })
+   }
+
+   function handleCupsChange(field: CupsField, value: string) {
+      setFormState((current) => {
+         if (field === 'size') return { ...current, cupsSize: value }
+
+         return { ...current, [field]: value }
+      })
+   }
+
+   function handleNitrileGlovesChange(field: NitrileGlovesField, value: string) {
+      setFormState((current) => {
+         if (field === 'size') return { ...current, nitrileGlovesSize: value }
+         if (field === 'expirationDate') return { ...current, nitrileGlovesExpirationDate: value }
+
+         return { ...current, [field]: value }
+      })
+   }
+
+   function handleStencilChange(field: StencilField, value: string) {
+      setFormState((current) => {
+         if (field === 'milliliters') return { ...current, stencilMilliliters: value }
+         if (field === 'expirationDate') return { ...current, stencilExpirationDate: value }
+
+         return { ...current, [field]: value }
+      })
+   }
+
    function resetSpecificFields() {
       setFormState((current) => ({
          ...current,
          measure: '',
          expirationDate: '',
+         cupsSize: '',
          quantityInGrams: '',
          penCartridgeMeasure: '',
          penCartridgeExpirationDate: '',
          inkSizeInOz: '',
          inkColor: '',
          inkExpirationDate: '',
+         liquidSoapLiters: '',
+         liquidSoapExpirationDate: '',
+         nitrileGlovesSize: '',
+         nitrileGlovesExpirationDate: '',
+         stencilMilliliters: '',
+         stencilExpirationDate: '',
+         tongueDepressorExpirationDate: '',
          error: ''
       }))
    }
@@ -298,12 +470,15 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
                   onSavingTypeChange={setIsSavingType}
                />
 
-               <ProductBrandField
-                  brands={brands}
-                  value={formState.brand}
-                  onChange={(brand) => setFormState((current) => ({ ...current, brand }))}
-                  onError={(message) => setFormState((current) => ({ ...current, error: message }))}
-               />
+               {selectedProductKind !== 'hectograph-paper' && (
+                  <ProductBrandField
+                     brands={brands}
+                     value={formState.brand}
+                     optional={brandIsOptional}
+                     onChange={(brand) => setFormState((current) => ({ ...current, brand }))}
+                     onError={(message) => setFormState((current) => ({ ...current, error: message }))}
+                  />
+               )}
 
                {selectedProductKind === 'ink' && (
                   <Ink
@@ -321,7 +496,6 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
                      expirationDate={formState.expirationDate}
                      stock={formState.stock}
                      onChange={(field, value) => setFormState((current) => ({ ...current, [field]: value }))}
-                     brand={formState.brand}
                   />
                )}
 
@@ -342,12 +516,65 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
                   />
                )}
 
+               {selectedProductKind === 'liquid-soap' && (
+                  <LiquidSoap
+                     liters={formState.liquidSoapLiters}
+                     expirationDate={formState.liquidSoapExpirationDate}
+                     stock={formState.stock}
+                     onChange={handleLiquidSoapChange}
+                  />
+               )}
+
+               {selectedProductKind === 'cups' && (
+                  <Cups
+                     size={formState.cupsSize}
+                     stock={formState.stock}
+                     onChange={handleCupsChange}
+                  />
+               )}
+
+               {selectedProductKind === 'nitrile-gloves' && (
+                  <NitrileGloves
+                     size={formState.nitrileGlovesSize}
+                     expirationDate={formState.nitrileGlovesExpirationDate}
+                     stock={formState.stock}
+                     onChange={handleNitrileGlovesChange}
+                  />
+               )}
+
+               {selectedProductKind === 'stencil' && (
+                  <Stencil
+                     milliliters={formState.stencilMilliliters}
+                     expirationDate={formState.stencilExpirationDate}
+                     stock={formState.stock}
+                     onChange={handleStencilChange}
+                  />
+               )}
+
+               {selectedProductKind === 'tongue-depressor' && (
+                  <TongueDepressor
+                     expirationDate={formState.tongueDepressorExpirationDate}
+                     stock={formState.stock}
+                     onChange={(field, value) => setFormState((current) => (
+                        field === 'expirationDate'
+                           ? { ...current, tongueDepressorExpirationDate: value }
+                           : { ...current, [field]: value }
+                     ))}
+                  />
+               )}
+
+               {selectedProductKind === 'hectograph-paper' && (
+                  <HectographPaper
+                     stock={formState.stock}
+                     onChange={(value) => setFormState((current) => ({ ...current, stock: value }))}
+                  />
+               )}
+
                {selectedProductKind === 'default' && (
                   <DefaultProduct
                      name={formState.name}
                      stock={formState.stock}
                      onChange={(field, value) => setFormState((current) => ({ ...current, [field]: value }))}
-                     brand={formState.brand}
                   />
                )}
 

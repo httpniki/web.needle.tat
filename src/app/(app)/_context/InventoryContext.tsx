@@ -33,7 +33,7 @@ export default function InventoryProvider(props: InventoryProviderProps) {
 
    const products = inventory.products
    const productTypes = inventory.productTypes
-   const brands = useMemo(() => [...new Set(products.map((product) => product.brand))], [products])
+   const brands = useMemo(() => [...new Set(products.map((product) => product.brand).filter(Boolean))], [products])
 
    function addProduct(product: ProductInput) {
       const newProduct = toProduct(product)

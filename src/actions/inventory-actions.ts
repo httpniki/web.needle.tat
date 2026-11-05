@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { InventoryObject } from '@/domain/inventory/Inventory'
 import { ProductObject } from '@/domain/inventory/Product'
 import { ProductAttributeObject } from '@/domain/inventory/ProductAttribute'
+import { getProductKind } from '@/domain/inventory/products'
 import { ProductTypeObject } from '@/domain/inventory/ProductType'
 import { requireArtist } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
@@ -58,12 +59,6 @@ export async function createProduct(body: ProductObject): Promise<ProductObject>
       throw err
    }
 
-   if (!brand || brand.length > 100) {
-      const err = new ActionException('Invalid product brand')
-      err.name = 'invalid_product_brand'
-      throw err
-   }
-
    if (!Number.isInteger(body.stock) || body.stock < 0) {
       const err = new ActionException('Product stock must be a non-negative integer')
       err.name = 'invalid_product_stock'
@@ -88,6 +83,15 @@ export async function createProduct(body: ProductObject): Promise<ProductObject>
       const err = new ActionException('Product type not found')
       err.name = 'product_type_not_found'
       err.data = { typeId: String(body.type.id) }
+      throw err
+   }
+
+   const productKind = getProductKind(typeResult.data[0].value)
+   const brandIsOptional = productKind === 'tongue-depressor' || productKind === 'liquid-soap' || productKind === 'nitrile-gloves' || productKind === 'cups' || productKind === 'hectograph-paper'
+
+   if (brand.length > 100 || (!brand && !brandIsOptional)) {
+      const err = new ActionException('Invalid product brand')
+      err.name = 'invalid_product_brand'
       throw err
    }
 
@@ -122,7 +126,7 @@ export async function createProduct(body: ProductObject): Promise<ProductObject>
 
    try {
       await saveProductAttributes(db, result.data.product_id, [
-         { name: BRAND_ATTRIBUTE, value: brand },
+         ...(brand ? [{ name: BRAND_ATTRIBUTE, value: brand }] : []),
          ...Array.from(customAttributes, ([attributeName, value]) => ({ name: attributeName, value }))
       ])
    } catch (error) {
