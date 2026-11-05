@@ -23,7 +23,7 @@ export default function AccountModal({ email, role, onClose, position }: Props) 
          onClickOutside={onClose}
       >
          <div
-            className='absolute flex size-full flex-col bg-black-primary md:size-auto md:h-max md:w-full md:max-w-sm md:rounded-lg md:border md:border-gray-primary md:shadow-2xl'
+            className='flex size-full flex-col bg-black-primary md:absolute md:size-auto md:h-max md:w-full md:max-w-sm md:rounded-lg md:border md:border-gray-primary md:shadow-2xl'
             ref={ref}
             style={{
                top: position.y,
@@ -38,7 +38,7 @@ export default function AccountModal({ email, role, onClose, position }: Props) 
                </div>
             </header>
 
-            <div className='flex flex-col gap-5 p-4 md:px-6 md:py-5'>
+            <div className='flex flex-1 flex-col gap-5 p-4 md:px-6 md:py-5'>
                <div className='flex flex-col gap-1'>
                   <span className='text-xs text-gray-400'>
                      Email
@@ -60,16 +60,23 @@ export default function AccountModal({ email, role, onClose, position }: Props) 
                </div>
             </div>
 
-            <footer className='flex gap-2 border-t border-gray-primary p-4 md:border-0 md:px-6 md:pb-6'>
-               <form action={logout} className='flex-1'>
-                  <Button
-                     type='submit'
-                     variant='filled'
-                     className='w-full'
-                  >
-                     Cerrar sesión
-                  </Button>
-               </form>
+            <footer className='flex flex-col gap-2 border-t border-gray-primary p-4 md:border-0 md:px-6 md:pb-6'>
+               <Button
+                  variant='outline'
+                  className='w-full md:hidden'
+                  onClick={onClose}
+               >
+                  Cerrar
+               </Button>
+
+               <Button
+                  type='submit'
+                  variant='filled'
+                  className='w-full'
+                  onClick={logout}
+               >
+                  Cerrar sesión
+               </Button>
             </footer>
          </div>
       </RenderModal>
