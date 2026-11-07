@@ -45,11 +45,14 @@ export interface NewProductAttribute {
    value: string
 }
 
-export async function createProduct(body: ProductObject): Promise<ProductObject> {
-   await requireArtist()
+interface ProductData {
+   name: string
+   brand: string
+   typeId: number
+   customAttributes: Map<string, string>
+}
 
-   const db = createClient(await cookies())
-
+async function resolveProductData(db: DbClient, body: ProductObject): Promise<ProductData> {
    const name = body.name.trim()
    const brand = body.brand.trim()
 
@@ -112,9 +115,25 @@ export async function createProduct(body: ProductObject): Promise<ProductObject>
       customAttributes.set(attributeName, attributeValue)
    }
 
+   return { name, brand, typeId: body.type.id, customAttributes }
+}
+
+function toProductAttributeEntries(brand: string, customAttributes: Map<string, string>): NewProductAttribute[] {
+   return [
+      ...(brand ? [{ name: BRAND_ATTRIBUTE, value: brand }] : []),
+      ...Array.from(customAttributes, ([name, value]) => ({ name, value }))
+   ]
+}
+
+export async function createProduct(body: ProductObject): Promise<ProductObject> {
+   await requireArtist()
+
+   const db = createClient(await cookies())
+   const { name, brand, typeId, customAttributes } = await resolveProductData(db, body)
+
    const result = await db
       .from('products')
-      .insert({ name, stock: body.stock, product_type_id: body.type.id })
+      .insert({ name, stock: body.stock, product_type_id: typeId })
       .select<string, ProductModel>('*')
       .single()
 
@@ -125,10 +144,7 @@ export async function createProduct(body: ProductObject): Promise<ProductObject>
    }
 
    try {
-      await saveProductAttributes(db, result.data.product_id, [
-         ...(brand ? [{ name: BRAND_ATTRIBUTE, value: brand }] : []),
-         ...Array.from(customAttributes, ([attributeName, value]) => ({ name: attributeName, value }))
-      ])
+      await saveProductAttributes(db, result.data.product_id, toProductAttributeEntries(brand, customAttributes))
    } catch (error) {
       await db.from('products').delete().eq('product_id', result.data.product_id)
 
@@ -136,6 +152,49 @@ export async function createProduct(body: ProductObject): Promise<ProductObject>
    }
 
    return findProductById(result.data.product_id)
+}
+
+export async function updateProduct(id: number, body: ProductObject): Promise<ProductObject> {
+   await requireArtist()
+
+   const db = createClient(await cookies())
+   const { name, brand, typeId, customAttributes } = await resolveProductData(db, body)
+
+   const result = await db
+      .from('products')
+      .update({ name, stock: body.stock, product_type_id: typeId })
+      .eq('product_id', id)
+      .select('product_id')
+
+   if (result.error) {
+      const err = new ActionException('Unexpected error updating product')
+      err.name = 'unexpected_error'
+      throw err
+   }
+
+   if (result.data.length === 0) {
+      const err = new ActionException('Product not found')
+      err.name = 'product_not_found'
+      err.data = { id: String(id) }
+      throw err
+   }
+
+   const attributeIds = await saveProductAttributes(db, id, toProductAttributeEntries(brand, customAttributes))
+   let deleteQuery = db.from('product_attributes').delete().eq('product_id', id)
+
+   if (attributeIds.length > 0) {
+      deleteQuery = deleteQuery.not('attribute_id', 'in', `(${attributeIds.join(',')})`)
+   }
+
+   const { error } = await deleteQuery
+
+   if (error) {
+      const err = new ActionException('Unexpected error updating product attributes')
+      err.name = 'unexpected_error'
+      throw err
+   }
+
+   return findProductById(id)
 }
 
 export async function getInventory(): Promise<InventoryObject> {
@@ -338,8 +397,8 @@ export async function createProductType(value: string): Promise<ProductTypeObjec
    return { id: result.data.product_type_id, value: result.data.value }
 }
 
-async function saveProductAttributes(db: DbClient, productId: number, entries: NewProductAttribute[]): Promise<void> {
-   if (entries.length === 0) return
+async function saveProductAttributes(db: DbClient, productId: number, entries: NewProductAttribute[]): Promise<number[]> {
+   if (entries.length === 0) return []
 
    const names = [...new Set(entries.map((entry) => entry.name))]
    const existingResult = await db.from('attributes').select<string, AttributeModel>('attribute_id, name').in('name', names)
@@ -387,6 +446,8 @@ async function saveProductAttributes(db: DbClient, productId: number, entries: N
       err.name = 'unexpected_error'
       throw err
    }
+
+   return rows.map((row) => row.attribute_id)
 }
 
 function toProductAttribute(productAttribute: ProductAttributeModel, attributeNamesById: Map<number, string>): ProductAttributeObject | undefined {

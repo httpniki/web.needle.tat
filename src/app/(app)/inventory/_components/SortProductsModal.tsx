@@ -106,20 +106,18 @@ export default function SortProductsModal({ field, direction, onApply, onClose }
       </>
    )
 
-   if (isMobile) {
-      return (
-         <RenderModal onClickOutside={onClose}>
-            <div
-               role='dialog'
-               aria-modal='true'
-               aria-label='Ordenar productos'
-               className='mx-4 flex w-full max-w-sm flex-col rounded-lg border border-gray-primary bg-black-secondary shadow-2xl'
-            >
-               {content}
-            </div>
-         </RenderModal>
-      )
-   }
+   if (isMobile)
+      return <RenderModal onClickOutside={onClose}>
+         <div
+            role='dialog'
+            aria-modal='true'
+            aria-label='Ordenar productos'
+            className='mx-4 flex w-full max-w-sm flex-col rounded-lg border border-gray-primary bg-black-secondary shadow-2xl'
+         >
+            {content}
+         </div>
+      </RenderModal>
+
 
    return (
       <div

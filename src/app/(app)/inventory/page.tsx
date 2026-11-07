@@ -2,18 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { createProduct, createProductType, decreaseProductStock, deleteProduct, increaseProductStock } from '@/actions/inventory-actions'
+import { createProduct, createProductType, decreaseProductStock, deleteProduct, increaseProductStock, updateProduct } from '@/actions/inventory-actions'
 import { usePageHeader } from '@/app/(app)/_components/AppShell'
 import { useInventory } from '@/app/(app)/_context/InventoryContext'
 import { useToast } from '@/app/(app)/_context/ToastContext'
 import Button from '@/components/ui/buttons/Button'
 import SearchBar from '@/components/ui/SearchBar'
-import { Product } from '@/domain/inventory/Product'
+import { Product, ProductObject } from '@/domain/inventory/Product'
 import { ProductType } from '@/domain/inventory/ProductType'
 
-import AddProductForm from './_components/AddProductForm'
 import DeleteProductModal from './_components/DeleteProductModal'
 import ProductCard from './_components/ProductCard'
+import ProductForm from './_components/ProductForm'
 import SortProductsModal, { ProductSortField, SortDirection } from './_components/SortProductsModal'
 
 export default function InventoryPage() {
@@ -23,12 +23,24 @@ export default function InventoryPage() {
 
    const [searchQuery, setSearchQuery] = useState('')
    const [typeFilter, setTypeFilter] = useState<number | null>(null)
-   const [sortField, setSortField] = useState<ProductSortField>('name')
-   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
-   const [isSortModalOpen, setIsSortModalOpen] = useState(false)
+   const [sort, setSort] = useState<{
+      field: ProductSortField
+      direction: SortDirection
+      isOpen: boolean
+   }>({
+      field: 'name',
+      direction: 'asc',
+      isOpen: false
+   })
    const sortMenuRef = useRef<HTMLDivElement>(null)
 
-   const [isAddingProduct, setIsAddingProduct] = useState(false)
+   const [productForm, setProductForm] = useState<{
+      isOpen: boolean
+      product: Product | null
+   }>({
+      isOpen: false,
+      product: null
+   })
 
    const [updatingStockProductId, setUpdatingStockProductId] = useState<number | null>(null)
    const [deletingProductId, setDeletingProductId] = useState<number | null>(null)
@@ -51,28 +63,28 @@ export default function InventoryPage() {
       return [...filteredProducts].sort((a, b) => {
          let result = 0
 
-         if (sortField === 'name') result = collator.compare(a.name, b.name)
-         if (sortField === 'stock') result = a.stock - b.stock || collator.compare(a.name, b.name)
-         if (sortField === 'type') result = collator.compare(a.type.value, b.type.value) || collator.compare(a.name, b.name)
+         if (sort.field === 'name') result = collator.compare(a.name, b.name)
+         if (sort.field === 'stock') result = a.stock - b.stock || collator.compare(a.name, b.name)
+         if (sort.field === 'type') result = collator.compare(a.type.value, b.type.value) || collator.compare(a.name, b.name)
 
-         return sortDirection === 'asc' ? result : -result
+         return sort.direction === 'asc' ? result : -result
       })
-   }, [filteredProducts, sortField, sortDirection])
+   }, [filteredProducts, sort.field, sort.direction])
 
    useEffect(() => {
-      if (!isSortModalOpen) return
+      if (!sort.isOpen) return
 
       function handleMouseDown(event: MouseEvent) {
          if (window.matchMedia('(max-width: 767px)').matches) return
          if (sortMenuRef.current?.contains(event.target as Node)) return
 
-         setIsSortModalOpen(false)
+         setSort((current) => ({ ...current, isOpen: false }))
       }
 
       document.addEventListener('mousedown', handleMouseDown)
 
       return () => document.removeEventListener('mousedown', handleMouseDown)
-   }, [isSortModalOpen])
+   }, [sort.isOpen])
 
    async function handleCreateProductType(value: string): Promise<ProductType> {
       const existingType = inventoryStore.productTypes.find((type) => normalize(type.value) === normalize(value))
@@ -84,23 +96,30 @@ export default function InventoryPage() {
       return inventoryStore.addProductType(createdType)
    }
 
-   async function handleAddProduct(product: Product) {
+   async function handleSaveProduct(product: Product) {
+      const productObject = product.toObject()
+      const editingProduct = productForm.product
+      let savedProduct: ProductObject
+
       try {
          let typeId = product.type.id
 
          if (typeId === 0) typeId = (await handleCreateProductType(product.type.value)).id
 
-         const productObject = product.toObject()
          productObject.type = { id: typeId, value: product.type.value }
-
-         const createdProduct = await createProduct(productObject)
-
-         inventoryStore.addProduct(createdProduct)
-         setIsAddingProduct(false)
+         savedProduct = editingProduct
+            ? await updateProduct(editingProduct.id, productObject)
+            : await createProduct(productObject)
       } catch (error: unknown) {
+         const fallback = editingProduct ? 'No se pudo actualizar el producto.' : 'No se pudo agregar el producto.'
+
          if (error instanceof Error && error.message) toast.add({ title: 'Error', message: error.message, type: 'error' })
-         else toast.add({ title: 'Error', message: 'No se pudo agregar el producto.', type: 'error' })
+         else toast.add({ title: 'Error', message: fallback, type: 'error' })
+         return
       }
+
+      inventoryStore.addProduct(savedProduct)
+      setProductForm({ isOpen: false, product: null })
    }
 
    async function handleStockChange(productId: number, quantity: number, operation: 'increase' | 'decrease') {
@@ -108,18 +127,21 @@ export default function InventoryPage() {
 
       setUpdatingStockProductId(productId)
 
+      let updatedProduct: ProductObject
+
       try {
-         const updatedProduct = operation === 'increase'
+         updatedProduct = operation === 'increase'
             ? await increaseProductStock(productId, quantity)
             : await decreaseProductStock(productId, quantity)
-
-         inventoryStore.addProduct(updatedProduct)
       } catch (error: unknown) {
          if (error instanceof Error && error.message) toast.add({ title: 'Error', message: error.message, type: 'error' })
          else toast.add({ title: 'Error', message: 'No se pudo actualizar el stock.', type: 'error' })
+         return
       } finally {
          setUpdatingStockProductId(null)
       }
+
+      inventoryStore.addProduct(updatedProduct)
    }
 
    async function handleDeleteProduct(product: Product) {
@@ -128,19 +150,20 @@ export default function InventoryPage() {
 
       try {
          await deleteProduct(product.id)
-
-         inventoryStore.removeProduct(product.id)
-         setProductToDelete(null)
       } catch (error: unknown) {
          if (error instanceof Error && error.message) toast.add({ title: 'Error', message: error.message, type: 'error' })
          else toast.add({ title: 'Error', message: 'No se pudo eliminar el producto.', type: 'error' })
+         return
       } finally {
          setDeletingProductId(null)
       }
+
+      inventoryStore.removeProduct(product.id)
+      setProductToDelete(null)
    }
 
    return (
-      <main className='flex w-full flex-col gap-4 p-4 md:px-8'>
+      <main className='flex h-max w-full flex-col gap-4 p-4 md:px-8'>
          <header className='mt-4 flex items-start justify-between gap-4'>
             <div className='flex flex-col gap-1'>
                <h1 className='text-2xl font-bold'>
@@ -155,7 +178,7 @@ export default function InventoryPage() {
             <Button
                variant='filled'
                className='shrink-0'
-               onClick={() => setIsAddingProduct(true)}
+               onClick={() => setProductForm({ isOpen: true, product: null })}
             >
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" width="1em" height="1em">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -200,9 +223,9 @@ export default function InventoryPage() {
                <button
                   type='button'
                   aria-haspopup='dialog'
-                  aria-expanded={isSortModalOpen}
+                  aria-expanded={sort.isOpen}
                   className='flex cursor-pointer items-center gap-2 rounded-full border border-gray-primary bg-black-secondary px-3 py-1.5 text-xs text-gray-400 transition-colors hover:text-white'
-                  onClick={() => setIsSortModalOpen((open) => !open)}
+                  onClick={() => setSort((current) => ({ ...current, isOpen: !current.isOpen }))}
                >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" width="1em" height="1em">
                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 5v14m0 0-3-3m3 3 3-3M16 19V5m0 0-3 3m3-3 3 3" />
@@ -211,22 +234,18 @@ export default function InventoryPage() {
                   Ordenar
                </button>
 
-               {isSortModalOpen &&
+               {(sort.isOpen === true) &&
                   <SortProductsModal
-                     field={sortField}
-                     direction={sortDirection}
-                     onApply={(field, direction) => {
-                        setSortField(field)
-                        setSortDirection(direction)
-                        setIsSortModalOpen(false)
-                     }}
-                     onClose={() => setIsSortModalOpen(false)}
+                     field={sort.field}
+                     direction={sort.direction}
+                     onApply={(field, direction) => setSort((current) => ({ ...current, field, direction, isOpen: false }))}
+                     onClose={() => setSort((current) => ({ ...current, isOpen: false }))}
                   />
                }
             </div>
          </section>
 
-         {filteredProducts.length === 0 &&
+         {(filteredProducts.length === 0) &&
             <p className='text-sm text-gray-400'>
                No se encontraron productos.
             </p>
@@ -241,23 +260,26 @@ export default function InventoryPage() {
                      isDeleting={deletingProductId === product.id}
                      onIncrease={(quantity) => handleStockChange(product.id, quantity, 'increase')}
                      onDecrease={(quantity) => handleStockChange(product.id, quantity, 'decrease')}
+                     onEdit={() => setProductForm({ isOpen: true, product })}
                      onDelete={() => setProductToDelete(product)}
                   />
                </li>
             )}
          </ul>
 
-         {isAddingProduct &&
-            <AddProductForm
+         {(productForm.isOpen === true) &&
+            <ProductForm
+               key={productForm.product?.id ?? 'new'}
+               product={productForm.product ?? undefined}
                productTypes={inventoryStore.productTypes}
                brands={inventoryStore.brands}
-               onAdd={handleAddProduct}
+               onSubmit={handleSaveProduct}
                onCreateType={handleCreateProductType}
-               onClose={() => setIsAddingProduct(false)}
+               onClose={() => setProductForm({ isOpen: false, product: null })}
             />
          }
 
-         {productToDelete &&
+         {(productToDelete !== null) &&
             <DeleteProductModal
                product={productToDelete}
                isDeleting={deletingProductId === productToDelete.id}

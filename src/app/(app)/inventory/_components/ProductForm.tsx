@@ -22,9 +22,10 @@ import Stencil, { StencilField } from './products/Stencil'
 import TongueDepressor from './products/TongueDepressor'
 
 interface Props {
+   product?: Product
    productTypes: ProductType[]
    brands: string[]
-   onAdd: (product: Product) => Promise<void>
+   onSubmit: (product: Product) => Promise<void>
    onCreateType: (value: string) => Promise<ProductType>
    onClose: () => void
 }
@@ -52,36 +53,18 @@ interface ProductFormState {
    error: string
 }
 
-export default function AddProductForm({ productTypes, brands, onAdd, onCreateType, onClose }: Props) {
-   const [formState, setFormState] = useState<ProductFormState>({
-      name: '',
-      brand: '',
-      stock: '0',
-      measure: '',
-      expirationDate: '',
-      cupsSize: '',
-      quantityInGrams: '',
-      penCartridgeMeasure: '',
-      penCartridgeExpirationDate: '',
-      inkSizeInOz: '',
-      inkColor: '',
-      inkExpirationDate: '',
-      liquidSoapLiters: '',
-      liquidSoapExpirationDate: '',
-      nitrileGlovesSize: '',
-      nitrileGlovesExpirationDate: '',
-      stencilMilliliters: '',
-      stencilExpirationDate: '',
-      tongueDepressorExpirationDate: '',
-      error: ''
-   })
+export default function ProductForm({ product, productTypes, brands, onSubmit, onCreateType, onClose }: Props) {
+   const [formState, setFormState] = useState<ProductFormState>(() => buildInitialFormState(product))
    const [isSubmitting, setIsSubmitting] = useState(false)
    const [isSavingType, setIsSavingType] = useState(false)
-   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null)
+   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(product?.type.id ?? null)
 
    const selectedType = productTypes.find((type) => type.id === selectedTypeId) ?? productTypes[0]
    const selectedProductKind = getProductKind(selectedType?.value)
    const brandIsOptional = selectedProductKind === 'tongue-depressor' || selectedProductKind === 'liquid-soap' || selectedProductKind === 'nitrile-gloves' || selectedProductKind === 'cups' || selectedProductKind === 'hectograph-paper'
+   const isEditing = product !== undefined
+   const productId = product?.id
+   const errorFallback = isEditing ? 'No se pudo actualizar el producto.' : 'No se pudo agregar el producto.'
 
    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
       event.preventDefault()
@@ -319,10 +302,12 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
                stock: parsedStock
             })
          }
+
+         if (productId !== undefined) product.id = productId
       } catch (error: unknown) {
          const message = error instanceof Error && error.message
             ? error.message
-            : 'No se pudo agregar el producto.'
+            : errorFallback
 
          setFormState((current) => ({ ...current, error: message }))
          return
@@ -332,11 +317,11 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
       setIsSubmitting(true)
 
       try {
-         await onAdd(product)
+         await onSubmit(product)
       } catch (error: unknown) {
          const message = error instanceof Error && error.message
             ? error.message
-            : 'No se pudo agregar el producto.'
+            : errorFallback
 
          setFormState((current) => ({ ...current, error: message }))
       } finally {
@@ -438,11 +423,13 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
             <header className='flex items-start justify-between gap-4 border-b border-gray-primary p-4 md:border-0 md:px-6 md:pt-6'>
                <div className='flex flex-col gap-1'>
                   <h2 className='text-lg font-bold'>
-                     Nuevo producto
+                     {isEditing ? 'Editar producto' : 'Nuevo producto'}
                   </h2>
 
                   <p className='text-xs text-gray-400'>
-                     Completá los datos del producto para agregarlo al inventario.
+                     {isEditing
+                        ? 'Modificá los datos del producto.'
+                        : 'Completá los datos del producto para agregarlo al inventario.'}
                   </p>
                </div>
 
@@ -599,12 +586,52 @@ export default function AddProductForm({ productTypes, brands, onAdd, onCreateTy
                   disabled={isSubmitting || isSavingType}
                   variant='filled'
                >
-                  {isSubmitting ? <Loader size='16px' /> : 'Agregar'}
+                  {isSubmitting
+                     ? <Loader size='16px' />
+                     : isEditing ? 'Guardar cambios' : 'Agregar'
+                  }
                </Button>
             </footer>
          </form>
       </RenderModal>
    )
+}
+
+function buildInitialFormState(product?: Product): ProductFormState {
+   const expirationDate = expirationDateToDisplay(product?.findAttribute('expiration_date')?.value)
+
+   return {
+      name: product?.name ?? '',
+      brand: product?.brand ?? '',
+      stock: String(product?.stock ?? 0),
+      measure: product?.findAttribute('measure')?.value ?? '',
+      expirationDate,
+      cupsSize: product?.findAttribute('size')?.value ?? '',
+      quantityInGrams: product?.findAttribute('quantity_g')?.value ?? '',
+      penCartridgeMeasure: product?.findAttribute('measure')?.value ?? '',
+      penCartridgeExpirationDate: expirationDate,
+      inkSizeInOz: product?.findAttribute('size_oz')?.value ?? '',
+      inkColor: product?.findAttribute('color')?.value ?? '',
+      inkExpirationDate: expirationDate,
+      liquidSoapLiters: product?.findAttribute('liters')?.value ?? '',
+      liquidSoapExpirationDate: expirationDate,
+      nitrileGlovesSize: product?.findAttribute('size')?.value ?? '',
+      nitrileGlovesExpirationDate: expirationDate,
+      stencilMilliliters: product?.findAttribute('ml')?.value ?? '',
+      stencilExpirationDate: expirationDate,
+      tongueDepressorExpirationDate: expirationDate,
+      error: ''
+   }
+}
+
+function expirationDateToDisplay(value?: string): string {
+   if (!value) return ''
+
+   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+   if (!match) return ''
+
+   const [, year, month, day] = match
+   return `${day}/${month}/${year}`
 }
 
 function buildProductName(type: string, detail: string, brand: string): string {
