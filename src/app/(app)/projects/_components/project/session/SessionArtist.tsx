@@ -12,7 +12,7 @@ export default function SessionArtist(props: Props) {
    const artist = props.artists.find((option) => option.id === props.artist_id)
 
    return (
-      <div className='flex max-w-48 min-w-0 items-center gap-1.5 text-sm'>
+      <div className='flex min-w-0 items-center gap-1.5 text-sm'>
          <p className='shrink-0'>Tatuador:</p>
 
          {(props.showInput)

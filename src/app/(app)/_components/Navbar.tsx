@@ -10,7 +10,7 @@ interface NavbarProps {
 
 export default function Navbar({ hidden, isOwner }: NavbarProps) {
    return (
-      <nav className={`sticky inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2 border-t border-r border-gray-primary bg-black-primary px-2 py-4 transition-all duration-300 ease-in-out md:inset-y-0 md:h-full md:flex-col md:items-start md:justify-start md:border-t-0 lg:left-0 ${hidden ? 'md:w-16' : 'md:w-52'}`}>
+      <nav className={`sticky inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2 border-t border-r border-gray-primary bg-black-primary px-1 py-4 transition-all duration-300 ease-in-out md:inset-y-0 md:h-full md:flex-col md:items-start md:justify-start md:border-t-0 lg:left-0 ${hidden ? 'md:w-16' : 'md:w-52'}`}>
          <Link href="/" className={`hidden cursor-pointer items-center gap-2 py-2 text-lg font-bold text-white transition-colors duration-200 hover:opacity-80 md:flex md:w-full ${hidden ? 'justify-center px-2' : 'px-4'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 15 15">
                <path d="M0 0h15v15H0z" fill="none" />
@@ -144,7 +144,7 @@ export default function Navbar({ hidden, isOwner }: NavbarProps) {
                hide={hidden}
                label="Artistas"
                icon={
-                  <svg xmlns="http://www.w3.org/2000/svg" width="1.4em" height="1.4em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="1.4em" height="1.4em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                      <path d="M15.2184 21.4679C14.1819 21.8203 13.0947 22 12 22C6.4772 22 2 17.5228 2 12C2 6.4772 6.4772 2 12 2C17.5228 2 22 6.4772 22 12C22 13.7005 20.6215 15.079 18.921 15.079C18.7666 15.079 18.6124 15.0674 18.4598 15.0443C18.3111 15.0217 18.1608 15.0104 18.0104 15.0104C16.3536 15.0104 15.0104 16.3536 15.0104 18.0104C15.0104 18.6956 15.2449 19.3601 15.675 19.8935C15.8184 20.0713 15.8965 20.2928 15.8965 20.5212C15.8965 20.9494 15.6238 21.3301 15.2184 21.4679Z" fill="none" />
                      <path d="M11.6189 17.1683C11.6189 17.9967 10.9473 18.6683 10.1189 18.6683C9.2905 18.6683 8.6189 17.9967 8.6189 17.1683C8.6189 16.3399 9.2905 15.6683 10.1189 15.6683C10.9473 15.6683 11.6189 16.3399 11.6189 17.1683ZM8.1304 13.1904C8.1304 14.0188 7.4588 14.6904 6.6304 14.6904C5.8019 14.6904 5.1304 14.0188 5.1304 13.1904C5.1304 12.362 5.8019 11.6904 6.6304 11.6904C7.4588 11.6904 8.1304 12.362 8.1304 13.1904ZM9.6109 8.1109C9.6109 8.9393 8.9393 9.6109 8.1109 9.6109C7.2825 9.6109 6.6109 8.9393 6.6109 8.1109C6.6109 7.2825 7.2825 6.6109 8.1109 6.6109C8.9393 6.6109 9.6109 7.2825 9.6109 8.1109ZM14.6904 6.6304C14.6904 7.4588 14.0188 8.1304 13.1904 8.1304C12.362 8.1304 11.6904 7.4588 11.6904 6.6304C11.6904 5.8019 12.362 5.1304 13.1904 5.1304C14.0188 5.1304 14.6904 5.8019 14.6904 6.6304ZM18.6683 10.1189C18.6683 10.9473 17.9967 11.6189 17.1683 11.6189C16.3399 11.6189 15.6683 10.9473 15.6683 10.1189C15.6683 9.2905 16.3399 8.6189 17.1683 8.6189C17.9967 8.6189 18.6683 9.2905 18.6683 10.1189Z" fill="currentColor" stroke="none" />
                   </svg>

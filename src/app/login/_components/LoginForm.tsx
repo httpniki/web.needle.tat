@@ -47,8 +47,8 @@ export default function LoginForm() {
             disabled={isPending}
             className='mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-sm border border-white/20 bg-gray-primary px-4 py-2 font-semibold transition-all duration-300 hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50'
          >
-            {isPending && <Loader size={18} className='border-white/30 border-t-white' />}
-            {isPending ? 'Ingresando...' : 'Ingresar'}
+            {isPending && <Loader size={21} className='border-white/30 border-t-white' />}
+            {!isPending && 'Ingresar'}
          </button>
       </form>
    )

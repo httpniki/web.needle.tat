@@ -1,4 +1,4 @@
-import { ChangeEvent, useRef, useState } from 'react'
+import { ChangeEvent, DragEvent, useRef, useState } from 'react'
 
 import RenderModal from '@/components/RenderModal'
 import TattooReference, { TattooReferenceObject } from '@/domain/TattooReference'
@@ -14,7 +14,9 @@ interface Props {
 
 export default function References(props: Props) {
    const refInputFile = useRef<HTMLInputElement>(null)
+   const dragDepth = useRef(0)
    const [preview, setPreview] = useState<string | null>(null)
+   const [isDragging, setIsDragging] = useState(false)
 
    if (preview) {
       if (props.references.length === 0) setPreview(null)
@@ -23,10 +25,7 @@ export default function References(props: Props) {
 
    if (!preview && props.references.length > 0) setPreview(props.references[0].url)
 
-   function addImage(event: ChangeEvent<HTMLInputElement>) {
-      const file = event.target.files?.[0]
-      if (!file) return
-
+   function addFile(file: File) {
       const reference = new TattooReference({
          url: URL.createObjectURL(file),
          file
@@ -35,15 +34,67 @@ export default function References(props: Props) {
       props.onAddReference?.(reference.toObject())
    }
 
+   function addImage(event: ChangeEvent<HTMLInputElement>) {
+      const file = event.target.files?.[0]
+      if (!file) return
+
+      addFile(file)
+   }
+
+   function handleDragEnter(event: DragEvent<HTMLElement>) {
+      if (!props.enableEdit) return
+
+      event.preventDefault()
+      dragDepth.current += 1
+      setIsDragging(true)
+   }
+
+   function handleDragOver(event: DragEvent<HTMLElement>) {
+      if (!props.enableEdit) return
+
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'copy'
+   }
+
+   function handleDragLeave() {
+      if (!props.enableEdit) return
+
+      dragDepth.current -= 1
+
+      if (dragDepth.current > 0) return
+
+      dragDepth.current = 0
+      setIsDragging(false)
+   }
+
+   function handleDrop(event: DragEvent<HTMLElement>) {
+      if (!props.enableEdit) return
+
+      event.preventDefault()
+      dragDepth.current = 0
+      setIsDragging(false)
+
+      const file = event.dataTransfer.files[0]
+      if (!file) return
+
+      addFile(file)
+   }
+
    function removeReference(reference: TattooReferenceObject) {
       props.onRemoveReference?.(reference)
    }
 
    return (
-      <section className="flex-1 rounded-sm border border-gray-primary p-6 xl:max-w-2/4">
+      <section
+         className={`flex-1 rounded-sm border p-6 xl:max-w-2/4 ${isDragging ? 'border-white' : 'border-gray-primary'}`}
+         onDragEnter={handleDragEnter}
+         onDragOver={handleDragOver}
+         onDragLeave={handleDragLeave}
+         onDrop={handleDrop}
+      >
          {(preview) && <ReferencePreview url={preview} />}
 
-         <div>
+         <div className='h-full'>
             <div className='mt-1 flex items-center justify-end'>
                {props.references.length > 0 && props.errors &&
                   <div className='flex gap-2'>
@@ -52,7 +103,7 @@ export default function References(props: Props) {
                }
             </div>
 
-            <ul className='flex min-w-0 flex-col items-start gap-2'>
+            <ul className='flex h-full min-w-0 flex-col items-start gap-2'>
                {props.references.length === 0 && props.enableEdit &&
                   <label className='flex size-full max-h-54 cursor-pointer items-center justify-center overflow-hidden border border-gray-primary bg-black-primary p-4 text-nowrap hover:opacity-80'>
                      <input

@@ -24,13 +24,13 @@ export default async function LoginPage({ searchParams }: PageProps<'/login'>) {
                <p className='text-white/60'>Ingresá con tu cuenta de artista o propietario.</p>
             </header>
 
+            <LoginForm />
+
             {(error === 'invite') &&
-               <p role='alert' className='rounded-sm border border-red-500/30 bg-red-500/10 px-3 py-2 text-center text-sm text-red-400'>
-                  La invitación no es válida o expiró. Pedile a un administrador que te envíe una nueva.
+               <p role='alert' className='rounded-sm border border-red-500/30 p-3 text-center text-sm text-red-400'>
+                  La invitación no es válida o expiró.
                </p>
             }
-
-            <LoginForm />
          </section>
       </main>
    )

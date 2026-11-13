@@ -60,7 +60,7 @@ export default function ProjectsView() {
                            </h3>
                         }
 
-                        <section className="flex min-w-0 items-baseline justify-between gap-2">
+                        <section className="flex min-w-0 items-baseline gap-2">
                            <p
                               className="min-w-0 truncate text-sm text-white/60 transition-colors hover:opacity-80"
                               onClick={(event) => { event.stopPropagation(); router.push(`/customers/${customer.id}`) }}
