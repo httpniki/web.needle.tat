@@ -17,6 +17,7 @@ export enum Currency {
 
 export interface ITattooSession {
    id: number
+   artist_id: string
    starts_at: Date
    ends_at: Date
    observations: string
@@ -30,6 +31,7 @@ export interface ITattooSession {
 
 export interface TattooSessionObject {
    id: number
+   artist_id: string
    starts_at: Date
    ends_at: Date
    observations: string
@@ -41,6 +43,7 @@ export interface TattooSessionObject {
 
 type TattooSessionConsturctor = {
    id: number,
+   artist_id?: string,
    starts_at: Date,
    ends_at: Date,
    price: number,
@@ -52,6 +55,7 @@ type TattooSessionConsturctor = {
 
 export default class TattooSession implements ITattooSession {
    private _id: number = 0;
+   private _artist_id: string = '';
    private _starts_at: Date = startOfHour(new Date());
    private _ends_at: Date = addHours(this._starts_at, 1);
    private _observations: string = '';
@@ -63,6 +67,7 @@ export default class TattooSession implements ITattooSession {
    constructor(props?: TattooSessionConsturctor) {
       if (!props) return
       this._id = props.id;
+      if (props.artist_id) this.artist_id = props.artist_id;
       if (props.status) this._status = props.status;
       if (props.currency) this._currency = props.currency;
       if (typeof props.observations === 'string') this._observations = props.observations;
@@ -70,6 +75,14 @@ export default class TattooSession implements ITattooSession {
       this._starts_at = new Date(props.starts_at);
       this._ends_at = new Date(props.ends_at);
       this._price = props.price;
+   }
+
+   public get artist_id(): string { return this._artist_id; }
+   public set artist_id(value: string) {
+      const id = value.trim()
+      if (!id) throw new DomainException('artist_id', 'La sesión debe tener un tatuador asociado')
+
+      this._artist_id = id
    }
 
    public get starts_at(): Date { return this._starts_at; }
@@ -108,6 +121,7 @@ export default class TattooSession implements ITattooSession {
    public clone(): TattooSession {
       const copy = new TattooSession({
          id: this._id,
+         artist_id: this._artist_id,
          starts_at: this._starts_at,
          ends_at: this._ends_at,
          observations: this._observations,
@@ -123,6 +137,7 @@ export default class TattooSession implements ITattooSession {
    public toObject(): TattooSessionObject {
       return {
          id: this._id,
+         artist_id: this._artist_id,
          starts_at: this._starts_at,
          ends_at: this._ends_at,
          observations: this._observations,

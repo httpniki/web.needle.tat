@@ -33,10 +33,10 @@ export default function AppShell({ children, account }: AppShellProps) {
 
    return (
       <AppShellContext.Provider value={{ title, setTitle }}>
-         <div className='flex min-h-0 flex-1 flex-col-reverse md:flex-row md:bg-black-secondary'>
-            <Navbar hidden={hidden} />
+         <div className='flex min-h-0 flex-1 flex-col-reverse bg-black-primary md:flex-row'>
+            <Navbar hidden={hidden} isOwner={account.role === 'owner'} />
 
-            <div className='flex min-h-0 min-w-0 flex-1 flex-col bg-black-primary md:mt-2 md:rounded-t-2xl'>
+            <div className='flex min-h-0 min-w-0 flex-1 flex-col bg-black-primary'>
                <Topbar hidden={hidden} title={title} account={account} onToggle={() => setHidden((prev) => !prev)} />
 
                <div className='relative flex min-h-0 min-w-0 flex-1 overflow-y-auto'>

@@ -3,6 +3,7 @@ import TattooSession, { TattooSessionObject } from '@/domain/TattooSession'
 interface Props {
    children: React.ReactNode
    onAddSession?: (session: TattooSessionObject) => void
+   defaultArtistId?: string
    enableEdit?: boolean
 }
 
@@ -12,6 +13,7 @@ export default function Sessions(props: Props) {
 
       const session = new TattooSession()
       session.id = Math.floor(Math.random() * 10000)
+      if (props.defaultArtistId) session.artist_id = props.defaultArtistId
       props.onAddSession(session.toObject())
    }
 

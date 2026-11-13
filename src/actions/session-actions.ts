@@ -4,12 +4,14 @@ import { cookies } from 'next/headers'
 
 import { Currency, SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
 import { requireArtist } from '@/lib/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 import ServerActionException from '../utils/exceptions/action-exception'
 
 interface NewSession {
    projectId: number
+   artist_id: string
    starts_at: Date
    ends_at: Date
    observations?: string
@@ -21,6 +23,7 @@ interface NewSession {
 interface SessionModel {
    id: number
    project_id: string
+   artist_id: string
    starts_at: Date
    ends_at: Date
    observations: string
@@ -32,26 +35,38 @@ interface SessionModel {
 }
 
 export async function createSession(newSession: NewSession): Promise<TattooSessionObject> {
-   await requireArtist()
+   const currentArtist = await requireArtist()
+
+   if (!newSession.artist_id) {
+      const err = new ServerActionException('La sesión debe tener un tatuador asociado')
+      err.name = 'invalid_artist'
+      throw err
+   }
+
+   if (currentArtist.app_metadata.role !== 'owner' && newSession.artist_id !== currentArtist.id) {
+      const err = new ServerActionException('Solo podés asignar sesiones a tu propio usuario')
+      err.name = 'forbidden'
+      throw err
+   }
 
    const db = createClient(await cookies())
 
    if (newSession.starts_at instanceof Date && isNaN(newSession.starts_at.getTime())) {
-      const err = new Error('Invalid session starts_at date')
+      const err = new Error('Fecha de inicio inválida')
       err.name = 'invalid_date'
       throw err
    }
 
    if (newSession.ends_at instanceof Date && isNaN(newSession.ends_at.getTime())) {
-      const err = new Error('Invalid session ends_at date')
+      const err = new Error('Hora final inválida')
       err.name = 'invalid_date'
       throw err
    }
 
-   const conflicts = await hasSessionConflict(newSession.starts_at, newSession.ends_at)
+   const conflicts = await hasSessionConflict(newSession.starts_at, newSession.ends_at, newSession.artist_id)
 
    if (conflicts.length > 0) {
-      const err = new ServerActionException('The session time is already occupied')
+      const err = new ServerActionException('La hora seleccionada ya contiene una sesión pendiente')
       err.name = 'session_time_conflict'
       throw err
    }
@@ -60,6 +75,7 @@ export async function createSession(newSession: NewSession): Promise<TattooSessi
       .from('sessions')
       .insert({
          project_id: newSession.projectId,
+         artist_id: newSession.artist_id,
          starts_at: newSession.starts_at,
          ends_at: newSession.ends_at,
          observations: newSession.observations,
@@ -71,13 +87,14 @@ export async function createSession(newSession: NewSession): Promise<TattooSessi
       .single()
 
    if (result.error || !result.data) {
-      const err = new Error('Unexpected error creating session')
+      const err = new Error('Error inesperado al crear la sesión')
       err.name = 'unexpected_error'
       throw err
    }
 
    return {
       id: result.data.id,
+      artist_id: result.data.artist_id,
       starts_at: result.data.starts_at,
       ends_at: result.data.ends_at,
       observations: result.data.observations,
@@ -88,8 +105,16 @@ export async function createSession(newSession: NewSession): Promise<TattooSessi
    }
 }
 
-export async function hasSessionConflict(startsAt: Date, endsAt: Date, excludeSessionId?: string): Promise<TattooSessionObject[]> {
-   const db = createClient(await cookies())
+export async function hasSessionConflict(startsAt: Date, endsAt: Date, artistId: string, excludeSessionId?: string): Promise<TattooSessionObject[]> {
+   await requireArtist()
+
+   if (!artistId) {
+      const err = new ServerActionException('La sesión debe tener un tatuador asociado')
+      err.name = 'invalid_artist'
+      throw err
+   }
+
+   const db = createAdminClient()
 
    if (isNaN(startsAt.getTime()) || isNaN(endsAt.getTime())) {
       const err = new ServerActionException('Fechas de sesión inválidas para la validación')
@@ -100,6 +125,7 @@ export async function hasSessionConflict(startsAt: Date, endsAt: Date, excludeSe
    let query = db
       .from('sessions')
       .select('*')
+      .eq('artist_id', artistId)
       .lt('starts_at', endsAt.toISOString()) // El inicio existente debe ser menor al nuevo fin
       .gt('ends_at', startsAt.toISOString()) // El fin existente debe ser mayor al nuevo inicio
       .neq('status', 'CANCELED')
@@ -116,6 +142,7 @@ export async function hasSessionConflict(startsAt: Date, endsAt: Date, excludeSe
 
    return data.map((session) => ({
       id: session.id,
+      artist_id: session.artist_id,
       starts_at: session.starts_at,
       ends_at: session.ends_at,
       booking_fee: session.booking_fee,
@@ -127,6 +154,8 @@ export async function hasSessionConflict(startsAt: Date, endsAt: Date, excludeSe
 }
 
 export default async function findSessionById(id: string): Promise<TattooSessionObject> {
+   await requireArtist()
+
    const db = createClient(await cookies())
 
    const { data, error } = await db
@@ -134,13 +163,13 @@ export default async function findSessionById(id: string): Promise<TattooSession
       .overrideTypes<SessionModel[]>()
 
    if (error || !data || 'Error' in data) {
-      const exception = new ServerActionException('Unexpected error finding session')
+      const exception = new ServerActionException('Error inesperado al buscar la sesión')
       exception.name = 'unexpected_error'
       throw exception
    }
 
    if (!data || data.length === 0) {
-      const exception = new ServerActionException('Session not found')
+      const exception = new ServerActionException('Sesión no encontrada')
       exception.name = 'session_not_found'
       throw exception
    }
@@ -149,6 +178,7 @@ export default async function findSessionById(id: string): Promise<TattooSession
 
    return {
       id: session.id,
+      artist_id: session.artist_id,
       starts_at: session.starts_at,
       ends_at: session.ends_at,
       observations: session.observations,
@@ -160,6 +190,8 @@ export default async function findSessionById(id: string): Promise<TattooSession
 }
 
 export async function findSessionsByProjectId(projectId: number): Promise<TattooSessionObject[]> {
+   await requireArtist()
+
    const db = createClient(await cookies())
 
    const { data, error } = await db
@@ -167,13 +199,14 @@ export async function findSessionsByProjectId(projectId: number): Promise<Tattoo
       .overrideTypes<SessionModel[]>()
 
    if (error || !data || 'Error' in data) {
-      const exception = new ServerActionException('Unexpected error finding sessions')
+      const exception = new ServerActionException('Error inesperado al buscar las sesiones')
       exception.name = 'unexpected_error'
       throw exception
    }
 
    return data.map((session) => ({
       id: session.id,
+      artist_id: session.artist_id,
       starts_at: session.starts_at,
       ends_at: session.ends_at,
       observations: session.observations,
@@ -185,7 +218,21 @@ export async function findSessionsByProjectId(projectId: number): Promise<Tattoo
 }
 
 export async function updateSession(session: TattooSessionObject): Promise<TattooSessionObject> {
-   await requireArtist()
+   const currentArtist = await requireArtist()
+
+   if (!session.artist_id) {
+      const err = new ServerActionException('La sesión debe tener un tatuador asociado')
+      err.name = 'invalid_artist'
+      throw err
+   }
+
+   await findSessionById(String(session.id))
+
+   if (currentArtist.app_metadata.role !== 'owner' && session.artist_id !== currentArtist.id) {
+      const err = new ServerActionException('Solo podés asignar sesiones a tu propio usuario')
+      err.name = 'forbidden'
+      throw err
+   }
 
    const db = createClient(await cookies())
    const { id, ...payload } = session
@@ -200,7 +247,7 @@ export async function updateSession(session: TattooSessionObject): Promise<Tatto
    }
 
    if (isNaN(endsAt.getTime())) {
-      const err = new ServerActionException('Fecha de fin inválida')
+      const err = new ServerActionException('Hora final inválida')
       err.name = 'invalid_date'
       throw err
    }
@@ -214,6 +261,7 @@ export async function updateSession(session: TattooSessionObject): Promise<Tatto
    const conflicts = await hasSessionConflict(
       startsAt,
       endsAt,
+      session.artist_id,
       String(id)
    )
 
@@ -238,6 +286,7 @@ export async function updateSession(session: TattooSessionObject): Promise<Tatto
 
    return {
       id: data.id,
+      artist_id: data.artist_id,
       starts_at: data.starts_at,
       ends_at: data.ends_at,
       observations: data.observations,
@@ -258,20 +307,29 @@ export async function deleteSession(id: TattooSessionObject['id']): Promise<void
       .overrideTypes<SessionModel[]>()
 
    if (sessionError || !sessionData || 'Error' in sessionData) {
-      const exception = new ServerActionException('Unexpected error finding session')
+      const exception = new ServerActionException('Error inesperado al buscar la sesión')
       exception.name = 'unexpected_error'
       throw exception
    }
 
    if (!sessionData || sessionData.length === 0) {
-      const exception = new ServerActionException('Session not found')
+      const exception = new ServerActionException('Sesión no encontrada')
       exception.name = 'session_not_found'
       throw exception
    }
 
-   const projectSessions = await findSessionsByProjectId(Number(sessionData[0].project_id))
+   const { count: projectSessionCount, error: projectSessionError } = await createAdminClient()
+      .from('sessions')
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', Number(sessionData[0].project_id))
 
-   if (projectSessions.length <= 1) {
+   if (projectSessionError) {
+      const err = new ServerActionException('Error inesperado al validar las sesiones del proyecto')
+      err.name = 'unexpected_error'
+      throw err
+   }
+
+   if ((projectSessionCount ?? 0) <= 1) {
       const err = new ServerActionException('No se puede eliminar la única sesión del proyecto')
       err.name = 'cannot_delete_last_session'
       throw err

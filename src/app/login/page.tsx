@@ -6,7 +6,9 @@ export const metadata: Metadata = {
    title: 'Ingresar - Needle.tat'
 }
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: PageProps<'/login'>) {
+   const { error } = await searchParams
+
    return (
       <main className='flex min-h-screen items-center justify-center bg-black-primary p-4'>
          <section className='flex w-full max-w-sm flex-col gap-8'>
@@ -21,6 +23,12 @@ export default function LoginPage() {
                </div>
                <p className='text-white/60'>Ingresá con tu cuenta de artista o propietario.</p>
             </header>
+
+            {(error === 'invite') &&
+               <p role='alert' className='rounded-sm border border-red-500/30 bg-red-500/10 px-3 py-2 text-center text-sm text-red-400'>
+                  La invitación no es válida o expiró. Pedile a un administrador que te envíe una nueva.
+               </p>
+            }
 
             <LoginForm />
          </section>

@@ -45,14 +45,14 @@ export async function createCustomer(body: NewCustomer): Promise<CustomerObject>
          .or(filters.join(','))
 
       if (result.error) {
-         const err = new ActionException('Unexpected error validating customer')
+         const err = new ActionException('Error inesperado al validar el cliente')
          err.name = 'unexpected_error'
 
          throw err
       }
 
       if (body.email && result.data.some((customer) => customer.email === body.email)) {
-         const err = new ActionException('Customer with this email already exists')
+         const err = new ActionException('Ya existe un cliente con este email')
          err.name = 'customer_with_email_exists'
          err.data = { email: body.email }
 
@@ -60,7 +60,7 @@ export async function createCustomer(body: NewCustomer): Promise<CustomerObject>
       }
 
       if (body.username && result.data.some((customer) => customer.username === body.username)) {
-         const err = new ActionException('Customer with this username already exists')
+         const err = new ActionException('Ya existe un cliente con este nombre de usuario')
          err.name = 'customer_with_username_exists'
          err.data = { username: body.username }
 
@@ -68,14 +68,14 @@ export async function createCustomer(body: NewCustomer): Promise<CustomerObject>
       }
 
       if (body.phone_number && result.data.some((customer) => customer.phone_number === body.phone_number)) {
-         const err = new ActionException('Customer with this phone number already exists')
+         const err = new ActionException('Ya existe un cliente con este número de teléfono')
          err.name = 'customer_with_phone_number_exists'
          err.data = { phone_number: body.phone_number }
          throw err
       }
 
       if (body.name && result.data.some((customer) => customer.name === body.name)) {
-         const err = new ActionException('Customer with this name already exists')
+         const err = new ActionException('Ya existe un cliente con este nombre')
          err.name = 'customer_with_name_exists'
          err.data = { name: body.name }
          throw err
@@ -89,7 +89,7 @@ export async function createCustomer(body: NewCustomer): Promise<CustomerObject>
       .single()
 
    if (results.error) {
-      const err = new ActionException('Unexpected error creating customer')
+      const err = new ActionException('Error inesperado al crear el cliente')
       err.name = 'unexpected_error'
       throw err
    }
@@ -113,7 +113,7 @@ export async function findCustomers(q: string): Promise<CustomerObject[]> {
       .or(`name.imatch.${q},username.imatch.${q},phone_number.imatch.${q},email.imatch.${q}`)
 
    if (results.error) {
-      const err = new ActionException('Unexpected error finding customers')
+      const err = new ActionException('Error inesperado al buscar clientes')
       err.name = 'unexpected_error'
       throw err
    }
@@ -138,13 +138,13 @@ export async function findCustomerById(id: number): Promise<CustomerObject> {
       .single()
 
    if (result.error) {
-      const err = new ActionException('Unexpected error finding customer')
+      const err = new ActionException('Error inesperado al buscar el cliente')
       err.name = 'unexpected_error'
       throw err
    }
 
    if (!result.data) {
-      const err = new ActionException('Customer not found')
+      const err = new ActionException('Cliente no encontrado')
       err.name = 'customer_not_found'
       throw err
    }
@@ -168,7 +168,7 @@ export async function getCustomers(): Promise<CustomerObject[]> {
       .order('name')
 
    if (results.error) {
-      const err = new ActionException('Unexpected error getting customers')
+      const err = new ActionException('Error inesperado al obtener los clientes')
       err.name = 'unexpected_error'
       throw err
    }
@@ -203,34 +203,34 @@ export async function updateCustomer(id: number, body: CustomerObject): Promise<
          .or(filters.join(','))
 
       if (result.error) {
-         const err = new ActionException('Unexpected error validating customer')
+         const err = new ActionException('Error inesperado al validar el cliente')
          err.name = 'unexpected_error'
          throw err
       }
 
       if (body.email && result.data.some((customer) => customer.email === body.email)) {
-         const err = new ActionException('Customer with this email already exists')
+         const err = new ActionException('Ya existe un cliente con este email')
          err.name = 'customer_with_email_exists'
          err.data = { email: body.email }
          throw err
       }
 
       if (body.username && result.data.some((customer) => customer.username === body.username)) {
-         const err = new ActionException('Customer with this username already exists')
+         const err = new ActionException('Ya existe un cliente con este nombre de usuario')
          err.name = 'customer_with_username_exists'
          err.data = { username: body.username }
          throw err
       }
 
       if (body.phone_number && result.data.some((customer) => customer.phone_number === body.phone_number)) {
-         const err = new ActionException('Customer with this phone number already exists')
+         const err = new ActionException('Ya existe un cliente con este número de teléfono')
          err.name = 'customer_with_phone_number_exists'
          err.data = { phone_number: body.phone_number }
          throw err
       }
 
       if (body.name && result.data.some((customer) => customer.name === body.name)) {
-         const err = new ActionException('Customer with this name already exists')
+         const err = new ActionException('Ya existe un cliente con este nombre')
          err.name = 'customer_with_name_exists'
          err.data = { name: body.name }
          throw err
@@ -249,13 +249,13 @@ export async function updateCustomer(id: number, body: CustomerObject): Promise<
       .select<string, CustomerModel>('*')
 
    if (results.error) {
-      const err = new ActionException('Unexpected error updating customer')
+      const err = new ActionException('Error inesperado al actualizar el cliente')
       err.name = 'unexpected_error'
       throw err
    }
 
    if (!results.data) {
-      const err = new ActionException('Customer not found')
+      const err = new ActionException('Cliente no encontrado')
       err.name = 'customer_not_found'
       throw err
    }

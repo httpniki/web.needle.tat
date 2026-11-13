@@ -8,6 +8,7 @@ import { TattooSessionObject } from '@/domain/TattooSession'
 import { requireArtist } from '@/lib/auth'
 import { deleteFromCloudinary } from '@/lib/cloudinary/delete'
 import { uploadFile } from '@/lib/cloudinary/upload'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 import ServerActionException from '../utils/exceptions/action-exception'
@@ -36,14 +37,14 @@ export async function createProject({ customer, project }: CreateProjectParams):
 }> {
    await requireArtist()
 
-   const db = createClient(await cookies())
+   const db = createAdminClient()
    let c: CustomerObject | null = null
 
    if (customer.id) c = await findCustomerById(customer.id)
    if (!customer.id) c = await createCustomer(customer)
 
    if (!c) {
-      const exception = new ServerActionException('Unexpected error')
+      const exception = new ServerActionException('Error inesperado')
       exception.name = 'unexpected_error'
       throw exception
    }
@@ -56,7 +57,7 @@ export async function createProject({ customer, project }: CreateProjectParams):
          return await uploadFile(r.file)
       }))
    } catch (error) {
-      const exception = new ServerActionException('Unexpected error uploading images')
+      const exception = new ServerActionException('Error inesperado al cargar la imagen')
       exception.name = 'unexpected_error'
       console.error(error)
       throw exception
@@ -76,7 +77,7 @@ export async function createProject({ customer, project }: CreateProjectParams):
       .single()
 
    if (projectResult.error || !projectResult.data) {
-      const exception = new ServerActionException('Unexpected error creating project')
+      const exception = new ServerActionException('Error inesperado al guardar el proyecto')
       exception.name = 'unexpected_error'
       throw exception
    }
@@ -121,12 +122,12 @@ export async function getProjects(): Promise<TattooProjectObject[]> {
       .order('created_at', { ascending: false })
 
    if (error) {
-      const exception = new ServerActionException('Unexpected error getting projects')
+      const exception = new ServerActionException('Error inesperado al obtener los proyectos')
       exception.name = 'unexpected_error'
       throw exception
    }
 
-   return Promise.all(data.map(async (project) => {
+   const projects = await Promise.all(data.map(async (project) => {
       const sessions = await findSessionsByProjectId(project.id)
 
       return {
@@ -139,6 +140,8 @@ export async function getProjects(): Promise<TattooProjectObject[]> {
          observations: project.observations
       }
    }))
+
+   return projects.filter((project) => project.sessions.length > 0)
 }
 
 export async function getProjectsByCustomerId(customerId: number): Promise<TattooProjectObject[]> {
@@ -151,12 +154,12 @@ export async function getProjectsByCustomerId(customerId: number): Promise<Tatto
       .order('created_at', { ascending: false })
 
    if (error) {
-      const exception = new ServerActionException('Unexpected error getting projects')
+      const exception = new ServerActionException('Error inesperado al obtener los proyectos')
       exception.name = 'unexpected_error'
       throw exception
    }
 
-   return Promise.all(data.map(async (project) => {
+   const projects = await Promise.all(data.map(async (project) => {
       const sessions = await findSessionsByProjectId(project.id)
 
       return {
@@ -169,6 +172,8 @@ export async function getProjectsByCustomerId(customerId: number): Promise<Tatto
          observations: project.observations
       }
    }))
+
+   return projects.filter((project) => project.sessions.length > 0)
 }
 
 interface GetProjectOptions {
@@ -185,12 +190,18 @@ export async function getProject({ projectId }: GetProjectOptions): Promise<Tatt
       .single()
 
    if (projectResult.error || !projectResult.data) {
-      const exception = new ServerActionException('Unexpected error getting project')
+      const exception = new ServerActionException('Error inesperado al obtener el proyecto')
       exception.name = 'unexpected_error'
       throw exception
    }
 
    const sessions = await findSessionsByProjectId(projectResult.data.id)
+
+   if (sessions.length === 0) {
+      const exception = new ServerActionException('Proyecto no encontrado')
+      exception.name = 'project_not_found'
+      throw exception
+   }
 
    return {
       id: projectResult.data.id,
@@ -270,12 +281,6 @@ export async function updateProject(id: ProjectModel['id'], data: UpdateProjectP
       }
 
       payload.references = updatedReferences
-   }
-
-   if (Object.keys(payload).length === 0) {
-      const err = new ServerActionException('No se detectaron cambios con respecto al estado actual del proyecto')
-      err.name = 'no_changes'
-      throw err
    }
 
    const { data: _result, error } = await db

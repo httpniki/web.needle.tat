@@ -7,6 +7,24 @@ export default async function proxy(request: NextRequest) {
    const { response, user } = await updateSession(request)
    const hasAccess = hasAppAccess(user?.app_metadata.role)
    const isLoginRoute = request.nextUrl.pathname === '/login'
+   const isPasswordSetupRoute = request.nextUrl.pathname === '/auth/set-password'
+   const needsPasswordSetup = hasAccess && user?.app_metadata.password_set === false
+
+   if (needsPasswordSetup && isPasswordSetupRoute === false) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth/set-password'
+      url.search = ''
+
+      return redirectWithCookies(url, response)
+   }
+
+   if (hasAccess && isPasswordSetupRoute && needsPasswordSetup === false) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      url.search = ''
+
+      return redirectWithCookies(url, response)
+   }
 
    if (!hasAccess && !isLoginRoute) {
       const url = request.nextUrl.clone()
@@ -36,5 +54,5 @@ function redirectWithCookies(url: URL, response: NextResponse) {
 }
 
 export const config = {
-   matcher: ['/((?!api|_next/static|_next/image|favicon.ico|icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+   matcher: ['/((?!api|auth/confirm|_next/static|_next/image|favicon.ico|icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }

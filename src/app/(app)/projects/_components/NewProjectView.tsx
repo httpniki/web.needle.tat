@@ -7,6 +7,7 @@ import { useState, useTransition } from 'react'
 import { createProject } from '@/actions/project-actions'
 import Button from '@/components/ui/buttons/Button'
 import Loader from '@/components/ui/Loader'
+import type { ArtistOption } from '@/domain/artist/Artist'
 import CustomerDomain, { CustomerObject } from '@/domain/Customer'
 import TattooProject from '@/domain/TattooProject'
 import TattooReference, { TattooReferenceObject } from '@/domain/TattooReference'
@@ -38,6 +39,8 @@ type ErrorState = {
 }
 
 interface Props {
+   artists: ArtistOption[]
+   canAssignArtist: boolean
    starts_date?: Date
    ends_date?: Date
 }
@@ -48,8 +51,10 @@ export default function NewProjectView(props: Props) {
    const [project, setProject] = useState<TattooProject>(() => {
       const project = new TattooProject()
       const newSession = new TattooSession()
+      const defaultArtistId = props.artists[0]?.id
 
       newSession.id = 1
+      if (defaultArtistId) newSession.artist_id = defaultArtistId
 
       if (props.starts_date) newSession.starts_at = props.starts_date
       if (props.ends_date) newSession.ends_at = props.ends_date
@@ -178,6 +183,9 @@ export default function NewProjectView(props: Props) {
       for (const [key, value] of Object.entries(changes)) {
          try {
             switch (key) {
+               case 'artist_id':
+                  session.artist_id = value as string
+                  break
                case 'date':
                   let newDate = value as Date
                   newDate = setHours(newDate, session.starts_at.getHours())
@@ -273,6 +281,7 @@ export default function NewProjectView(props: Props) {
       }
 
       if (project.sessions.length === 0) disabled = true
+      if (project.sessions.some((session) => !session.artist_id)) disabled = true
       if (project.references.length === 0) disabled = true
 
       for (const key in customer) {
@@ -377,11 +386,17 @@ export default function NewProjectView(props: Props) {
                   />
                </div>
 
-               <Sessions onAddSession={(session) => addSession(session)} enableEdit>
+               <Sessions
+                  onAddSession={(session) => addSession(session)}
+                  defaultArtistId={props.artists[0]?.id}
+                  enableEdit
+               >
                   {project.sessions.map((session, index) => (
                      <Session
                         key={session.id}
                         session={session}
+                        artists={props.artists}
+                        canAssignArtist={props.canAssignArtist}
                         index={index}
                         onDelete={(id) => removeSession(id)}
                         onChange={(changes) => updateSession(session.id, changes)}

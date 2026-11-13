@@ -7,6 +7,7 @@ import { getCustomers, updateCustomer as updateCustomerAction } from '@/actions/
 import { updateProject } from '@/actions/project-actions'
 import { createSession, deleteSession, updateSession as updateSessionAction } from '@/actions/session-actions'
 import Button from '@/components/ui/buttons/Button'
+import type { ArtistOption } from '@/domain/artist/Artist'
 import CustomerDomain, { CustomerObject } from '@/domain/Customer'
 import TattooProject from '@/domain/TattooProject'
 import TattooReference, { TattooReferenceObject } from '@/domain/TattooReference'
@@ -40,6 +41,8 @@ type ErrorState = {
 
 interface Props {
    id: number
+   artists: ArtistOption[]
+   canAssignArtist: boolean
    view: 'Summary' | 'Form'
 }
 
@@ -177,6 +180,9 @@ export default function ProjectView(props: Props) {
       try {
          for (const [key, value] of Object.entries(changes)) {
             switch (key) {
+               case 'artist_id':
+                  session.artist_id = value as string
+                  break
                case 'starts_at':
                   session.starts_at = value as Date
                   break
@@ -377,11 +383,17 @@ export default function ProjectView(props: Props) {
             />
          </div>
 
-         <Sessions onAddSession={(session) => addSession(session)} enableEdit={isEditing}>
+         <Sessions
+            onAddSession={(session) => addSession(session)}
+            defaultArtistId={props.artists[0]?.id}
+            enableEdit={isEditing}
+         >
             {viewProject.sessions.map((session, index) => (
                <Session
                   key={session.id}
                   session={session}
+                  artists={props.artists}
+                  canAssignArtist={props.canAssignArtist}
                   index={index}
                   onDelete={(id) => removeSession(id)}
                   onChange={(changes) => updateSession(session.id, changes)}

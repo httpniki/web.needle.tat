@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 
+import { getArtistOptions } from '@/actions/artist-actions'
 import { getProject } from '@/actions/project-actions'
+import { getCurrentArtist } from '@/lib/auth'
 
 import NewProjectView from './_components/NewProjectView'
 import ProjectsView from './_components/ProjectsView'
@@ -39,9 +41,14 @@ export default async function ProjectsPage(props: Props) {
    const paramsObj = await props.searchParams
 
    if (paramsObj.new === 'true') {
+      const [artists, currentArtist] = await Promise.all([getArtistOptions(), getCurrentArtist()])
+      const canAssignArtist = currentArtist?.app_metadata.role === 'owner'
+
       return (
          <PageWrapper>
             <NewProjectView
+               artists={artists}
+               canAssignArtist={canAssignArtist}
                starts_date={paramsObj.starts_date ? new Date(paramsObj.starts_date) : undefined}
                ends_date={paramsObj.ends_date ? new Date(paramsObj.ends_date) : undefined}
             />
@@ -50,9 +57,17 @@ export default async function ProjectsPage(props: Props) {
    }
 
    if (paramsObj.id) {
+      const [artists, currentArtist] = await Promise.all([getArtistOptions(), getCurrentArtist()])
+      const canAssignArtist = currentArtist?.app_metadata.role === 'owner'
+
       return (
          <PageWrapper>
-            <ProjectView id={Number(paramsObj.id)} view={(paramsObj.update === 'true') ? 'Form' : 'Summary'} />
+            <ProjectView
+               id={Number(paramsObj.id)}
+               artists={artists}
+               canAssignArtist={canAssignArtist}
+               view={(paramsObj.update === 'true') ? 'Form' : 'Summary'}
+            />
          </PageWrapper>
       )
    }

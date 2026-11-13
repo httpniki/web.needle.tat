@@ -2,9 +2,11 @@ import { useState } from 'react'
 
 import RenderModal from '@/components/RenderModal'
 import Loader from '@/components/ui/Loader'
+import type { ArtistOption } from '@/domain/artist/Artist'
 import { SessionStatus, TattooSessionObject } from '@/domain/TattooSession'
 
 import SchedulePicker from '../SchedulePicker'
+import SessionArtist from './session/SessionArtist'
 import SessionBookingFee from './session/SessionBookingFee'
 import SessionDate from './session/SessionDate'
 import SessionPrice from './session/SessionPrice'
@@ -12,6 +14,8 @@ import SessionTime from './session/SessionTime'
 
 interface Props {
    session: TattooSessionObject
+   artists: ArtistOption[]
+   canAssignArtist: boolean
    index: number
    onDelete?: (id: number) => void
    onChange?: (changes: Partial<Omit<TattooSessionObject, 'id'>>) => void
@@ -112,6 +116,16 @@ export default function Session(props: Props) {
             </div>
 
             <div className='flex flex-col gap-3 text-sm'>
+               {(props.canAssignArtist === true) &&
+                  <SessionArtist
+                     artists={props.artists}
+                     artist_id={props.session.artist_id}
+                     showInput={renderInput}
+                     onChange={(artist_id) => props.onChange?.({ artist_id })}
+                     error={props.errors?.find(el => el.field === 'artist_id')?.message}
+                  />
+               }
+
                <SessionDate
                   showButton={renderInput}
                   date={props.session.starts_at}

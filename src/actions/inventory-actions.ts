@@ -57,19 +57,19 @@ async function resolveProductData(db: DbClient, body: ProductObject): Promise<Pr
    const brand = body.brand.trim()
 
    if (!name || name.length > 100) {
-      const err = new ActionException('Invalid product name')
+      const err = new ActionException('El nombre del producto es inválido')
       err.name = 'invalid_product_name'
       throw err
    }
 
    if (!Number.isInteger(body.stock) || body.stock < 0) {
-      const err = new ActionException('Product stock must be a non-negative integer')
+      const err = new ActionException('El stock del producto no puede ser menor a 0')
       err.name = 'invalid_product_stock'
       throw err
    }
 
    if (!Number.isInteger(body.type.id) || body.type.id <= 0) {
-      const err = new ActionException('Invalid product type')
+      const err = new ActionException('El tipo del producto no es válido')
       err.name = 'invalid_product_type'
       throw err
    }
@@ -77,13 +77,13 @@ async function resolveProductData(db: DbClient, body: ProductObject): Promise<Pr
    const typeResult = await db.from('product_type').select<string, ProductTypeModel>('*').eq('product_type_id', body.type.id).limit(1)
 
    if (typeResult.error) {
-      const err = new ActionException('Unexpected error validating product type')
+      const err = new ActionException('Error inesperado al validar el tipo del producto')
       err.name = 'unexpected_error'
       throw err
    }
 
    if (typeResult.data.length === 0) {
-      const err = new ActionException('Product type not found')
+      const err = new ActionException('Tipo del producto no encontrado')
       err.name = 'product_type_not_found'
       err.data = { typeId: String(body.type.id) }
       throw err
@@ -93,7 +93,7 @@ async function resolveProductData(db: DbClient, body: ProductObject): Promise<Pr
    const brandIsOptional = productKind === 'tongue-depressor' || productKind === 'liquid-soap' || productKind === 'nitrile-gloves' || productKind === 'cups' || productKind === 'hectograph-paper'
 
    if (brand.length > 100 || (!brand && !brandIsOptional)) {
-      const err = new ActionException('Invalid product brand')
+      const err = new ActionException('La marca del producto es inválida')
       err.name = 'invalid_product_brand'
       throw err
    }
@@ -105,7 +105,7 @@ async function resolveProductData(db: DbClient, body: ProductObject): Promise<Pr
       const attributeValue = attribute.value.trim()
 
       if (!attributeName || !attributeValue || attributeName.length > 100) {
-         const err = new ActionException('Invalid product attribute')
+         const err = new ActionException('Atributo de producto inválido')
          err.name = 'invalid_product_attribute'
          throw err
       }
@@ -138,7 +138,7 @@ export async function createProduct(body: ProductObject): Promise<ProductObject>
       .single()
 
    if (result.error || !result.data) {
-      const err = new ActionException('Unexpected error creating product')
+      const err = new ActionException('Error inesperado al crear el producto')
       err.name = 'unexpected_error'
       throw err
    }
@@ -167,13 +167,13 @@ export async function updateProduct(id: number, body: ProductObject): Promise<Pr
       .select('product_id')
 
    if (result.error) {
-      const err = new ActionException('Unexpected error updating product')
+      const err = new ActionException('Error inesperado al actualizar el producto')
       err.name = 'unexpected_error'
       throw err
    }
 
    if (result.data.length === 0) {
-      const err = new ActionException('Product not found')
+      const err = new ActionException('Producto no encontrado')
       err.name = 'product_not_found'
       err.data = { id: String(id) }
       throw err
@@ -189,7 +189,7 @@ export async function updateProduct(id: number, body: ProductObject): Promise<Pr
    const { error } = await deleteQuery
 
    if (error) {
-      const err = new ActionException('Unexpected error updating product attributes')
+      const err = new ActionException('Error inesperado al actualizar los atributos del producto')
       err.name = 'unexpected_error'
       throw err
    }
@@ -208,7 +208,7 @@ export async function getInventory(): Promise<InventoryObject> {
    ])
 
    if (productsResult.error || typesResult.error || attributesResult.error || productAttributesResult.error) {
-      const err = new ActionException('Unexpected error getting inventory')
+      const err = new ActionException('Error inesperado al obtener el inventario')
       err.name = 'unexpected_error'
       throw err
    }
@@ -241,13 +241,13 @@ async function findProductById(id: number): Promise<ProductObject> {
    const productResult = await db.from('products').select<string, ProductModel>('*').eq('product_id', id).limit(1)
 
    if (productResult.error) {
-      const err = new ActionException('Unexpected error finding product')
+      const err = new ActionException('Error inesperado al buscar el producto')
       err.name = 'unexpected_error'
       throw err
    }
 
    if (productResult.data.length === 0) {
-      const err = new ActionException('Product not found')
+      const err = new ActionException('Producto no encontrado')
       err.name = 'product_not_found'
       err.data = { id: String(id) }
       throw err
@@ -262,7 +262,7 @@ async function findProductById(id: number): Promise<ProductObject> {
    ])
 
    if (typeResult.error || attributesResult.error || productAttributesResult.error) {
-      const err = new ActionException('Unexpected error finding product')
+      const err = new ActionException('Error inesperado al buscar el producto')
       err.name = 'unexpected_error'
       throw err
    }
@@ -279,7 +279,7 @@ async function updateProductStock(id: number, stock: number): Promise<ProductObj
    const db = createClient(await cookies())
 
    if (!Number.isInteger(stock) || stock < 0) {
-      const err = new ActionException('Product stock must be a non-negative integer')
+      const err = new ActionException('El stock del producto no puede ser menor a 0')
       err.name = 'invalid_product_stock'
       throw err
    }
@@ -287,13 +287,13 @@ async function updateProductStock(id: number, stock: number): Promise<ProductObj
    const result = await db.from('products').update({ stock }).eq('product_id', id).select('product_id')
 
    if (result.error) {
-      const err = new ActionException('Unexpected error updating product stock')
+      const err = new ActionException('Error inesperado al actualizar el stock')
       err.name = 'unexpected_error'
       throw err
    }
 
    if (result.data.length === 0) {
-      const err = new ActionException('Product not found')
+      const err = new ActionException('Producto no encontrado')
       err.name = 'product_not_found'
       err.data = { id: String(id) }
       throw err
@@ -306,7 +306,7 @@ export async function increaseProductStock(id: number, quantity: number = 1): Pr
    await requireArtist()
 
    if (!Number.isInteger(quantity) || quantity <= 0) {
-      const err = new ActionException('Quantity must be a positive integer')
+      const err = new ActionException('La cantidad debe ser mayor a 0')
       err.name = 'invalid_quantity'
       throw err
    }
@@ -319,7 +319,7 @@ export async function decreaseProductStock(id: number, quantity: number = 1): Pr
    await requireArtist()
 
    if (!Number.isInteger(quantity) || quantity <= 0) {
-      const err = new ActionException('Quantity must be a positive integer')
+      const err = new ActionException('La cantidad debe ser mayor a 0')
       err.name = 'invalid_quantity'
       throw err
    }
@@ -327,7 +327,7 @@ export async function decreaseProductStock(id: number, quantity: number = 1): Pr
    const product = await findProductById(id)
 
    if (quantity > product.stock) {
-      const err = new ActionException('Not enough stock')
+      const err = new ActionException('No hay stock suficiente')
       err.name = 'insufficient_stock'
       err.data = { id: String(id), available: String(product.stock), requested: String(quantity) }
       throw err
@@ -346,7 +346,7 @@ export async function deleteProduct(id: number): Promise<void> {
    const { error } = await db.from('products').delete().eq('product_id', id)
 
    if (error) {
-      const err = new ActionException('Unexpected error deleting product')
+      const err = new ActionException('Error inesperado al eliminar el producto')
       err.name = 'unexpected_error'
       throw err
    }
@@ -359,7 +359,7 @@ export async function createProductType(value: string): Promise<ProductTypeObjec
    const normalizedValue = value.trim()
 
    if (!normalizedValue || normalizedValue.length > 100) {
-      const err = new ActionException('Invalid product type')
+      const err = new ActionException('Tipo de producto inválido')
       err.name = 'invalid_product_type'
       throw err
    }
@@ -367,13 +367,13 @@ export async function createProductType(value: string): Promise<ProductTypeObjec
    const existingResult = await db.from('product_type').select<string, ProductTypeModel>('*').eq('value', normalizedValue).limit(1)
 
    if (existingResult.error) {
-      const err = new ActionException('Unexpected error validating product type')
+      const err = new ActionException('Error inesperado al validar el tipo del producto')
       err.name = 'unexpected_error'
       throw err
    }
 
    if (existingResult.data.length > 0) {
-      const err = new ActionException('Product type already exists')
+      const err = new ActionException('El tipo del producto ya existe')
       err.name = 'product_type_exists'
       err.data = { value: normalizedValue }
       throw err
@@ -383,13 +383,13 @@ export async function createProductType(value: string): Promise<ProductTypeObjec
 
    if (result.error || !result.data) {
       if (result.error?.code === '23505') {
-         const err = new ActionException('Product type already exists')
+         const err = new ActionException('El tipo del producto ya existe')
          err.name = 'product_type_exists'
          err.data = { value: normalizedValue }
          throw err
       }
 
-      const err = new ActionException('Unexpected error creating product type')
+      const err = new ActionException('Error inesperado al crear el tipo del producto')
       err.name = 'unexpected_error'
       throw err
    }
@@ -404,7 +404,7 @@ async function saveProductAttributes(db: DbClient, productId: number, entries: N
    const existingResult = await db.from('attributes').select<string, AttributeModel>('attribute_id, name').in('name', names)
 
    if (existingResult.error) {
-      const err = new ActionException('Unexpected error resolving attributes')
+      const err = new ActionException('Error inesperado en los atributos')
       err.name = 'unexpected_error'
       throw err
    }
@@ -419,7 +419,7 @@ async function saveProductAttributes(db: DbClient, productId: number, entries: N
          .select<string, AttributeModel>('attribute_id, name')
 
       if (insertResult.error || !insertResult.data) {
-         const err = new ActionException('Unexpected error creating attributes')
+         const err = new ActionException('Error inesperado al crear los atributos')
          err.name = 'unexpected_error'
          throw err
       }
@@ -431,7 +431,7 @@ async function saveProductAttributes(db: DbClient, productId: number, entries: N
       const attributeId = attributeIds.get(entry.name)
 
       if (attributeId === undefined) {
-         const err = new ActionException('Unexpected error resolving product attributes')
+         const err = new ActionException('Error inesperado en los atributos')
          err.name = 'unexpected_error'
          throw err
       }
@@ -442,7 +442,7 @@ async function saveProductAttributes(db: DbClient, productId: number, entries: N
    const { error } = await db.from('product_attributes').upsert(rows, { onConflict: 'product_id,attribute_id' })
 
    if (error) {
-      const err = new ActionException('Unexpected error saving product attributes')
+      const err = new ActionException('Error inesperado al guardar los atributos del producto')
       err.name = 'unexpected_error'
       throw err
    }

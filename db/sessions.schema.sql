@@ -14,6 +14,7 @@ CREATE TYPE currency_code AS ENUM (
 CREATE TABLE IF NOT EXISTS sessions (
    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    project_id BIGINT NOT NULL,
+   artist_id UUID NOT NULL,
    starts_at TIMESTAMP WITH TIME ZONE NOT NULL,
    ends_at TIMESTAMP WITH TIME ZONE NOT NULL,
    observations TEXT NOT NULL DEFAULT '',
@@ -26,10 +27,16 @@ CREATE TABLE IF NOT EXISTS sessions (
    CONSTRAINT fk_session_project
       FOREIGN KEY (project_id)
       REFERENCES projects (id)
-      ON DELETE CASCADE
+      ON DELETE CASCADE,
+
+   CONSTRAINT fk_session_artist
+      FOREIGN KEY (artist_id)
+      REFERENCES auth.users (id)
+      ON DELETE RESTRICT
 );
 
 CREATE INDEX IF NOT EXISTS idx_sessions_project_id ON sessions(project_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_artist_id ON sessions(artist_id);
 
 CREATE OR REPLACE FUNCTION sync_sessions_status()
 RETURNS void
@@ -64,9 +71,17 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+   IF NOT public.is_artist() THEN
+      RAISE EXCEPTION 'No autorizado' USING ERRCODE = '42501';
+   END IF;
+
    PERFORM sync_sessions_status();
-      RETURN QUERY
-      SELECT * FROM public.sessions WHERE project_id = p_id ORDER BY starts_at DESC;
+
+   RETURN QUERY
+      SELECT * FROM public.sessions
+      WHERE project_id = p_id
+        AND artist_id = auth.uid()
+      ORDER BY starts_at DESC;
    END
 $$;
 
@@ -77,9 +92,15 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  PERFORM sync_sessions_status();
+   IF NOT public.is_artist() THEN
+      RAISE EXCEPTION 'No autorizado' USING ERRCODE = '42501';
+   END IF;
+
+   PERFORM sync_sessions_status();
 
    RETURN QUERY
-      SELECT * FROM public.sessions WHERE id = s_id;
-  END
+      SELECT * FROM public.sessions
+      WHERE id = s_id
+        AND artist_id = auth.uid();
+   END
 $$;
